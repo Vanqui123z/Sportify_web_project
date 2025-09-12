@@ -23,6 +23,32 @@
 	href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.min.css">
 <link rel="stylesheet" href="/user/css/flaticon.css">
 <link rel="stylesheet" href="/user/css/style.css">
+<style>
+/* Điều chỉnh navigation menu hiển thị 1 hàng */
+.navbar-nav {
+	flex-wrap: nowrap !important;
+}
+.navbar-nav .nav-item {
+	white-space: nowrap;
+	margin-left: 5px !important;
+	margin-right: 5px !important;
+}
+.navbar-nav .nav-link {
+	font-size: 14px !important;
+	padding-left: 12px !important;
+	padding-right: 12px !important;
+}
+@media (max-width: 991px) {
+	.navbar-nav .nav-link {
+		font-size: 16px !important;
+		padding: 10px 15px !important;
+	}
+	.navbar-nav .nav-item {
+		margin-left: 3px !important;
+		margin-right: 3px !important;
+	}
+}
+</style>
 </head>
 <body>
 
@@ -123,6 +149,8 @@
 						class="nav-link">Đội</a></li>
 					<li class="nav-item"><a th:href="@{/sportify/event}"
 						class="nav-link">Tin tức</a></li>
+					<li class="nav-item"><a th:href="@{/sportify/live-football}"
+						class="nav-link" target="_blank">Trực tiếp bóng đá</a></li>
 					<li class="nav-item"><a th:href="@{/sportify/product}"
 						class="nav-link">Cửa hàng</a></li>
 					<li class="nav-item"><a th:href="@{/sportify/about}"
