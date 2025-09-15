@@ -70,6 +70,6 @@
 - Hình ảnh về EER Diagram
   ![Screenshot 2024-02-20 155848](https://github.com/hoaibaohbvn/Sportify/assets/54605058/92edcf82-d62b-4a32-b34c-e65db6783f02)
 
-# Hi vọng bạn sẽ thích thú với dự án này của chúng tôi, TeamDevSportify xin nhận mọi gạch đá từ phía bạn vì những gạch đá đó sẽ giúp cho ngôi nhà (Dự án Sportify) thêm hoàn thiện hơn
+# Hi vọng bạn sẽ thích thú với dự án này của chúng tôi, Team Ngọc và Quí xin nhận mọi gạch đá từ phía bạn vì những gạch đá đó sẽ giúp cho ngôi nhà (Dự án Sportify) thêm hoàn thiện hơn
 
-# Liên hệ góp ý: teamdev.sportify@gmail.com
+# Liên hệ góp ý: phamleducngoc123@gmail.com
