@@ -28,6 +28,54 @@ body {
 	background-repeat: repeat;
 	background-size: 100% 100%;
 }
+/* Điều chỉnh navigation menu hiển thị 1 hàng */
+.navbar-nav {
+	flex-wrap: nowrap !important;
+}
+.navbar-nav .nav-item {
+	white-space: nowrap;
+	margin-left: 5px !important;
+	margin-right: 5px !important;
+}
+.navbar-nav .nav-link {
+	font-size: 14px !important;
+	padding-left: 12px !important;
+	padding-right: 12px !important;
+}
+@media (max-width: 991px) {
+	.navbar-nav .nav-link {
+		font-size: 16px !important;
+		padding: 10px 15px !important;
+	}
+	.navbar-nav .nav-item {
+		margin-left: 3px !important;
+		margin-right: 3px !important;
+	}
+}
+/* Dropdown menu styles */
+.dropdown-menu {
+	background-color: #343a40 !important;
+	border: none !important;
+	border-radius: 5px !important;
+	box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+}
+.dropdown-item {
+	color: #fff !important;
+	font-size: 14px !important;
+	padding: 8px 16px !important;
+}
+.dropdown-item:hover {
+	background-color: #495057 !important;
+	color: #fff !important;
+}
+/* Khóa mục "Trực tiếp bóng đá" - chỉ cho phép click vào dropdown */
+#footballDropdown {
+	pointer-events: none !important;
+	cursor: default !important;
+}
+#footballDropdown:hover {
+	color: #fff !important;
+}
 </style>
 </head>
 <body>
@@ -131,6 +179,15 @@ body {
 						class="nav-link">Đội</a></li>
 					<li class="nav-item"><a th:href="@{/sportify/event}"
 						class="nav-link">Tin Tức</a></li>
+					<li class="nav-item dropdown">
+						<a class="nav-link dropdown-toggle" href="#" id="footballDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+							Trực tiếp bóng đá
+						</a>
+						<div class="dropdown-menu" aria-labelledby="footballDropdown">
+							<a class="dropdown-item" th:href="@{/sportify/live-football}" target="_blank">Xem trực tiếp</a>
+							<a class="dropdown-item" th:href="@{/sportify/football-prediction}">Dự đoán kết quả</a>
+						</div>
+					</li>
 					<li class="nav-item"><a th:href="@{/sportify/product}"
 						class="nav-link">Cửa hàng</a></li>
 					<li class="nav-item"><a th:href="@{/sportify/about}"
@@ -441,12 +498,11 @@ body {
 						<div class="block-23 mb-3">
 							<ul>
 								<li><span class="icon fa fa-map marker"></span><span
-									class="text">Công viên phần mềm Quang QTSC Building 1,
-										Trung, P Q.12, Thành phố Hồ Chí Minh, Việt Nam</span></li>
+									class="text">104 Trần Bá Giao, Phường 5, Gò Vấp, Thành phố Hồ Chí Minh, Việt Nam</span></li>
 								<li><a href="#"><span class="icon fa fa-phone"></span><span
-										class="text">0123456789</span></a></li>
+										class="text">0366635625</span></a></li>
 								<li><a href="#"><span
-										class="icon fa fa-paper-plane pr-4"></span><span class="text">sportify@gmail.com</span></a></li>
+										class="icon fa fa-paper-plane pr-4"></span><span class="text">phamleducngoc123@gmail.com</span></a></li>
 							</ul>
 						</div>
 					</div>
@@ -466,8 +522,8 @@ body {
 							</script>
 							Bảo lưu mọi quyền | Mẫu này được thực hiện <i
 								class="fa fa-heart color-danger" aria-hidden="true"></i> bởi <a
-								th:href="@{/sportify/about}" target="_blank">Team Developer
-								Sportify</a>
+								th:href="@{/sportify/about}" target="_blank">Team Ngọc và Quí Sportify
+							</a>
 							<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
 						</p>
 					</div>
@@ -609,6 +665,27 @@ body {
 				document.querySelector('form').submit();
 			}
 		}
+		
+		// Khóa mục "Trực tiếp bóng đá" - chỉ cho phép click vào dropdown
+		document.addEventListener('DOMContentLoaded', function() {
+			const footballDropdown = document.getElementById('footballDropdown');
+			const footballDropdownMenu = footballDropdown.nextElementSibling;
+			
+			// Ngăn chặn click vào link chính
+			footballDropdown.addEventListener('click', function(e) {
+				e.preventDefault();
+				e.stopPropagation();
+			});
+			
+			// Cho phép dropdown hoạt động khi click vào mũi tên
+			footballDropdown.addEventListener('click', function(e) {
+				if (footballDropdownMenu.classList.contains('show')) {
+					footballDropdownMenu.classList.remove('show');
+				} else {
+					footballDropdownMenu.classList.add('show');
+				}
+			});
+		});
 	</script>
 
 </body>
