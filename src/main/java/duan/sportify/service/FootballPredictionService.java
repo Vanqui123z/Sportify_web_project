@@ -118,6 +118,12 @@ public class FootballPredictionService {
             match.put("predictedScore", aiAnalysis.get("predictedScore"));
             match.put("aiAnalysis", aiAnalysis.get("analysis"));
             match.put("recommendation", aiAnalysis.get("recommendation"));
+            match.put("homeWinProbability", aiAnalysis.get("homeWinProbability"));
+            match.put("drawProbability", aiAnalysis.get("drawProbability"));
+            match.put("awayWinProbability", aiAnalysis.get("awayWinProbability"));
+            match.put("keyFactors", aiAnalysis.get("keyFactors"));
+            match.put("riskLevel", aiAnalysis.get("riskLevel"));
+            match.put("alternativeRecommendation", aiAnalysis.get("alternativeRecommendation"));
             
             System.out.println("🧠 AI Enhanced: " + homeTeam + " vs " + awayTeam + " (" + aiAnalysis.get("confidence") + "% confidence)");
             
@@ -127,12 +133,12 @@ public class FootballPredictionService {
     }
     
     /**
-     * Generate AI analysis for a match
+     * Generate AI analysis for a match with detailed factors
      */
     private Map<String, Object> generateAIAnalysis(String homeTeam, String awayTeam) {
         Map<String, Object> analysis = new HashMap<>();
         
-        // Team strength mapping (can be enhanced with real data)
+        // Enhanced team strength mapping with more teams
         Map<String, Integer> teamStrengths = new HashMap<>();
         teamStrengths.put("Manchester City", 95);
         teamStrengths.put("Arsenal", 90);
@@ -142,37 +148,380 @@ public class FootballPredictionService {
         teamStrengths.put("Tottenham Hotspur", 78);
         teamStrengths.put("Newcastle United", 75);
         teamStrengths.put("Brighton & Hove Albion", 70);
+        teamStrengths.put("Aston Villa", 72);
+        teamStrengths.put("West Ham United", 68);
+        teamStrengths.put("Crystal Palace", 65);
+        teamStrengths.put("Fulham", 63);
+        teamStrengths.put("Wolverhampton", 61);
+        teamStrengths.put("Everton", 58);
+        teamStrengths.put("Brentford", 60);
+        teamStrengths.put("Nottingham Forest", 55);
+        teamStrengths.put("Luton Town", 45);
+        teamStrengths.put("Sheffield United", 42);
+        teamStrengths.put("Burnley", 40);
         
+        // Get base team strengths
         int homeStrength = teamStrengths.getOrDefault(homeTeam, 65);
         int awayStrength = teamStrengths.getOrDefault(awayTeam, 65);
         
-        // Home advantage
-        homeStrength += 5;
+        // Calculate detailed factors
+        Map<String, Object> factors = calculateDetailedFactors(homeTeam, awayTeam, homeStrength, awayStrength);
         
-        // Calculate probabilities
-        int totalStrength = homeStrength + awayStrength;
-        int homeWinProb = (homeStrength * 60) / totalStrength;
-        int awayWinProb = (awayStrength * 60) / totalStrength;
-        int drawProb = 100 - homeWinProb - awayWinProb;
+        // Apply factors to strength
+        homeStrength = (int)(homeStrength * (Double)factors.get("homeFormFactor"));
+        awayStrength = (int)(awayStrength * (Double)factors.get("awayFormFactor"));
         
-        // Predict score
-        String predictedScore = generatePredictedScore(homeStrength, awayStrength);
+        // Home advantage (3-8% depending on team)
+        int homeAdvantage = calculateHomeAdvantage(homeTeam, awayTeam);
+        homeStrength += homeAdvantage;
         
-        // Generate analysis text
-        String analysisText = generateAnalysisText(homeTeam, awayTeam, homeStrength, awayStrength);
+        // Head-to-head factor
+        int h2hFactor = calculateHeadToHeadFactor(homeTeam, awayTeam);
+        homeStrength += h2hFactor;
         
-        // Generate recommendation
-        String recommendation = generateRecommendation(homeWinProb, drawProb, awayWinProb);
+        // Calculate probabilities with more sophisticated algorithm
+        Map<String, Integer> probabilities = calculateProbabilities(homeStrength, awayStrength, factors);
         
-        // Calculate confidence
-        int confidence = Math.min(95, Math.max(60, Math.abs(homeStrength - awayStrength) + 60));
+        // Predict score with more realistic algorithm
+        String predictedScore = generateRealisticScore(homeStrength, awayStrength, factors);
         
+        // Generate detailed analysis
+        String analysisText = generateDetailedAnalysis(homeTeam, awayTeam, factors, probabilities);
+        
+        // Generate smart recommendation
+        String recommendation = generateSmartRecommendation(probabilities, factors);
+        
+        // Calculate confidence based on multiple factors
+        int confidence = calculateConfidence(factors, probabilities);
+        
+        // Add detailed analysis data
         analysis.put("confidence", confidence);
         analysis.put("predictedScore", predictedScore);
         analysis.put("analysis", analysisText);
         analysis.put("recommendation", recommendation);
+        analysis.put("homeWinProbability", probabilities.get("homeWin"));
+        analysis.put("drawProbability", probabilities.get("draw"));
+        analysis.put("awayWinProbability", probabilities.get("awayWin"));
+        analysis.put("keyFactors", factors.get("keyFactors"));
+        analysis.put("riskLevel", factors.get("riskLevel"));
+        analysis.put("alternativeRecommendation", factors.get("alternativeRecommendation"));
         
         return analysis;
+    }
+    
+    /**
+     * Calculate detailed factors affecting the match
+     */
+    private Map<String, Object> calculateDetailedFactors(String homeTeam, String awayTeam, int homeStrength, int awayStrength) {
+        Map<String, Object> factors = new HashMap<>();
+        Random random = new Random();
+        
+        // Recent form (last 5 matches simulation)
+        double homeFormFactor = 0.8 + (random.nextDouble() * 0.4); // 0.8 - 1.2
+        double awayFormFactor = 0.8 + (random.nextDouble() * 0.4);
+        
+        // Injury factor (simulation)
+        double homeInjuryFactor = 0.9 + (random.nextDouble() * 0.2); // 0.9 - 1.1
+        double awayInjuryFactor = 0.9 + (random.nextDouble() * 0.2);
+        
+        // Weather factor (simulation)
+        double weatherFactor = 0.95 + (random.nextDouble() * 0.1); // 0.95 - 1.05
+        
+        // Motivation factor (derby, relegation, etc.)
+        double motivationFactor = calculateMotivationFactor(homeTeam, awayTeam);
+        
+        // Key factors list
+        List<String> keyFactors = new ArrayList<>();
+        if (homeFormFactor > 1.1) keyFactors.add("Phong độ tốt của " + homeTeam);
+        if (awayFormFactor > 1.1) keyFactors.add("Phong độ tốt của " + awayTeam);
+        if (homeInjuryFactor < 0.95) keyFactors.add("Chấn thương quan trọng ở " + homeTeam);
+        if (awayInjuryFactor < 0.95) keyFactors.add("Chấn thương quan trọng ở " + awayTeam);
+        if (motivationFactor > 1.1) keyFactors.add("Động lực cao cho trận đấu");
+        
+        // Risk level calculation
+        String riskLevel = calculateRiskLevel(homeStrength, awayStrength, homeFormFactor, awayFormFactor);
+        
+        // Alternative recommendation
+        String alternativeRecommendation = generateAlternativeRecommendation(homeStrength, awayStrength);
+        
+        factors.put("homeFormFactor", homeFormFactor);
+        factors.put("awayFormFactor", awayFormFactor);
+        factors.put("homeInjuryFactor", homeInjuryFactor);
+        factors.put("awayInjuryFactor", awayInjuryFactor);
+        factors.put("weatherFactor", weatherFactor);
+        factors.put("motivationFactor", motivationFactor);
+        factors.put("keyFactors", keyFactors);
+        factors.put("riskLevel", riskLevel);
+        factors.put("alternativeRecommendation", alternativeRecommendation);
+        
+        return factors;
+    }
+    
+    /**
+     * Calculate home advantage based on team characteristics
+     */
+    private int calculateHomeAdvantage(String homeTeam, String awayTeam) {
+        // Big teams have less home advantage, smaller teams have more
+        Map<String, Integer> homeAdvantageMap = new HashMap<>();
+        homeAdvantageMap.put("Manchester City", 3);
+        homeAdvantageMap.put("Arsenal", 4);
+        homeAdvantageMap.put("Liverpool", 4);
+        homeAdvantageMap.put("Manchester United", 5);
+        homeAdvantageMap.put("Chelsea", 5);
+        homeAdvantageMap.put("Tottenham Hotspur", 6);
+        homeAdvantageMap.put("Newcastle United", 7);
+        homeAdvantageMap.put("Brighton & Hove Albion", 8);
+        
+        return homeAdvantageMap.getOrDefault(homeTeam, 6);
+    }
+    
+    /**
+     * Calculate head-to-head factor
+     */
+    private int calculateHeadToHeadFactor(String homeTeam, String awayTeam) {
+        // Simulate head-to-head records
+        Random random = new Random();
+        int factor = random.nextInt(7) - 3; // -3 to +3
+        return factor;
+    }
+    
+    /**
+     * Calculate probabilities with sophisticated algorithm
+     */
+    private Map<String, Integer> calculateProbabilities(int homeStrength, int awayStrength, Map<String, Object> factors) {
+        Map<String, Integer> probabilities = new HashMap<>();
+        
+        // Base calculation
+        int totalStrength = homeStrength + awayStrength;
+        int homeWin = (homeStrength * 100) / totalStrength;
+        int awayWin = (awayStrength * 100) / totalStrength;
+        int draw = 100 - homeWin - awayWin;
+        
+        // Apply factors
+        double homeFormFactor = (Double) factors.get("homeFormFactor");
+        double awayFormFactor = (Double) factors.get("awayFormFactor");
+        double motivationFactor = (Double) factors.get("motivationFactor");
+        
+        homeWin = (int)(homeWin * homeFormFactor * motivationFactor);
+        awayWin = (int)(awayWin * awayFormFactor * motivationFactor);
+        
+        // Normalize to 100%
+        int total = homeWin + awayWin + draw;
+        if (total > 0) {
+            homeWin = (homeWin * 100) / total;
+            awayWin = (awayWin * 100) / total;
+            draw = 100 - homeWin - awayWin;
+        }
+        
+        // Ensure realistic ranges
+        homeWin = Math.max(10, Math.min(80, homeWin));
+        awayWin = Math.max(10, Math.min(80, awayWin));
+        draw = Math.max(15, Math.min(40, draw));
+        
+        probabilities.put("homeWin", homeWin);
+        probabilities.put("awayWin", awayWin);
+        probabilities.put("draw", draw);
+        
+        return probabilities;
+    }
+    
+    /**
+     * Generate realistic score prediction
+     */
+    private String generateRealisticScore(int homeStrength, int awayStrength, Map<String, Object> factors) {
+        Random random = new Random();
+        
+        // Base goals calculation
+        double homeGoalRate = (homeStrength / 100.0) * 2.5; // Average 2.5 goals for top teams
+        double awayGoalRate = (awayStrength / 100.0) * 2.0; // Average 2.0 goals for top teams
+        
+        // Apply form factors
+        double homeFormFactor = (Double) factors.get("homeFormFactor");
+        double awayFormFactor = (Double) factors.get("awayFormFactor");
+        
+        homeGoalRate *= homeFormFactor;
+        awayGoalRate *= awayFormFactor;
+        
+        // Poisson distribution simulation
+        int homeGoals = simulatePoisson(homeGoalRate, random);
+        int awayGoals = simulatePoisson(awayGoalRate, random);
+        
+        // Ensure realistic scores (0-5 goals)
+        homeGoals = Math.min(5, Math.max(0, homeGoals));
+        awayGoals = Math.min(5, Math.max(0, awayGoals));
+        
+        return homeGoals + "-" + awayGoals;
+    }
+    
+    /**
+     * Simulate Poisson distribution for goal scoring
+     */
+    private int simulatePoisson(double lambda, Random random) {
+        double L = Math.exp(-lambda);
+        double p = 1.0;
+        int k = 0;
+        
+        do {
+            k++;
+            p *= random.nextDouble();
+        } while (p > L);
+        
+        return k - 1;
+    }
+    
+    /**
+     * Generate detailed analysis text
+     */
+    private String generateDetailedAnalysis(String homeTeam, String awayTeam, Map<String, Object> factors, Map<String, Integer> probabilities) {
+        StringBuilder analysis = new StringBuilder();
+        
+        int homeWin = probabilities.get("homeWin");
+        int draw = probabilities.get("draw");
+        int awayWin = probabilities.get("awayWin");
+        
+        @SuppressWarnings("unchecked")
+        List<String> keyFactors = (List<String>) factors.get("keyFactors");
+        
+        if (homeWin > 50) {
+            analysis.append(homeTeam).append(" có lợi thế rõ ràng với ").append(homeWin).append("% cơ hội thắng");
+        } else if (awayWin > 45) {
+            analysis.append(awayTeam).append(" có phong độ tốt hơn với ").append(awayWin).append("% cơ hội thắng");
+        } else if (draw > 35) {
+            analysis.append("Trận đấu cân bằng với ").append(draw).append("% khả năng hòa");
+        } else {
+            analysis.append("Trận đấu khó đoán, cả hai đội đều có cơ hội");
+        }
+        
+        if (!keyFactors.isEmpty()) {
+            analysis.append(". ").append(String.join(", ", keyFactors));
+        }
+        
+        return analysis.toString();
+    }
+    
+    /**
+     * Generate smart recommendation based on probabilities and factors
+     */
+    private String generateSmartRecommendation(Map<String, Integer> probabilities, Map<String, Object> factors) {
+        int homeWin = probabilities.get("homeWin");
+        int draw = probabilities.get("draw");
+        int awayWin = probabilities.get("awayWin");
+        String riskLevel = (String) factors.get("riskLevel");
+        
+        if (homeWin > 60) {
+            return "Đội nhà thắng " + (homeWin > 70 ? "(Rất chắc chắn)" : "(Khá chắc chắn)");
+        } else if (awayWin > 55) {
+            return "Đội khách thắng " + (awayWin > 65 ? "(Rất chắc chắn)" : "(Khá chắc chắn)");
+        } else if (draw > 40) {
+            return "Hòa " + (draw > 45 ? "(Rất chắc chắn)" : "(Khá chắc chắn)");
+        } else if (homeWin > 45 && awayWin > 35) {
+            return "Cả hai đội đều ghi bàn";
+        } else {
+            return "Trận đấu có nhiều bàn thắng (>2 bàn)";
+        }
+    }
+    
+    /**
+     * Calculate confidence level
+     */
+    private int calculateConfidence(Map<String, Object> factors, Map<String, Integer> probabilities) {
+        int homeWin = probabilities.get("homeWin");
+        int draw = probabilities.get("draw");
+        int awayWin = probabilities.get("awayWin");
+        
+        // Base confidence on probability spread
+        int maxProb = Math.max(homeWin, Math.max(draw, awayWin));
+        int confidence = 50 + (maxProb - 33); // 50-84 base
+        
+        // Adjust based on factors
+        @SuppressWarnings("unchecked")
+        List<String> keyFactors = (List<String>) factors.get("keyFactors");
+        confidence += keyFactors.size() * 2; // More factors = more confidence
+        
+        // Risk level adjustment
+        String riskLevel = (String) factors.get("riskLevel");
+        if ("Thấp".equals(riskLevel)) confidence += 10;
+        else if ("Cao".equals(riskLevel)) confidence -= 15;
+        
+        return Math.max(60, Math.min(95, confidence));
+    }
+    
+    /**
+     * Calculate motivation factor
+     */
+    private double calculateMotivationFactor(String homeTeam, String awayTeam) {
+        // Derby matches have higher motivation
+        if (isDerbyMatch(homeTeam, awayTeam)) {
+            return 1.15;
+        }
+        
+        // Big team vs small team
+        if (isBigTeam(homeTeam) && !isBigTeam(awayTeam)) {
+            return 0.95; // Big team might be less motivated
+        }
+        
+        return 1.0; // Normal motivation
+    }
+    
+    /**
+     * Check if it's a derby match
+     */
+    private boolean isDerbyMatch(String team1, String team2) {
+        String[][] derbies = {
+            {"Manchester United", "Manchester City"},
+            {"Arsenal", "Tottenham Hotspur"},
+            {"Liverpool", "Everton"},
+            {"Chelsea", "Arsenal"},
+            {"Newcastle United", "Sunderland"}
+        };
+        
+        for (String[] derby : derbies) {
+            if ((derby[0].equals(team1) && derby[1].equals(team2)) ||
+                (derby[0].equals(team2) && derby[1].equals(team1))) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Check if team is a big team
+     */
+    private boolean isBigTeam(String team) {
+        String[] bigTeams = {"Manchester City", "Arsenal", "Liverpool", "Manchester United", "Chelsea", "Tottenham Hotspur"};
+        for (String bigTeam : bigTeams) {
+            if (bigTeam.equals(team)) return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Calculate risk level
+     */
+    private String calculateRiskLevel(int homeStrength, int awayStrength, double homeForm, double awayForm) {
+        int strengthDiff = Math.abs(homeStrength - awayStrength);
+        double formDiff = Math.abs(homeForm - awayForm);
+        
+        if (strengthDiff < 10 && formDiff < 0.1) {
+            return "Cao"; // Very close match
+        } else if (strengthDiff < 20 && formDiff < 0.2) {
+            return "Trung Bình";
+        } else {
+            return "Thấp"; // Clear favorite
+        }
+    }
+    
+    /**
+     * Generate alternative recommendation
+     */
+    private String generateAlternativeRecommendation(int homeStrength, int awayStrength) {
+        if (homeStrength > awayStrength + 15) {
+            return "Trận đấu có nhiều bàn thắng (>2 bàn)";
+        } else if (awayStrength > homeStrength + 10) {
+            return "Cả hai đội đều ghi bàn";
+        } else {
+            return "Trận đấu ít bàn thắng (<2 bàn)";
+        }
     }
     
     private String generatePredictedScore(int homeStrength, int awayStrength) {
@@ -199,10 +548,10 @@ public class FootballPredictionService {
     }
     
     private String generateRecommendation(int homeWin, int draw, int awayWin) {
-        if (homeWin > 50) return "Cược Thắng Chủ Nhà";
-        if (awayWin > 45) return "Cược Thắng Khách";
-        if (draw > 35) return "Cược Hòa";
-        return "Cược Cả Hai Ghi Bàn";
+        if (homeWin > 50) return "Đội nhà thắng";
+        if (awayWin > 45) return "Đội khách thắng";
+        if (draw > 35) return "Hòa";
+        return "Cả hai đội đều ghi bàn";
     }
     
     /**
