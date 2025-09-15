@@ -47,6 +47,30 @@
 		margin-right: 3px !important;
 	}
 }
+/* Dropdown menu styles */
+.dropdown-menu {
+	background-color: #343a40 !important;
+	border: none !important;
+	border-radius: 5px !important;
+	box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+}
+.dropdown-item {
+	color: #fff !important;
+	font-size: 14px !important;
+	padding: 8px 16px !important;
+}
+.dropdown-item:hover {
+	background-color: #495057 !important;
+	color: #fff !important;
+}
+/* Khóa mục "Trực tiếp bóng đá" - chỉ cho phép click vào dropdown */
+#footballDropdown {
+	pointer-events: none !important;
+	cursor: default !important;
+}
+#footballDropdown:hover {
+	color: #fff !important;
+}
 </style>
 </head>
 <body>
@@ -73,8 +97,8 @@
 					</div>
 					<p class="mb-0 phone pl-md-2">
 						<a href="#" class="mr-2"><span class="fa fa-phone mr-1"></span>
-							+00 1234 567</a> <a href="#"><span class="fa fa-paper-plane mr-1"></span>
-							youremail@email.com</a>
+							0366635625</a> <a href="#"><span class="fa fa-paper-plane mr-1"></span>
+							phamleducngoc123@email.com</a>
 					</p>
 
 				</div>
@@ -148,8 +172,15 @@
 						class="nav-link">Đội</a></li>
 					<li class="nav-item"><a th:href="@{/sportify/event}"
 						class="nav-link">Tin tức</a></li>
-					<li class="nav-item"><a th:href="@{/sportify/live-football}"
-						class="nav-link" target="_blank">Trực tiếp bóng đá</a></li>
+					<li class="nav-item dropdown">
+						<a class="nav-link dropdown-toggle" href="#" id="footballDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+							Trực tiếp bóng đá
+						</a>
+						<div class="dropdown-menu" aria-labelledby="footballDropdown">
+							<a class="dropdown-item" th:href="@{/sportify/live-football}" target="_blank">Xem trực tiếp</a>
+							<a class="dropdown-item" th:href="@{/sportify/football-prediction}">Dự đoán kết quả</a>
+						</div>
+					</li>
 					<li class="nav-item"><a th:href="@{/sportify/product}"
 						class="nav-link">Cửa hàng</a></li>
 					<li class="nav-item"><a th:href="@{/sportify/about}"
@@ -271,7 +302,7 @@
 							<div class="col-md-5 order-md-first d-flex align-items-stretch" style="border: 3px solid #2E7D32;">
 
 								<iframe
-									src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.4435924064874!2d106.62525347460408!3d10.853826357762184!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752b161f50ae47%3A0x2328d1d1acc3b11a!2sFPT%20Polytechnic%20-%20T%C3%B2a%20F!5e0!3m2!1svi!2s!4v1691058165130!5m2!1svi!2s"
+									src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.4435924064874!2d106.6920845!3d10.8290898!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x317528f6e9e290ab%3A0xa322309091295c37!2s104%20Tr%E1%BA%A7n%20B%C3%A1%20Giao%2C%20Ph%C6%B0%E1%BB%9Dng%205%2C%20G%C3%B2%20V%E1%BA%A5p%2C%20Th%C3%A0nh%20ph%E1%BB%91%20H%E1%BB%93%20Ch%C3%AD%20Minh%2C%20Vi%E1%BB%87t%20Nam!5e0!3m2!1svi!2s!4v1691058165130!5m2!1svi!2s"
 									width="600" height="100%" style="border: 0;" allowfullscreen=""
 									loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
 
@@ -289,8 +320,7 @@
 								</div>
 								<div class="text">
 									<p>
-										<span>Address: </span> Công viên phần mềm Quang Trung QTSC Building
-										1, Quận 12, Thành phố Hồ Chí Minh, Việt Nam
+										<span>Address: </span> 104 Trần Bá Giao, Phường 5, Gò Vấp, Thành phố Hồ Chí Minh, Việt Nam
 									</p>
 								</div>
 							</div>
@@ -303,7 +333,7 @@
 								</div>
 								<div class="text">
 									<p>
-										<span>Phone:</span> + 1235 2355 98
+										<span>Phone:</span> 0366635625
 									</p>
 								</div>
 							</div>
@@ -316,7 +346,7 @@
 								</div>
 								<div class="text">
 									<p>
-										<span>Email:</span> <a href="mailto:info@yoursite.com">sportify@gmail.com</a>
+										<span>Email:</span> <a href="mailto:info@yoursite.com">phamleducngoc123@gmail.com</a>
 									</p>
 								</div>
 							</div>
@@ -390,12 +420,11 @@
 						<div class="block-23 mb-3">
 							<ul>
 								<li><span class="icon fa fa-map marker"></span><span
-									class="text">Công viên phần mềm Quang QTSC Building 1,
-										Trung, P Q.12, Thành phố Hồ Chí Minh, Việt Nam</span></li>
+									class="text">104 Trần Bá Giao, Phường 5, Gò Vấp, Thành phố Hồ Chí Minh, Việt Nam</span></li>
 								<li><a href="#"><span class="icon fa fa-phone"></span><span
-										class="text">0123456789</span></a></li>
+										class="text">0366635625</span></a></li>
 								<li><a href="#"><span
-										class="icon fa fa-paper-plane pr-4"></span><span class="text">sportify@gmail.com</span></a></li>
+										class="icon fa fa-paper-plane pr-4"></span><span class="text">phamleducngoc123@gmail.com</span></a></li>
 							</ul>
 						</div>
 					</div>
@@ -415,8 +444,8 @@
 							</script>
 							Bảo lưu mọi quyền | Mẫu này được thực hiện <i
 								class="fa fa-heart color-danger" aria-hidden="true"></i> bởi <a
-								th:href="@{/sportify/about}" target="_blank">Team Developer
-								Sportify</a>
+								th:href="@{/sportify/about}" target="_blank">Team Ngọc và Quí Sportify
+							</a>
 							<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
 						</p>
 					</div>
@@ -471,6 +500,28 @@
 		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBVWaKrjvy3MaE7SQ74_uJiULgl1JY0H2s&sensor=false"></script>
 	<script src="/user/js/google-map.js"></script>
 	<script src="/user/js/main.js"></script>
+	<script>
+		// Khóa mục "Trực tiếp bóng đá" - chỉ cho phép click vào dropdown
+		document.addEventListener('DOMContentLoaded', function() {
+			const footballDropdown = document.getElementById('footballDropdown');
+			const footballDropdownMenu = footballDropdown.nextElementSibling;
+			
+			// Ngăn chặn click vào link chính
+			footballDropdown.addEventListener('click', function(e) {
+				e.preventDefault();
+				e.stopPropagation();
+			});
+			
+			// Cho phép dropdown hoạt động khi click vào mũi tên
+			footballDropdown.addEventListener('click', function(e) {
+				if (footballDropdownMenu.classList.contains('show')) {
+					footballDropdownMenu.classList.remove('show');
+				} else {
+					footballDropdownMenu.classList.add('show');
+				}
+			});
+		});
+	</script>
 
 </body>
 </html>
