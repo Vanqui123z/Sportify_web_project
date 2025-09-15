@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Football API Test - Sportify</title>
+    <link rel="stylesheet" href="/user/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/all.min.css">
+    <style>
+        body { padding: 20px; font-family: 'Courier New', monospace; }
+        .api-status { margin: 10px 0; padding: 15px; border-radius: 5px; }
+        .success { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .match-item { border: 1px solid #ddd; margin: 10px 0; padding: 15px; border-radius: 5px; }
+        .json-data { background: #f8f9fa; padding: 10px; border-radius: 3px; max-height: 300px; overflow-y: auto; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Football API Test Page</h1>
+        <p class="lead" th:text="${message ?: 'Testing Football-Data.org Integration'}"></p>
+        
+        <a href="/sportify/football-prediction" class="btn btn-primary mb-4">← Back to Predictions</a>
+        
+        <!-- API Status -->
+        <div class="row">
+            <div class="col-md-12">
+                <h3>📡 API Connection Status</h3>
+                <div th:if="${apiStatus}" class="api-status" th:classappend="${apiStatus.status == 'SUCCESS'} ? 'success' : 'error'">
+                    <h5 th:text="${apiStatus.status}">Status</h5>
+                    <p th:text="${apiStatus.message}">Message</p>
+                    <div th:if="${apiStatus.competition}">
+                        <strong>Competition:</strong> <span th:text="${apiStatus.competition}"></span><br>
+                        <strong>Season:</strong> <span th:text="${apiStatus.season ?: 'N/A'}"></span>
+                    </div>
+                </div>
+                
+                <div th:if="${error}" class="alert alert-danger">
+                    <h5>❌ Error Occurred</h5>
+                    <p th:text="${error}">Error message</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Raw API Data -->
+        <div class="row mt-4" th:if="${realMatches}">
+            <div class="col-md-12">
+                <h3>⚽ Raw API Matches</h3>
+                <p>Direct data from Football-Data.org API:</p>
+                
+                <div th:each="match, iterStat : ${realMatches}" class="match-item">
+                    <h6 th:text="${match.homeTeam + ' vs ' + match.awayTeam}">Match</h6>
+                    <p>
+                        <strong>Date:</strong> <span th:text="${match.date}"></span><br>
+                        <strong>Time:</strong> <span th:text="${match.time}"></span><br>
+                        <strong>Competition:</strong> <span th:text="${match.competition}"></span><br>
+                        <strong>Venue:</strong> <span th:text="${match.venue ?: 'TBA'}"></span><br>
+                        <strong>Status:</strong> <span th:text="${match.status}"></span>
+                    </p>
+                    
+                    <!-- Show full JSON for debugging -->
+                    <details>
+                        <summary>🔍 Raw JSON Data</summary>
+                        <div class="json-data">
+                            <pre th:text="${match}"></pre>
+                        </div>
+                    </details>
+                </div>
+            </div>
+        </div>
+        
+        <!-- AI Enhanced Data -->
+        <div class="row mt-4" th:if="${aiMatches}">
+            <div class="col-md-12">
+                <h3>🧠 AI Enhanced Matches</h3>
+                <p>API data enhanced with AI predictions:</p>
+                
+                <div th:each="match, iterStat : ${aiMatches}" class="match-item">
+                    <h6 th:text="${match.homeTeam + ' vs ' + match.awayTeam}">Match</h6>
+                    <p>
+                        <strong>Date:</strong> <span th:text="${match.date}"></span><br>
+                        <strong>Time:</strong> <span th:text="${match.time}"></span><br>
+                        <strong>AI Predicted Score:</strong> <span th:text="${match.predictedScore ?: 'N/A'}" class="text-success"></span><br>
+                        <strong>AI Confidence:</strong> <span th:text="${match.aiConfidence ?: 'N/A'}" class="text-info"></span>%<br>
+                        <strong>Analysis:</strong> <span th:text="${match.aiAnalysis ?: 'N/A'}"></span><br>
+                        <strong>Recommendation:</strong> <span th:text="${match.recommendation ?: 'N/A'}" class="text-warning"></span>
+                    </p>
+                    
+                    <div class="row">
+                        <div class="col-4 text-center">
+                            <small>Home Win</small><br>
+                            <span class="badge badge-success" th:text="${match.homeWinProbability + '%'}">%</span>
+                        </div>
+                        <div class="col-4 text-center">
+                            <small>Draw</small><br>
+                            <span class="badge badge-warning" th:text="${match.drawProbability + '%'}">%</span>
+                        </div>
+                        <div class="col-4 text-center">
+                            <small>Away Win</small><br>
+                            <span class="badge badge-success" th:text="${match.awayWinProbability + '%'}">%</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Show full JSON for debugging -->
+                    <details class="mt-2">
+                        <summary>🔍 Enhanced JSON Data</summary>
+                        <div class="json-data">
+                            <pre th:text="${match}"></pre>
+                        </div>
+                    </details>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Test Actions -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <h3>🛠️ Test Actions</h3>
+                <button onclick="location.reload()" class="btn btn-primary">🔄 Refresh Data</button>
+                <a href="/sportify/football-prediction" class="btn btn-success">✅ Go to Production Page</a>
+                <button onclick="window.open('https://api.football-data.org/v4/competitions/2021/matches?status=SCHEDULED', '_blank')" class="btn btn-info">📡 View Raw API</button>
+            </div>
+        </div>
+        
+        <!-- Debug Info -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <h3>🐛 Debug Information</h3>
+                <div class="json-data">
+                    <strong>API Key (last 4 chars):</strong> ...c21<br>
+                    <strong>Base URL:</strong> https://api.football-data.org/v4<br>
+                    <strong>Endpoint:</strong> /competitions/2021/matches?status=SCHEDULED<br>
+                    <strong>League:</strong> Premier League (ID: 2021)<br>
+                    <strong>Current Time:</strong> <span id="currentTime"></span><br>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Update current time
+        document.getElementById('currentTime').textContent = new Date().toLocaleString();
+        
+        // Auto-refresh every 30 seconds
+        setTimeout(function() {
+            location.reload();
+        }, 30000);
+    </script>
+</body>
+</html>
+
