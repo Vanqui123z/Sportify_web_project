@@ -65,6 +65,22 @@ body {
 		margin-right: 3px !important;
 	}
 }
+/* Dropdown menu styles */
+.dropdown-menu {
+	background-color: #343a40 !important;
+	border: none !important;
+	border-radius: 5px !important;
+	box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+}
+.dropdown-item {
+	color: #fff !important;
+	font-size: 14px !important;
+	padding: 8px 16px !important;
+}
+.dropdown-item:hover {
+	background-color: #495057 !important;
+	color: #fff !important;
+}
 </style>
 </head>
 
@@ -207,8 +223,15 @@ body {
 						class="nav-link">Đội</a></li>
 					<li class="nav-item"><a th:href="@{/sportify/event}"
 						class="nav-link">Tin Tức</a></li>
-					<li class="nav-item"><a th:href="@{/sportify/live-football}"
-						class="nav-link" target="_blank">Trực tiếp bóng đá</a></li>
+					<li class="nav-item dropdown">
+						<a class="nav-link dropdown-toggle" href="#" id="footballDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+							Trực tiếp bóng đá
+						</a>
+						<div class="dropdown-menu" aria-labelledby="footballDropdown">
+							<a class="dropdown-item" th:href="@{/sportify/live-football}" target="_blank">Xem trực tiếp</a>
+							<a class="dropdown-item" th:href="@{/sportify/football-prediction}">Dự đoán kết quả</a>
+						</div>
+					</li>
 					<li class="nav-item"><a th:href="@{/sportify/product}"
 						class="nav-link">Cửa hàng</a></li>
 					<li class="nav-item"><a th:href="@{/sportify/about}"
