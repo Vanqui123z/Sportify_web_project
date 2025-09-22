@@ -1,5 +1,6 @@
 import React, {type  FC, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import getImageUrl from "../../../utils/getImageUrl ";
 
 type TeamRow = any[]; // raw array from API
 type Team = {
@@ -111,7 +112,7 @@ const TeamDetail: FC<{ teamIdProp?: string }> = ({ teamIdProp }) => {
 									{/* team image */}
 									<img
 										className="block-20 img bg-dark block-19 rounded"
-										src={team.image ? `/user/images/${team.image}` : "/user/images/noavatar.jpg"}
+										src={team.image ? getImageUrl(team.image) : "/user/images/noavatar.jpg"}
 										alt={team.name || "Team image"}
 									/>
 									<div className="ml-5 text p-4 bg-light d-flex flex-column">

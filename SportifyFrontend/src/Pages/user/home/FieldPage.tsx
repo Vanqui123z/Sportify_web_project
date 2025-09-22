@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Loader from "../../../components/user/Loader";
-
+import getImageUrl from "../../../utils/getImageUrl ";
 type Category = {
   sporttypeid: string;
   categoryname: string;
@@ -156,7 +156,7 @@ export default function FieldPage() {
                   <div key={e.fieldid} className="col-lg-6">
                     <div className="card h-100 shadow-sm">
                       <div style={{ position: 'relative' }}>
-                        <img src={`/user/images/${e.image}`} className="card-img-top" alt={e.namefield} style={{ height: 220, objectFit: 'cover' }} />
+                        <img src={getImageUrl(e.image)} className="card-img-top" alt={e.namefield} style={{ height: 220, objectFit: 'cover' }} />
                         <span className="badge bg-danger rounded-pill" style={{ position: 'absolute', right: 12, top: 12 }}>
                           {e.price.toLocaleString()} VND
                         </span>

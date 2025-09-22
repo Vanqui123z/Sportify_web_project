@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import getImageUrl from '../../../utils/getImageUrl ';
 
 interface EventItem {
   eventid: number;
@@ -177,7 +178,7 @@ const Event: React.FC = () => {
                 <div key={ev.eventid} className="col-lg-6 mb-4">
                   <div className="card h-100 shadow-sm">
                     <img
-                      src={ev.image ? `/user/images/${ev.image}` : '/user/images/event3.png'}
+                      src={ev.image ? getImageUrl(ev.image) : '/user/images/default.png'}
                       className="card-img-top"
                       alt={ev.nameevent}
                       style={{ objectFit: 'cover', height: 220 }}

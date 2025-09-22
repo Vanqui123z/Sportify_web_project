@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
+import getImageUrl from "../../../utils/getImageUrl ";
 
 interface SportType {
     sporttypeid: string;
@@ -148,7 +149,7 @@ const DetailFields: React.FC = () => {
                     <div className="row">
                         <div className="col-lg-6 mb-4">
                             <div className="card shadow-sm">
-                                <img src={mainField?.image ? `/user/images/${mainField.image}` : "/user/images/noimage.png"} className="card-img-top img-fluid" alt={mainField?.namefield} />
+                                <img src={mainField?.image ? getImageUrl(mainField.image) : "/user/images/noimage.png"} className="card-img-top img-fluid" alt={mainField?.namefield} />
                             </div>
                         </div>
 
@@ -235,7 +236,7 @@ const DetailFields: React.FC = () => {
                                                 <div className="card h-100">
                                                     <div className="row no-gutters">
                                                         <div className="col-4">
-                                                            <img src={f.image ? `/user/images/${f.image}` : "/user/images/noimage.png"} className="img-fluid" alt={f.namefield} />
+                                                            <img src={f.image ? getImageUrl(f.image) : "/user/images/noimage.png"} className="img-fluid" alt={f.namefield} />
                                                         </div>
                                                         <div className="col-8">
                                                             <div className="card-body">

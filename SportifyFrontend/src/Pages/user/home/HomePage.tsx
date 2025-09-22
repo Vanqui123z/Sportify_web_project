@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Loader from "../../../components/user/Loader";
 import type { User, Field, Product } from "../../../Types/interface";
 import CustomCard from "../../../components/user/CustomCard";
+import getImageUrl from "../../../utils/getImageUrl ";
 
 interface EventApi {
   eventid: number;
@@ -66,7 +67,7 @@ export default function HomePage() {
 
   return (
     <>
-    
+
 
       {/* Hero */}
       <section
@@ -107,7 +108,7 @@ export default function HomePage() {
                 id={f.id}
                 title={f.name}
                 link={`sportify/field/detail/${f.id}`}
-                image={`/user/images/${f.image}`}
+                image={getImageUrl(f.image)}
                 badgeText={`${f.price.toLocaleString()} VND`}
                 badgeColor="bg-danger"
                 description={f.address}
@@ -139,7 +140,7 @@ export default function HomePage() {
                 id={p.id}
                 title={p.name}
                 link={`sportify/product-single/${p.id}`}
-                image={`/user/images/${p.image}`}
+                image={getImageUrl(p.image)}
                 badgeText={`${p.price.toLocaleString()} VND`}
                 badgeColor="bg-success"
                 description={p.description}
@@ -177,7 +178,7 @@ export default function HomePage() {
                 id={e.eventid}
                 title={e.nameevent}
                 link={`sportify/eventdetail/${e.eventid}`}
-                image={`/user/images/${e.image}`}
+                image={getImageUrl(e.image)}
                 badgeText="Sự kiện"
                 badgeColor="bg-info"
                 description={e.descriptions}

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import getImageUrl from '../../../utils/getImageUrl ';
 
 interface Product {
   productid: number;
@@ -100,7 +101,7 @@ const ProductDetail: React.FC = () => {
                 <div className="col-lg-6">
                   <div className="position-relative">
                     <img 
-                      src={`/user/images/products_img/${product.image}`} 
+                      src={getImageUrl(product.image)} 
                       className="img-fluid rounded shadow" 
                       alt={product.productname}
                       style={{ width: '100%', height: '400px', objectFit: 'cover' }}

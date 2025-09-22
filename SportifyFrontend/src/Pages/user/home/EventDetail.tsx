@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import getImageUrl from '../../../utils/getImageUrl ';
 
 interface EventDetailData {
   eventdetail: EventItem;
@@ -80,7 +81,7 @@ const EventDetail: React.FC = () => {
             <div className="col-lg-8">
               <div className="card shadow-sm mb-4">
                 {event.image && (
-                  <img src={`/user/images/${event.image}`} alt={event.nameevent} className="card-img-top img-fluid" style={{ objectFit: 'cover', height: 400 }} />
+                  <img src={getImageUrl(event.image)} alt={event.nameevent} className="card-img-top img-fluid" style={{ objectFit: 'cover', height: 400 }} />
                 )}
                 <div className="card-body">
                   <div className="mb-3 d-flex justify-content-between align-items-center">

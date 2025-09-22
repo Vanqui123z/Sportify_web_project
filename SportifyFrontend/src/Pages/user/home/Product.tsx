@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import CustomCard from '../../../components/user/CustomCard';
+import getImageUrl from '../../../utils/getImageUrl ';
 
 interface Category {
   categoryid: number;
@@ -80,7 +81,7 @@ const Product: React.FC = () => {
                     <CustomCard id={product.productid}
                       title={product.productname}
                       link={`/sportify/product-single/${product.productid}`}
-                      image={`/user/images/${product.image}`}
+                     image={getImageUrl(product.image)}
                       badgeText={formatPrice(product.discountprice)}
                       badgeColor="bg-success"
                       description={product.descriptions} 

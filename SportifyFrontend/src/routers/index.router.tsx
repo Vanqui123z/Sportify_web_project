@@ -1,5 +1,5 @@
 // AppRouter.tsx
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import AdminRoutes from "./admin/AdminRoutes";
 import HomeRouter from "./user/HomeRouter";
 import Layout from "../layouts/Layout";
@@ -33,7 +33,7 @@ const AppRouter = () => (
 
 
         {/* Trang fallback */}
-        <Route path="*" element={<HomePage />} />
+        <Route path="*" element={<Navigate to="/sportify" replace />} />
       </Routes>
     </AuthProvider>
   </Router>

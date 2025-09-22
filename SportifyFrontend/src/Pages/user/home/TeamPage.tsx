@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CustomCard from "../../../components/user/CustomCard";
+import getImageUrl from "../../../utils/getImageUrl ";
 
 interface SportType {
   sporttypeid: string;
@@ -324,7 +325,7 @@ const TeamPage: React.FC = () => {
             <CustomCard
               id={team.id}
               title={team.name}
-              image={team.avatar ? `/user/images/${team.avatar}` : "/user/images/default.png"}
+              image={team.avatar ? getImageUrl(team.avatar) : "/user/images/default.png"}
               badgeText={team.sport}
               badgeColor="bg-success"
               description={team.description || team.contact || undefined}
