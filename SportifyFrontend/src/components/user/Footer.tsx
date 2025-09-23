@@ -2,111 +2,107 @@ import React from "react";
 
 export default function Footer() {
   return (
-    <footer className="bg-dark text-light py-5 mt-5">
-      <div className="container">
-        <div className="row mb-5">
-          <div className="col-lg-3 col-md-6 mb-4">
-            <div className="mb-4">
-              <h5 className="text-primary fw-bold mb-3">
-                <a href="#" className="text-decoration-none text-primary">
-                  Sportify - Giải Pháp Sân Thể Thao
-                </a>
-              </h5>
-              <p className="text-muted">
-                Nền tảng đa năng cho đặt sân, tạo đội và mua sắm sản phẩm thể thao
-              </p>
-              <div className="d-flex gap-3 mt-3">
-                <a href="#" className="text-light">
-                  <i className="fab fa-twitter fs-5"></i>
-                </a>
-                <a href="https://www.facebook.com/profile.php?id=100094025267338" className="text-light">
-                  <i className="fab fa-facebook fs-5"></i>
-                </a>
-                <a href="#" className="text-light">
-                  <i className="fab fa-instagram fs-5"></i>
-                </a>
-              </div>
-            </div>
-          </div>
-          <div className="col-lg-3 col-md-6 mb-4">
-            <div className="mb-4">
-              <h5 className="text-white fw-bold mb-3">Chính sách và điều kiện</h5>
-              <ul className="list-unstyled">
-                <li className="mb-2">
-                  <a href="/sportify/chinhsach" className="text-decoration-none text-muted d-flex align-items-center">
-                    <i className="fas fa-chevron-right me-2 text-primary"></i>
-                    Chính sách
-                  </a>
-                </li>
-                <li className="mb-2">
-                  <a href="/sportify/quydinh" className="text-decoration-none text-muted d-flex align-items-center">
-                    <i className="fas fa-chevron-right me-2 text-primary"></i>
-                    Quy Định &amp; Điều Kiện
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="col-lg-3 col-md-6 mb-4">
-            <div className="mb-4">
-              <h5 className="text-white fw-bold mb-3">Liên Hệ Nhanh</h5>
-              <ul className="list-unstyled">
-                <li className="mb-2">
-                  <a href="/sportify/contact" className="text-decoration-none text-muted d-flex align-items-center">
-                    <i className="fas fa-chevron-right me-2 text-primary"></i>
-                    Liên Hệ
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="col-lg-3 col-md-6 mb-4">
-            <div className="mb-4">
-              <h5 className="text-white fw-bold mb-3">Thông tin liên hệ</h5>
-              <div>
-                <ul className="list-unstyled">
-                  <li className="mb-3 d-flex">
-                    <i className="fas fa-map-marker-alt text-primary me-3 mt-1"></i>
-                    <span className="text-muted">
-                      Công viên phần mềm Quang QTSC Building 1, Trung, P Q.12,
-                      Thành phố Hồ Chí Minh, Việt Nam
-                    </span>
+    <>
+      {/* Footer */}
+      <footer className="ftco-footer">
+        <div className="container">
+          <div className="row mb-5">
+            <div className="col-sm-12 col-md">
+              <div className="ftco-footer-widget mb-4">
+                <h2 className="ftco-heading-2 logo">
+                  <a href="#">Sportify - Giải Pháp Sân Thể Thao</a>
+                </h2>
+                <p>Nền tảng đa năng cho đặt sân, tạo đội và mua sắm sản phẩm thể thao</p>
+                <ul className="ftco-footer-social list-unstyled mt-2">
+                  <li className="ftco-animate">
+                    <a href="#"><span className="fa fa-twitter"></span></a>
                   </li>
-                  <li className="mb-3 d-flex">
-                    <i className="fas fa-phone text-primary me-3 mt-1"></i>
-                    <a href="tel:0123456789" className="text-decoration-none text-muted">
-                      0123456789
+                  <li className="ftco-animate">
+                    <a href="https://www.facebook.com/profile.php?id=100094025267338">
+                      <span className="fa fa-facebook"></span>
                     </a>
                   </li>
-                  <li className="mb-3 d-flex">
-                    <i className="fas fa-envelope text-primary me-3 mt-1"></i>
-                    <a href="mailto:sportify@gmail.com" className="text-decoration-none text-muted">
-                      sportify@gmail.com
+                  <li className="ftco-animate">
+                    <a href="#"><span className="fa fa-instagram"></span></a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="col-sm-12 col-md">
+              <div className="ftco-footer-widget mb-4 ml-md-4">
+                <h2 className="ftco-heading-2">Chính sách và điều kiện</h2>
+                <ul className="list-unstyled">
+                  <li>
+                    <a href="/sportify/chinhsach">
+                      <span className="fa fa-chevron-right mr-2"></span>Chính sách
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/sportify/quydinh">
+                      <span className="fa fa-chevron-right mr-2"></span>Quy Định & Điều Kiện
                     </a>
                   </li>
                 </ul>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-      <div className="border-top border-secondary py-4">
-        <div className="container">
-          <div className="row">
-            <div className="col-12 text-center">
-              <p className="mb-0 text-muted">
-                Bản quyền &copy; {new Date().getFullYear()} Bảo lưu mọi quyền | Mẫu
-                này được thực hiện{" "}
-                <i className="fas fa-heart text-danger"></i>{" "}
-                bởi{" "}
-                <a href="/sportify/about" target="_blank" className="text-decoration-none text-primary">
-                  Team Developer Sportify
-                </a>
-              </p>
+            <div className="col-sm-12 col-md">
+              <div className="ftco-footer-widget mb-4">
+                <h2 className="ftco-heading-2">Liên Hệ Nhanh</h2>
+                <ul className="list-unstyled">
+                  <li>
+                    <a href="/sportify/contact">
+                      <span className="fa fa-chevron-right mr-2"></span>Liên Hệ
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div className="col-sm-12 col-md">
+              <div className="ftco-footer-widget mb-4">
+                <h2 className="ftco-heading-2">Thông tin liên hệ</h2>
+                <div className="block-23 mb-3">
+                  <ul>
+                    <li>
+                      <span className="icon fa fa-map marker"></span>
+                      <span className="text">
+                        Công viên phần mềm Quang QTSC Building 1, Trung, P Q.12, Thành phố Hồ Chí Minh, Việt Nam
+                      </span>
+                    </li>
+                    <li>
+                      <a href="#">
+                        <span className="icon fa fa-phone"></span>
+                        <span className="text">0123456789</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#">
+                        <span className="icon fa fa-paper-plane pr-4"></span>
+                        <span className="text">sportify@gmail.com</span>
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </footer>
+        <div className="container-fluid px-0 py-5 bg-black">
+          <div className="container">
+            <div className="row">
+              <div className="col-md-12">
+                <p className="mb-0" style={{ color: "rgba(255, 255, 255, .5)" }}>
+                  Bản quyền &copy; {new Date().getFullYear()} Bảo lưu mọi quyền | Mẫu này được thực hiện{" "}
+                  <i className="fa fa-heart color-danger" aria-hidden="true"></i> bởi{" "}
+                  <a href="/sportify/about" target="_blank">
+                    Team Developer Sportify
+                  </a>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </>
   );
 }

@@ -1,8 +1,20 @@
 import { useEffect, useState } from "react";
 import Loader from "../../../components/user/Loader";
-import type { User, Field, Product } from "../../../Types/interface";
-import CustomCard from "../../../components/user/CustomCard";
+import type { Field, Product } from "../../../Types/interface";
 import getImageUrl from "../../../utils/getImageUrl ";
+
+
+// Add body background style
+const bodyStyle = {
+  backgroundImage: "url('/user/images/bgAll.png')",
+  backgroundRepeat: "repeat",
+  backgroundSize: "100% 100%"
+};
+
+// Apply body style when component mounts
+if (typeof document !== 'undefined') {
+  Object.assign(document.body.style, bodyStyle);
+}
 
 interface EventApi {
   eventid: number;
@@ -15,13 +27,36 @@ interface EventApi {
 }
 
 export default function HomePage() {
-  const [user, setUser] = useState<User | null>(null);
   const [fieldList, setFieldList] = useState<Field[]>([]);
   const [topProduct, setTopProduct] = useState<Product[]>([]);
   const [eventList, setEventList] = useState<EventApi[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Add required fonts and stylesheets to document head
+    const links = [
+      {
+        href: "https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,200;0,300;0,400;0,500;0,700;0,800;1,200;1,300;1,400;1,500;1,700&display=swap",
+        rel: "stylesheet"
+      },
+      {
+        href: "https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css",
+        rel: "stylesheet"
+      }
+    ];
+
+    const addedLinks: HTMLLinkElement[] = [];
+
+    links.forEach(linkInfo => {
+      if (!document.querySelector(`link[href="${linkInfo.href}"]`)) {
+        const link = document.createElement('link');
+        link.href = linkInfo.href;
+        link.rel = linkInfo.rel;
+        document.head.appendChild(link);
+        addedLinks.push(link);
+      }
+    });
+
     Promise.all([
       fetch("http://localhost:8081/api/sportify").then(res => res.json()),
       fetch("http://localhost:8081/api/sportify/event").then(res => res.json())
@@ -52,7 +87,6 @@ export default function HomePage() {
         setFieldList(transformedFields);
         setTopProduct(transformedProducts);
         setEventList(eventData.content || []);
-        setUser(null); // No user data in the API response
       })
       .catch(error => {
         console.error("Error fetching data:", error);
@@ -61,148 +95,493 @@ export default function HomePage() {
         setEventList([]);
       })
       .finally(() => setLoading(false));
+
+    // Load required scripts for the functionality
+
+    // js script
+    const scripts = [
+      "/user/js/jquery.min.js",
+      "/user/js/jquery-migrate-3.0.1.min.js",
+      "/user/js/popper.min.js",
+      "/user/js/bootstrap.min.js",
+      "/user/js/jquery.easing.1.3.js",
+      "/user/js/jquery.waypoints.min.js",
+      "/user/js/jquery.stellar.min.js",
+      "/user/js/owl.carousel.min.js",
+      "/user/js/jquery.magnific-popup.min.js",
+      "/user/js/jquery.animateNumber.min.js",
+      "/user/js/scrollax.min.js",
+      "/user/js/main.js"
+    ];
+
+    const loadedScripts: HTMLScriptElement[] = [];
+    scripts.forEach(src => {
+      if (!document.querySelector(`script[src="${src}"]`)) {
+        const script = document.createElement("script");
+        script.src = src;
+        script.async = false; // để đảm bảo thứ tự load
+        document.body.appendChild(script);
+        loadedScripts.push(script);
+      }
+    });
+
+    // Initialize owl carousel after scripts are loaded
+    const initCarousel = () => {
+      setTimeout(() => {
+        const $ = (window as any).$;
+        if ($ && $.fn.owlCarousel) {
+          $('.carousel-testimony').owlCarousel({
+            center: true,
+            loop: true,
+            items: 1,
+            margin: 30,
+            stagePadding: 0,
+            nav: false,
+            dots: true,
+            autoplay: true,
+            autoplayTimeout: 5000,
+            navText: ['<span class="fa fa-chevron-left">', '<span class="fa fa-chevron-right">'],
+            responsive: {
+              0: {
+                items: 1
+              },
+              600: {
+                items: 1
+              },
+              1000: {
+                items: 1
+              }
+            }
+          });
+        }
+      }, 1500);
+    };
+
+    // Load scripts and then initialize carousel
+    Promise.all(loadedScripts.map(script => {
+      return new Promise((resolve) => {
+        script.onload = resolve;
+        script.onerror = resolve;
+        // If script is already loaded
+        if ((script as any).readyState === 'complete') resolve(script);
+      });
+    })).then(() => {
+      initCarousel();
+    });
+
+    return () => {
+      loadedScripts.forEach(s => s.remove());
+      addedLinks.forEach(l => l.remove());
+    };
   }, []);
+
+  // Additional useEffect to ensure carousel initialization
+  useEffect(() => {
+    if (!loading) {
+      const initCarouselAgain = () => {
+        const $ = (window as any).$;
+        if ($ && $.fn.owlCarousel) {
+          // Destroy existing carousel if any
+          $('.carousel-testimony').trigger('destroy.owl.carousel');
+          $('.carousel-testimony').removeClass('owl-carousel owl-loaded');
+          $('.carousel-testimony').find('.owl-stage-outer').children().unwrap();
+          
+          // Re-initialize
+          setTimeout(() => {
+            $('.carousel-testimony').addClass('owl-carousel').owlCarousel({
+              center: true,
+              loop: true,
+              items: 1,
+              margin: 30,
+              stagePadding: 0,
+              nav: false,
+              dots: true,
+              autoplay: true,
+              autoplayTimeout: 5000,
+              responsive: {
+                0: { items: 1 },
+                600: { items: 1 },
+                1000: { items: 1 }
+              }
+            });
+          }, 500);
+        }
+      };
+      
+      setTimeout(initCarouselAgain, 2000);
+    }
+  }, [loading]);
 
   if (loading) return <Loader />;
 
   return (
     <>
+    
 
+ 
 
-      {/* Hero */}
-      <section
-        className="position-relative d-flex align-items-center justify-content-center text-white"
-        style={{
-          backgroundImage: "url(/user/images/bgSum.jpg)",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          minHeight: "100vh"
-        }}
+      {/* Hero Section */}
+      <div
+        className="hero-wrap"
+        style={{ backgroundImage: "url('/user/images/bgSum.jpg')" }}
+        data-stellar-background-ratio="0.5"
       >
-        <div className="position-absolute top-0 start-0 w-100 h-100" style={{ backgroundColor: "rgba(0,0,0,0.5)", zIndex: 1 }}></div>
-        <div className="container text-center position-relative" style={{ zIndex: 2 }}>
-          <h1 className="display-1 fw-bold mb-4">
-            Good Sport <br /> For Good Health
-          </h1>
-          <div className="mt-4">
-            <a href="/sportify/field" className="btn btn-primary btn-lg me-3 px-4 py-2">
-              Đặt Sân Ngay
-            </a>
-            <a href="/sportify/product" className="btn btn-outline-light btn-lg px-4 py-2">
-              Đi Mua Sắm
-            </a>
+        <div className="overlay"></div>
+        <div className="container">
+          <div className="row no-gutters slider-text align-items-center justify-content-center">
+            <div className="col-md-8 ftco-animate d-flex align-items-end">
+              <div className="text w-100 text-center">
+                <h1 className="mb-2" style={{ fontSize: "100px" }}>
+                  <span>Good Sport <br /> For Good Health</span>
+                </h1>
+                <p>
+                  <a href="/sportify/field" className="btn btn-primary py-2 px-4">
+                    Đặt Sân Ngay
+                  </a>{" "}
+                  <a href="/sportify/product" className="btn btn-white btn-outline-white py-2 px-4">
+                    Đi Mua Sắm
+                  </a>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Introduction Section */}
+      <section className="ftco-intro">
+        <div className="container">
+          <div className="row no-gutters">
+            <div className="col-md-4 d-flex">
+              <div className="intro d-lg-flex w-100 ftco-animate">
+                <div className="icon">
+                  <span className="flaticon-support"></span>
+                </div>
+                <div className="text">
+                  <h2>Hỗ trợ 24/7</h2>
+                  <br />
+                  <p>Bạn có thể yên tâm, chúng tôi luôn đồng hành cùng bạn, ngay cả vào cuối tuần và ngày lễ.</p>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-4 d-flex">
+              <div className="intro color-1 d-lg-flex w-100 ftco-animate">
+                <div className="icon">
+                  <span className="flaticon-cashback"></span>
+                </div>
+                <div className="text">
+                  <h2>Thanh toán với nhiều hình thức</h2>
+                  <p>Chúng tôi đáp ứng nhu cầu thanh toán của bạn với sự linh hoạt và tiện lợi. Bạn có thể chọn từ nhiều phương thức thanh toán phù hợp với bạn.</p>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-4 d-flex">
+              <div className="intro color-2 d-lg-flex w-100 ftco-animate">
+                <div className="icon">
+                  <span className="flaticon-free-delivery"></span>
+                </div>
+                <div className="text">
+                  <h2>Miễn phí giao hàng &amp; Hoàn trả</h2>
+                  <p>Chúng tôi cam kết cung cấp dịch vụ giao hàng nhanh chóng và hoàn trả dễ dàng để mang lại trải nghiệm tốt nhất cho bạn.</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Section: Sân nổi bật */}
-      <section className="container my-5">
-        <div className="text-center mb-5">
-          <h2 className="display-4 fw-bold text-primary mb-3">SÂN NỔI BẬT</h2>
-          <p className="lead text-muted">Top 4 sân được đặt nhiều nhất</p>
-        </div>
-        <div className="row g-4">
-          {fieldList.slice(0, 4).map(f => (
-            <div key={f.id} className="col-lg-3 col-md-6">
-              <CustomCard
-                id={f.id}
-                title={f.name}
-                link={`sportify/field/detail/${f.id}`}
-                image={getImageUrl(f.image)}
-                badgeText={`${f.price.toLocaleString()} VND`}
-                badgeColor="bg-danger"
-                description={f.address}
-                buttonText="Xem chi tiết"
-                buttonColor="btn-primary"
-              />
+      {/* Product Categories Section */}
+      <section className="ftco-section ftco-no-pb">
+        <div className="container">
+          <div className="row">
+            <div className="col-lg-2 col-md-4">
+              <div className="sort w-100 text-center ftco-animate">
+                <div className="img" style={{ backgroundImage: "url(/user/images/vot.png)" }}></div>
+                <h5>Vợt Tennis</h5>
+              </div>
             </div>
-          ))}
-
-        </div>
-        <div className="text-center mt-5">
-          <a href="sportify/field" className="btn btn-outline-primary btn-lg rounded-pill px-4">
-            <i className="fas fa-plus me-2"></i>
-            Xem thêm sân
-          </a>
+            <div className="col-lg-2 col-md-4">
+              <div className="sort w-100 text-center ftco-animate">
+                <div className="img" style={{ backgroundImage: "url(/user/images/bong.png)" }}></div>
+                <h5>Bóng Đá</h5>
+              </div>
+            </div>
+            <div className="col-lg-2 col-md-4">
+              <div className="sort w-100 text-center ftco-animate">
+                <div className="img" style={{ backgroundImage: "url(/user/images/caulong.png)" }}></div>
+                <h5>Vợt Cầu Lông</h5>
+              </div>
+            </div>
+            <div className="col-lg-2 col-md-4">
+              <div className="sort w-100 text-center ftco-animate">
+                <div className="img" style={{ backgroundImage: "url(/user/images/dothethao.jpg)" }}></div>
+                <h5>Đồ Thể Thao</h5>
+              </div>
+            </div>
+            <div className="col-lg-2 col-md-4">
+              <div className="sort w-100 text-center ftco-animate">
+                <div className="img" style={{ backgroundImage: "url(/user/images/giay.png)" }}></div>
+                <h5>Giày Thể Thao</h5>
+              </div>
+            </div>
+            <div className="col-lg-2 col-md-4">
+              <div className="sort w-100 text-center ftco-animate">
+                <div className="img" style={{ backgroundImage: "url(/user/images/bongro.png)" }}></div>
+                <h5>Bóng Rổ</h5>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Section: Xu hướng mua sắm */}
-      <section className="container my-5">
-        <div className="text-center mb-5">
-          <h2 className="display-4 fw-bold text-success mb-3">XU HƯỚNG MUA SẮM</h2>
-          <p className="lead text-muted">Top 4 sản phẩm bán chạy</p>
-        </div>
-        <div className="row g-4">
-          {topProduct.slice(0, 4).map(p => (
-            <div key={p.id} className="col-lg-3 col-md-6">
-              <CustomCard
-                id={p.id}
-                title={p.name}
-                link={`sportify/product-single/${p.id}`}
-                image={getImageUrl(p.image)}
-                badgeText={`${p.price.toLocaleString()} VND`}
-                badgeColor="bg-success"
-                description={p.description}
-                extraInfo={
-                  <small className="text-warning fw-bold">
-                    <i className="fas fa-shopping-cart me-1"></i>
-                    Đã bán: {p.count}
-                  </small>
-                }
-                buttonText="Xem chi tiết"
-                buttonColor="btn-success"
-              />
+      {/* Featured Fields Section */}
+      <section className="ftco-section">
+        <div className="container">
+          <div className="row justify-content-center pb-5">
+            <div className="col-md-7 heading-section text-center ftco-animate">
+              <h2>SÂN NỔI BẬT</h2>
+              <span className="subheading">Top 4 sân được đặt nhiều nhất</span>
             </div>
-          ))}
-
-        </div>
-        <div className="text-center mt-5">
-          <a href="/sportify/product" className="btn btn-outline-success btn-lg rounded-pill px-4">
-            <i className="fas fa-plus me-2"></i>
-            Xem thêm sản phẩm khác
-          </a>
+          </div>
+          <div className="row d-flex">
+            {fieldList.slice(0, 4).map(f => (
+              <div key={f.id} className="col-lg-6 d-flex align-items-stretch ftco-animate">
+                <div className="blog-entry d-flex">
+                  <img className="block-20 img" alt="" src={getImageUrl(f.image)} />
+                  <div className="text p-4 bg-light">
+                    <h3 className="heading mb-3">
+                      <a href={`/sportify/field/detail/${f.id}`}>{f.name}</a>
+                    </h3>
+                    <p>
+                      <span className="text-success font-weight-bold">Giá tiền</span>:{" "}
+                      <span className="text-danger font-weight-bold">
+                        {f.price.toLocaleString()} VND
+                      </span>
+                    </p>
+                    <p>
+                      <span className="text-success font-weight-bold">Địa chỉ</span>:{" "}
+                      <span className="text-dark font-weight">{f.address}</span>
+                    </p>
+                    <a href={`/sportify/field/detail/${f.id}`} className="btn-custom">
+                      Chi tiết <span className="fa fa-long-arrow-right"></span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="row justify-content-center">
+            <div className="col-md-4">
+              <a href="/sportify/field" className="btn btn-primary d-block">
+                Xem thêm sân
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Section: Hoạt động */}
-      <section className="container my-5">
-        <div className="text-center mb-5">
-          <h2 className="display-4 fw-bold text-info mb-3">HOẠT ĐỘNG</h2>
-          <p className="lead text-muted">Trong tháng {new Date().getMonth() + 1}</p>
-        </div>
-        <div className="row g-4">
-          {eventList.slice(0, 4).map(e => (
-            <div key={e.eventid} className="col-lg-3 col-md-6">
-              <CustomCard
-                id={e.eventid}
-                title={e.nameevent}
-                link={`sportify/eventdetail/${e.eventid}`}
-                image={getImageUrl(e.image)}
-                badgeText="Sự kiện"
-                badgeColor="bg-info"
-                description={e.descriptions}
-                extraInfo={
-                  <>
-                    <i className="fas fa-calendar me-1"></i>
-                    <span className="me-2">{e.datestart} - {e.dateend}</span>
-                  </>
-                }
-                buttonText="Xem chi tiết"
-                buttonColor="btn-info"
-              />
+      {/* Shopping Trends Section */}
+      <section className="ftco-section">
+        <div className="container">
+          <div className="row justify-content-center pb-5">
+            <div className="col-md-7 heading-section text-center ftco-animate">
+              <h2>XU HƯỚNG MUA SẮM</h2>
+              <span className="subheading">Top 4 sản phẩm bán chạy</span>
             </div>
-          ))}
-
-        </div>
-        <div className="text-center mt-5">
-          <a href="sportify/event" className="btn btn-outline-info btn-lg rounded-pill px-4">
-            <i className="fas fa-plus me-2"></i>
-            Xem thêm tin tức
-          </a>
+          </div>
+          <div className="row d-flex">
+            {topProduct.slice(0, 4).map(p => (
+              <div key={p.id} className="col-lg-6 d-flex align-items-stretch ftco-animate">
+                <div className="blog-entry d-flex">
+                  <img className="block-20 img" alt="" src={getImageUrl(p.image)} />
+                  <div className="text p-4 bg-light">
+                    <h3 className="heading mb-3">
+                      <a href={`/sportify/product-single/${p.id}`}>{p.name}</a>
+                    </h3>
+                    <p>
+                      <span className="text-success font-weight-bold">Giá tiền</span>:{" "}
+                      <span className="text-danger font-weight-bold">
+                        {p.price.toLocaleString()} VND
+                      </span>
+                    </p>
+                    <p>
+                      <span className="text-success font-weight-bold">Mô tả</span>:{" "}
+                      <span className="text-dark font-weight limited-length">{p.description}</span>
+                    </p>
+                    <a href={`/sportify/product-single/${p.id}`} className="btn-custom">
+                      Chi tiết <span className="fa fa-long-arrow-right"></span>
+                    </a>
+                    <p style={{ color: "#252B48", fontWeight: "bold", width: "50%", paddingLeft: "4px", marginTop: "30px", borderRadius: "10px" }}>
+                      <span>Lượt mua:</span>
+                      <span>{p.count}</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="row justify-content-center">
+            <div className="col-md-4">
+              <a href="/sportify/product" className="btn btn-primary d-block">
+                Xem thêm sản phẩm khác
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 
+      {/* Testimonials Section */}
+      <section className="ftco-section testimony-section img" style={{ backgroundImage: "url(/user/images/bgcaunoi.jpg)" }}>
+        <div className="overlay"></div>
+        <div className="container">
+          <div className="row justify-content-center mb-5">
+            <div className="col-md-7 text-center heading-section heading-section-white ftco-animate">
+              <span className="subheading">Câu nói</span>
+              <h2 className="mb-3">Truyền cảm hứng</h2>
+            </div>
+          </div>
+          <div className="row ftco-animate">
+            <div className="col-md-12">
+              <div className="carousel-testimony owl-carousel">
+                <div className="item">
+                  <div className="testimony-wrap py-4">
+                    <div className="icon d-flex align-items-center justify-content-center">
+                      <span className="fa fa-quote-left"></span>
+                    </div>
+                    <div className="text">
+                      <p className="mb-4">"Thành công không phải là bất ngờ. Đó là công việc khó khăn, kiên trì, học hỏi, học tập, hy sinh và hơn hết, tình yêu của những gì bạn đang làm hoặc học tập để làm".</p>
+                      <br /> <br />
+                      <div className="d-flex align-items-center">
+                        <div className="user-img" style={{ backgroundImage: "url(/user/images/pele.png)" }}></div>
+                        <div className="pl-3">
+                          <p className="name">Pelé</p>
+                          <span className="position">Ngôi sao vĩ đại trên sân cỏ</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="item">
+                  <div className="testimony-wrap py-4">
+                    <div className="icon d-flex align-items-center justify-content-center">
+                      <span className="fa fa-quote-left"></span>
+                    </div>
+                    <div className="text">
+                      <p className="mb-4">"Mỗi năm tôi đều cố gắng phấn đấu với tư cách là một cầu thủ. Và tôi không muốn sự nghiệp của mình đi theo một lối mòn. Tôi luôn cố gắng trong mỗi trận đấu theo mọi cách có thể."</p>
+                      <br /> <br />
+                      <div className="d-flex align-items-center">
+                        <div className="user-img" style={{ backgroundImage: "url(/user/images/messi.png)" }}></div>
+                        <div className="pl-3">
+                          <p className="name">Lionel Messi</p>
+                          <span className="position">Cầu thủ xuất sắc nhất thế giới.</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="item">
+                  <div className="testimony-wrap py-4">
+                    <div className="icon d-flex align-items-center justify-content-center">
+                      <span className="fa fa-quote-left"></span>
+                    </div>
+                    <div className="text">
+                      <p className="mb-4">"Đã chọn thể thao thì bắt buộc phải nỗ lực và hy sinh, bởi tôi muốn vươn lên đỉnh cao trong sự nghiệp, bởi kỷ lục không bao giờ có giới hạn, nên với tôi ngày hôm nay phải tốt hơn ngày hôm qua."</p>
+                      <br />
+                      <div className="d-flex align-items-center">
+                        <div className="user-img" style={{ backgroundImage: "url(/user/images/anhvien.jpg)" }}></div>
+                        <div className="pl-3">
+                          <p className="name">Nguyễn Thị Ánh Viên</p>
+                          <span className="position">Vận động viên bơi lội</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="item">
+                  <div className="testimony-wrap py-4">
+                    <div className="icon d-flex align-items-center justify-content-center">
+                      <span className="fa fa-quote-left"></span>
+                    </div>
+                    <div className="text">
+                      <p className="mb-4">"Tôi đã trượt hơn 9000 cú ném trong sự nghiệp của mình. Tôi đã thua gần 300 trận đấu. 26 lần tôi được tin tưởng giao cho cú ném quyết định trận đấu và bỏ lỡ chúng. Tôi đã thất bại hết lần này đến lần khác trong đời mình. Và đó là lý do tôi thành công."</p>
+                      <div className="d-flex align-items-center">
+                        <div className="user-img" style={{ backgroundImage: "url(/user/images/ro.jpg)" }}></div>
+                        <div className="pl-3">
+                          <p className="name">Michael Jordan</p>
+                          <span className="position">Cựu cầu thủ bóng rổ thế giới</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="item">
+                  <div className="testimony-wrap py-4">
+                    <div className="icon d-flex align-items-center justify-content-center">
+                      <span className="fa fa-quote-left"></span>
+                    </div>
+                    <div className="text">
+                      <p className="mb-4">"Đừng ngại thất bại, đó là con đường dẫn đến thành công."</p>
+                      <br /> <br /> <br /> <br />
+                      <div className="d-flex align-items-center">
+                        <div className="user-img" style={{ backgroundImage: "url(/user/images/LeBron_James.jpg)" }}></div>
+                        <div className="pl-3">
+                          <p className="name">LeBron James</p>
+                          <span className="position">Vận động viên bóng rổ Hoa Kỳ</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Events Section */}
+      <section className="ftco-section">
+        <div className="container">
+          <div className="row justify-content-center mb-5">
+            <div className="col-md-7 heading-section text-center ftco-animate">
+              <h2>HOẠT ĐỘNG</h2>
+              <span className="subheading">Trong tháng {new Date().getMonth() + 1}</span>
+            </div>
+          </div>
+          <div className="row d-flex">
+            {eventList.slice(0, 4).map(e => (
+              <div key={e.eventid} className="col-lg-6 d-flex align-items-stretch ftco-animate">
+                <div className="blog-entry d-flex">
+                  <img className="block-19 block-20 img" alt="" src={getImageUrl(e.image)} />
+                  <div className="text p-4 bg-light">
+                    <div className="meta d-flex">
+                      <p className="fa fa-calendar m-2"></p>
+                      <span className="m-1">{e.datestart}</span>
+                      <p>|</p>
+                      <p className="m-1">{e.dateend}</p>
+                    </div>
+                    <h3 className="heading mb-3">{e.nameevent}</h3>
+                    <p className="limited-length">{e.descriptions}</p>
+                    <a href={`/sportify/eventdetail/${e.eventid}`} className="btn-custom">
+                      Chi tiết <span className="fa fa-long-arrow-right"></span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="row justify-content-center">
+            <div className="col-md-4">
+              <a href="/sportify/event" className="btn btn-primary d-block">
+                Xem thêm tin tức
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+   
+
+   
     </>
   );
 }
