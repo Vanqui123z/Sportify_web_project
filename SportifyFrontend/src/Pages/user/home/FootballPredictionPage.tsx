@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
+import "../../../styles/FootballPredictionPage.css"
 
 type Match = {
   id: number;
@@ -179,17 +180,14 @@ const FootballPredictionPage: React.FC = () => {
   const closeModal = () => setModalMatch(null);
 
   return (
-    <div className="bg-light min-vh-100">
+    <div>
       {/* Hero banner */}
-      <section
-        className="hero-wrap hero-wrap-2 d-flex align-items-center"
+      <section 
+        className="hero-wrap hero-wrap-2"
         style={{
-          backgroundImage: "url('/user/images/event3.png')",
-          height: 400,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          backgroundAttachment: "fixed",
+          backgroundImage: "url('/user/images/event3.png')", 
+          height: "400px !important", 
+          minHeight: "400px !important"
         }}
         data-stellar-background-ratio="0.5"
       >
@@ -205,108 +203,122 @@ const FootballPredictionPage: React.FC = () => {
                 </span>
                 <span>Dự đoán kết quả <i className="fa fa-chevron-right"></i></span>
               </p>
-              <h2 className="mb-0 bread font-weight-bold">Dự đoán kết quả</h2>
+              <h2 className="mb-0 bread">Dự đoán kết quả</h2>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="ftco-section py-5">
+      <section className="ftco-section">
         <div className="container">
-          {/* Title */}
-          <div className="row justify-content-center pb-4 mb-3">
-            <div className="col-md-8 text-center">
-              <h2 className="font-weight-bold">Dự đoán kết quả trận đấu</h2>
-              <p className="text-muted">Sử dụng AI và dữ liệu thống kê để dự đoán kết quả các trận đấu bóng đá</p>
+          <div className="row justify-content-center pb-5 mb-3">
+            <div className="col-md-8 text-center heading-section">
+              <h2 className="mb-4">Dự đoán kết quả trận đấu</h2>
+              <p>Sử dụng AI và dữ liệu thống kê để dự đoán kết quả các trận đấu bóng đá</p>
             </div>
           </div>
 
-          {/* Search and Filter */}
+          {/* Search and Filter Section */}
           <div className="row mb-4">
             <div className="col-12">
-              <div className="card shadow-sm border-0">
+              <div className="card search-filter-card">
                 <div className="card-body">
                   <form className="row g-3 align-items-end">
-                    <div className="col-md-6">
-                      <label htmlFor="searchInput" className="form-label font-weight-bold">
-                        <i className="fa fa-search mr-2"></i>Tìm kiếm trận đấu
-                      </label>
-                      <div className="position-relative">
-                        <input
-                          type="text"
-                          className="form-control"
-                          id="searchInput"
-                          placeholder="Nhập tên đội bóng..."
-                          autoComplete="off"
-                          value={search}
-                          onChange={handleSearchChange}
-                          onFocus={() => setShowSuggestions(search.length >= 2)}
-                          onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                          onKeyDown={handleSearchKeyDown}
-                        />
-                        {showSuggestions && suggestions.length > 0 && (
-                          <div className="list-group position-absolute w-100 shadow" style={{ zIndex: 1000 }}>
-                            {suggestions.map((team, idx) => (
-                              <button
-                                type="button"
-                                key={team}
-                                className={
-                                  "list-group-item list-group-item-action" +
-                                  (selectedSuggestion === idx ? " active" : "")
-                                }
-                                onMouseDown={() => handleSuggestionClick(team)}
-                              >
-                                {team}
-                              </button>
-                            ))}
-                          </div>
-                        )}
+                    <div className="col-md-4">
+                      <div className="form-group">
+                        <label className="form-label">
+                          <i className="fa fa-search mr-2"></i>Tìm kiếm đội bóng
+                        </label>
+                        <div className="autocomplete-container">
+                          <input
+                            type="text"
+                            id="searchInput"
+                            className="form-control"
+                            placeholder="Nhập tên đội bóng..."
+                            value={search}
+                            onChange={handleSearchChange}
+                            onKeyDown={handleSearchKeyDown}
+                          />
+                          {showSuggestions && suggestions.length > 0 && (
+                            <div className="suggestions-dropdown" id="suggestions" style={{ display: 'block' }}>
+                              {suggestions.map((team, idx) => (
+                                <div
+                                  key={idx}
+                                  className={`suggestion-item ${idx === selectedSuggestion ? 'selected' : ''}`}
+                                  onClick={() => handleSuggestionClick(team)}
+                                >
+                                  <span className="team-name">{team}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="col-md-3">
-                      <label htmlFor="dateFilter" className="form-label font-weight-bold">Lọc theo ngày</label>
-                      <select
-                        className="form-control"
-                        id="dateFilter"
-                        value={dateFilter}
-                        onChange={handleDateFilter}
-                      >
-                        <option value="all">Tất cả ngày</option>
-                        <option value="today">Hôm nay</option>
-                        <option value="tomorrow">Ngày mai</option>
-                        <option value="week">Tuần này</option>
-                        <option value="custom">Chọn ngày cụ thể</option>
-                      </select>
+                      <div className="form-group">
+                        <label className="form-label">
+                          <i className="fa fa-calendar mr-2"></i>Lọc theo ngày
+                        </label>
+                        <select
+                          id="dateFilter"
+                          className="form-control"
+                          value={dateFilter}
+                          onChange={handleDateFilter}
+                        >
+                          <option value="all">Tất cả</option>
+                          <option value="today">Hôm nay</option>
+                          <option value="tomorrow">Ngày mai</option>
+                          <option value="week">Tuần này</option>
+                          <option value="custom">Tùy chọn</option>
+                        </select>
+                      </div>
                     </div>
                     <div className="col-md-3">
                       {dateFilter === "custom" && (
-                        <div>
-                          <label htmlFor="customDatePicker" className="form-label font-weight-bold">Chọn ngày</label>
+                        <div className="form-group" id="customDateGroup">
+                          <label className="form-label">Chọn ngày</label>
                           <div className="input-group">
                             <input
                               type="date"
+                              id="customDate"
                               className="form-control"
-                              id="customDatePicker"
                               value={customDate}
                               onChange={handleCustomDate}
                             />
-                            <button
-                              className="btn btn-outline-secondary"
-                              type="button"
-                              onClick={() => setCustomDate("")}
-                            >
-                              <i className="fa fa-times"></i>
-                            </button>
+                            <div className="input-group-append">
+                              <button 
+                                type="button" 
+                                className="btn btn-outline-secondary"
+                                onClick={() => setCustomDate("")}
+                              >
+                                <i className="fa fa-times"></i>
+                              </button>
+                            </div>
                           </div>
                         </div>
                       )}
                     </div>
+                    <div className="col-md-2">
+                      <button 
+                        type="button" 
+                        className="btn btn-primary w-100"
+                        onClick={() => {
+                          setSearch("");
+                          setDateFilter("all");
+                          setCustomDate("");
+                        }}
+                      >
+                        <i className="fa fa-refresh mr-2"></i>Reset
+                      </button>
+                    </div>
                   </form>
                   <div className="row mt-3">
                     <div className="col text-center">
-                      <span className="text-muted">
-                        Hiển thị <span id="matchCount">{totalMatches}</span> trận đấu
-                      </span>
+                      <small className="text-muted">
+                        <i className="fa fa-info-circle mr-1"></i>
+                        Tìm thấy {filteredMatches.length} trận đấu
+                      </small>
                     </div>
                   </div>
                 </div>
@@ -314,16 +326,24 @@ const FootballPredictionPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Matches */}
+          {/* Matches Container */}
           <div className="row" id="matchesContainer">
             {loading && (
               <div className="col-12">
                 <div className="alert alert-info text-center">
-                  <h4>Đang tải dữ liệu trận đấu...</h4>
-                  <p>Hệ thống đang kết nối với Football-Data.org API để lấy dữ liệu mới nhất</p>
+                  <div className="d-flex justify-content-center align-items-center">
+                    <div className="spinner-border text-primary mr-3" role="status">
+                      <span className="sr-only">Loading...</span>
+                    </div>
+                    <div>
+                      <h4 className="mb-1">Đang tải dữ liệu trận đấu...</h4>
+                      <p className="mb-0">Hệ thống đang kết nối với Football-Data.org API để lấy dữ liệu mới nhất</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
+            
             {!loading && pagedMatches.length === 0 && (
               <div className="col-12">
                 <div className="alert alert-warning text-center">
@@ -333,15 +353,16 @@ const FootballPredictionPage: React.FC = () => {
                   <p>
                     Không có kết quả cho "{search}"{" "}
                     {dateFilter !== "all" && (
-                      <>trong {dateFilter === "today"
-                        ? "hôm nay"
-                        : dateFilter === "tomorrow"
-                        ? "ngày mai"
-                        : dateFilter === "week"
-                        ? "tuần này"
-                        : customDate
-                        ? customDate
-                        : ""}</>
+                      <span>
+                        với bộ lọc{" "}
+                        {dateFilter === "today"
+                          ? "hôm nay"
+                          : dateFilter === "tomorrow"
+                          ? "ngày mai"
+                          : dateFilter === "week"
+                          ? "tuần này"
+                          : `ngày ${customDate}`}
+                      </span>
                     )}
                   </p>
                   <p>
@@ -353,102 +374,120 @@ const FootballPredictionPage: React.FC = () => {
             {pagedMatches.map((match) => (
               <div
                 key={match.id}
-                className="col-md-6 mb-4"
+                className="col-md-6 col-lg-4 match-item mb-4"
                 data-home-team={match.homeTeam}
                 data-away-team={match.awayTeam}
                 data-date={match.date}
                 data-confidence={match.aiConfidence || 0}
               >
-                <div className="card shadow-sm border-0 h-100">
-                  <div className="card-body">
-                    <div className="row align-items-center mb-3">
+                <div className="match-card h-100">
+                  <div className="match-header text-center mb-3">
+                    <small className="text-info font-weight-bold">{match.competition}</small>
+                    <br />
+                    <small className="text-muted">
+                      <i className="fa fa-clock-o mr-1"></i>
+                      {match.time} - {new Date(match.date).toLocaleDateString("vi-VN")}
+                    </small>
+                  </div>
+                  
+                  <div className="teams-container">
+                    <div className="row align-items-center">
                       <div className="col-4 text-center">
                         <img
                           src={match.homeTeamLogo || defaultTeamLogo}
                           alt={match.homeTeam}
-                          className="img-fluid rounded-circle border border-secondary mb-2"
-                          loading="lazy"
-                          onError={(e) => ((e.target as HTMLImageElement).src = defaultTeamLogo)}
-                          style={{ width: 56, height: 56, objectFit: "cover", background: "#fff" }}
+                          className="team-logo mb-2"
+                          onError={(e) => {
+                            e.currentTarget.src = defaultTeamLogo;
+                          }}
                         />
-                        <h6 className="font-weight-bold mt-2">{match.homeTeam || "Home Team"}</h6>
+                        <h6 className="team-name mb-0">{match.homeTeam}</h6>
                       </div>
+                      
                       <div className="col-4 text-center">
-                        <h4 className="text-primary font-weight-bold mb-1">VS</h4>
-                        <small className="text-muted d-block mb-1">
-                          <i className="fa fa-clock mr-1"></i>
-                          {(match.time || "20:00") + " - " + (match.date || "2024-09-15")}
-                        </small>
-                        <span className="badge bg-info mb-1">
-                          {match.competition || "Premier League"}
-                        </span>
-                        <br />
-                        {match.predictedScore && (
-                          <span className="badge bg-success font-weight-bold mt-1">
-                            AI: {match.predictedScore}
-                          </span>
-                        )}
+                        <div className="vs-section">
+                          <h4 className="vs-text mb-2">VS</h4>
+                          {match.predictedScore && (
+                            <div className="prediction-score mb-2">
+                              <span className="badge badge-success">
+                                <i className="fa fa-trophy mr-1"></i>
+                                AI: {match.predictedScore}
+                              </span>
+                            </div>
+                          )}
+                          {match.aiConfidence && (
+                            <div className="confidence-level">
+                              <small className="text-muted">
+                                Độ tin cậy: {match.aiConfidence}%
+                              </small>
+                            </div>
+                          )}
+                        </div>
                       </div>
+                      
                       <div className="col-4 text-center">
                         <img
                           src={match.awayTeamLogo || defaultTeamLogo}
                           alt={match.awayTeam}
-                          className="img-fluid rounded-circle border border-secondary mb-2"
-                          loading="lazy"
-                          onError={(e) => ((e.target as HTMLImageElement).src = defaultTeamLogo)}
-                          style={{ width: 56, height: 56, objectFit: "cover", background: "#fff" }}
+                          className="team-logo mb-2"
+                          onError={(e) => {
+                            e.currentTarget.src = defaultTeamLogo;
+                          }}
                         />
-                        <h6 className="font-weight-bold mt-2">{match.awayTeam || "Away Team"}</h6>
+                        <h6 className="team-name mb-0">{match.awayTeam}</h6>
                       </div>
                     </div>
-                    <div className="row text-center mb-2">
+                  </div>
+                  
+                  <div className="probabilities mt-3">
+                    <div className="row text-center">
                       <div className="col-4">
-                        <small className="text-success font-weight-bold">Thắng</small>
-                        <br />
-                        <span className="badge bg-success px-3 py-2">
-                          {match.homeWinProbability ?? 35}%
+                        <span className="badge badge-primary d-block mb-1">
+                          {match.homeWinProbability}%
                         </span>
+                        <small className="text-muted">Thắng</small>
                       </div>
                       <div className="col-4">
-                        <small className="text-warning font-weight-bold">Hòa</small>
-                        <br />
-                        <span className="badge bg-warning text-dark px-3 py-2">
-                          {match.drawProbability ?? 30}%
+                        <span className="badge badge-secondary d-block mb-1">
+                          {match.drawProbability}%
                         </span>
+                        <small className="text-muted">Hòa</small>
                       </div>
                       <div className="col-4">
-                        <small className="text-info font-weight-bold">Thắng</small>
-                        <br />
-                        <span className="badge bg-info px-3 py-2">
-                          {match.awayWinProbability ?? 35}%
+                        <span className="badge badge-primary d-block mb-1">
+                          {match.awayWinProbability}%
                         </span>
+                        <small className="text-muted">Thắng</small>
                       </div>
                     </div>
-                    {match.aiAnalysis && (
-                      <div className="alert alert-light py-2 px-3 text-muted text-center mb-2">
-                        <small>{match.aiAnalysis}</small>
-                      </div>
-                    )}
-                    {match.recommendation && (
-                      <div className="alert alert-info py-2 px-3 text-center mb-2">
-                        <small className="font-weight-bold">
-                          {match.recommendation}
-                        </small>
-                      </div>
-                    )}
-                    <div className="text-center mt-3">
-                      <button
-                        className="btn btn-outline-primary btn-sm font-weight-bold"
-                        onClick={() => showMatchDetails(match.id)}
-                      >
-                        Xem chi tiết{" "}
-                        {match.aiConfidence && (
-                          <span className="badge bg-light text-dark ml-1">
-                            ({match.aiConfidence}%)
-                          </span>
-                        )}
-                      </button>
+                  </div>
+                  
+                  {match.aiAnalysis && (
+                    <div className="ai-analysis mt-3">
+                      <small className="text-muted">
+                        <i className="fa fa-brain mr-1"></i>
+                        {match.aiAnalysis}
+                      </small>
                     </div>
+                  )}
+                  
+                  {match.recommendation && (
+                    <div className="recommendation mt-2">
+                      <small className="text-info">
+                        <i className="fa fa-lightbulb-o mr-1"></i>
+                        {match.recommendation}
+                      </small>
+                    </div>
+                  )}
+                  
+                  <div className="action-buttons text-center mt-3">
+                    <button
+                      className="prediction-btn"
+                      onClick={() => showMatchDetails(match.id)}
+                    >
+                      <i className="fa fa-chart-line mr-2"></i>
+                      Chi tiết phân tích
+                    </button>
                   </div>
                 </div>
               </div>
@@ -461,22 +500,32 @@ const FootballPredictionPage: React.FC = () => {
               <div className="col-12 text-center">
                 <nav aria-label="Match pagination">
                   <ul className="pagination justify-content-center">
-                    <li className={"page-item" + (currentPage === 1 ? " disabled" : "")}>
-                      <button className="page-link" onClick={() => changePage(-1)}>
-                        Trước
+                    <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                      <button 
+                        className="page-link" 
+                        onClick={() => changePage(-1)}
+                        disabled={currentPage === 1}
+                      >
+                        <i className="fa fa-chevron-left"></i> Trước
                       </button>
                     </li>
                     <li className="page-item active">
-                      <span className="page-link">{currentPage}</span>
+                      <span className="page-link">
+                        Trang {currentPage} / {totalPages}
+                      </span>
                     </li>
-                    <li className={"page-item" + (currentPage === totalPages ? " disabled" : "")}>
-                      <button className="page-link" onClick={() => changePage(1)}>
-                        Sau
+                    <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                      <button 
+                        className="page-link" 
+                        onClick={() => changePage(1)}
+                        disabled={currentPage === totalPages}
+                      >
+                        Sau <i className="fa fa-chevron-right"></i>
                       </button>
                     </li>
                   </ul>
                 </nav>
-                <small className="text-muted">
+                <small className="text-muted d-block mt-2">
                   Hiển thị {(currentPage - 1) * matchesPerPage + 1} -{" "}
                   {Math.min(currentPage * matchesPerPage, totalMatches)} trong tổng số{" "}
                   {totalMatches} trận đấu
@@ -487,28 +536,40 @@ const FootballPredictionPage: React.FC = () => {
 
           {/* API Info */}
           {data.apiInfo && (
-            <div className="row mt-4">
-              <div className="col-12 text-center">
-                <div className="alert alert-success">
-                  <h5>
+            <div className="row mt-5">
+              <div className="col-12">
+                <div className="alert alert-success text-center">
+                  <h5 className="mb-3">
                     <i className="fa fa-check-circle mr-2"></i>
                     Football-Data.org API + AI Engine Hoạt Động!
                   </h5>
-                  <p className="mb-2">{data.apiInfo}</p>
-                  <ul className="mb-0 text-left">
-                    <li>
-                      <strong>Football-Data.org:</strong> Lịch thi đấu Premier League chính thức
-                    </li>
-                    <li>
-                      <strong>AI Prediction Engine:</strong> Phân tích thông minh dựa trên sức mạnh đội bóng
-                    </li>
-                    <li>
-                      <strong>Real-time Data:</strong> Cập nhật liên tục từ API
-                    </li>
-                    <li>
-                      <strong>Confidence Score:</strong> Đánh giá độ tin cậy của dự đoán
-                    </li>
-                  </ul>
+                  <p className="mb-3">{data.apiInfo}</p>
+                  <div className="row">
+                    <div className="col-md-6 col-lg-3 mb-2">
+                      <small>
+                        <i className="fa fa-database mr-1 text-primary"></i>
+                        <strong>Real-time data:</strong> Dữ liệu trận đấu được cập nhật liên tục
+                      </small>
+                    </div>
+                    <div className="col-md-6 col-lg-3 mb-2">
+                      <small>
+                        <i className="fa fa-brain mr-1 text-success"></i>
+                        <strong>AI Predictions:</strong> Sử dụng machine learning để dự đoán
+                      </small>
+                    </div>
+                    <div className="col-md-6 col-lg-3 mb-2">
+                      <small>
+                        <i className="fa fa-chart-bar mr-1 text-info"></i>
+                        <strong>Statistical Analysis:</strong> Phân tích dựa trên lịch sử đối đầu
+                      </small>
+                    </div>
+                    <div className="col-md-6 col-lg-3 mb-2">
+                      <small>
+                        <i className="fa fa-refresh mr-1 text-warning"></i>
+                        <strong>Live Updates:</strong> Cập nhật trạng thái trận đấu theo thời gian thực
+                      </small>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -516,30 +577,39 @@ const FootballPredictionPage: React.FC = () => {
 
           {/* API Status Section */}
           <div className="row mt-4">
-            <div className="col-md-4 mb-3 mb-md-0">
-              <div className="card text-center border-0 shadow-sm">
-                <div className="card-body">
-                  <i className="fa fa-server fa-2x text-success mb-2"></i>
-                  <h6>Football-Data.org API</h6>
-                  <small className="text-success">✓ Tích hợp hoàn tất</small>
+            <div className="col-md-4 mb-3">
+              <div className="card text-center h-100 border-0 shadow-sm">
+                <div className="card-body d-flex flex-column justify-content-center">
+                  <i className="fa fa-server fa-3x text-success mb-3"></i>
+                  <h6 className="font-weight-bold">Football-Data.org API</h6>
+                  <small className="text-success">
+                    <i className="fa fa-check-circle mr-1"></i>
+                    Tích hợp hoàn tất
+                  </small>
                 </div>
               </div>
             </div>
-            <div className="col-md-4 mb-3 mb-md-0">
-              <div className="card text-center border-0 shadow-sm">
-                <div className="card-body">
-                  <i className="fa fa-brain fa-2x text-success mb-2"></i>
-                  <h6>AI Prediction Engine</h6>
-                  <small className="text-success">✓ Đang hoạt động</small>
+            <div className="col-md-4 mb-3">
+              <div className="card text-center h-100 border-0 shadow-sm">
+                <div className="card-body d-flex flex-column justify-content-center">
+                  <i className="fa fa-brain fa-3x text-success mb-3"></i>
+                  <h6 className="font-weight-bold">AI Prediction Engine</h6>
+                  <small className="text-success">
+                    <i className="fa fa-check-circle mr-1"></i>
+                    Đang hoạt động
+                  </small>
                 </div>
               </div>
             </div>
-            <div className="col-md-4">
-              <div className="card text-center border-0 shadow-sm">
-                <div className="card-body">
-                  <i className="fa fa-chart-line fa-2x text-success mb-2"></i>
-                  <h6>Match Analysis</h6>
-                  <small className="text-success">✓ Real-time predictions</small>
+            <div className="col-md-4 mb-3">
+              <div className="card text-center h-100 border-0 shadow-sm">
+                <div className="card-body d-flex flex-column justify-content-center">
+                  <i className="fa fa-chart-line fa-3x text-success mb-3"></i>
+                  <h6 className="font-weight-bold">Match Analysis</h6>
+                  <small className="text-success">
+                    <i className="fa fa-check-circle mr-1"></i>
+                    Real-time predictions
+                  </small>
                 </div>
               </div>
             </div>

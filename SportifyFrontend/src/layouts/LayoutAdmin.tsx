@@ -3,6 +3,7 @@ import { AuthContext } from "../utils/AuthContext";
 import Header from "../components/admin/Header";
 import Sidebar from "../components/admin/SideBar";
 import { Outlet } from "react-router-dom";
+import { Helmet } from "@dr.pogodin/react-helmet";
 
 const LayoutAdmin: React.FC = () => {
   const { user, loading } = useContext(AuthContext);
@@ -31,13 +32,74 @@ const LayoutAdmin: React.FC = () => {
   }
 
   return (
-    <div className="admin-layout">
-      <Header username={user.username} />
-      <Sidebar />
-      <main style={{ marginLeft: "250px", marginTop: "70px", minHeight: "calc(100vh - 70px)", backgroundColor: "#f8f9fa" }}>
-        <Outlet />
-      </main>
-    </div>
+    <>
+
+      <Helmet>
+        <title>Admin Page</title>
+
+        {/* Base + Fonts + Favicon */}
+        <base href="/" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Roboto:400,400i,500,500i,700,700i&display=swap"
+        />
+        <link
+          rel="shortcut icon"
+          type="image/x-icon"
+          href="/admin/assets/img/logotitle.png"
+        />
+
+        {/* CSS */}
+        <link rel="stylesheet" href="/admin/assets/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="/admin/assets/css/font-awesome.min.css" />
+        <link rel="stylesheet" href="/admin/assets/css/line-awesome.min.css" />
+        <link rel="stylesheet" href="/admin/assets/plugins/morris/morris.css" />
+        <link rel="stylesheet" href="/admin/assets/css/style.css" />
+        <link rel="stylesheet" href="/admin/assets/css/dataTables.bootstrap4.min.css" />
+        <link rel="stylesheet" href="/admin/assets/css/select2.min.css" />
+        <link rel="stylesheet" href="/admin/assets/css/bootstrap-datetimepicker.min.css" />
+
+
+        {/* <!-- jQuery phải load trước --> */}
+        <script src="/admin/assets/js/jquery-3.5.1.min.js"></script>
+
+        {/* <!-- DataTables core + bootstrap integration --> */}
+        <script src="/admin/assets/js/jquery.dataTables.min.js"></script>
+        <script src="/admin/assets/js/dataTables.bootstrap4.min.js"></script>
+
+        {/* <!-- Popper + Bootstrap 4 --> */}
+        <script src="/admin/assets/js/popper.min.js"></script>
+        <script src="/admin/assets/js/bootstrap.min.js"></script>
+
+        {/* <!-- Plugins phụ thuộc jQuery --> */}
+        <script src="/admin/assets/js/jquery.slimscroll.min.js"></script>
+        <script src="/admin/assets/plugins/raphael/raphael.min.js"></script>
+        <script src="/admin/assets/plugins/morris/morris.min.js"></script>
+        <script src="/admin/assets/js/chart.js"></script>
+
+        {/* <!-- Moment trước datetimepicker --> */}
+        <script src="/admin/assets/js/moment.min.js"></script>
+        <script src="/admin/assets/js/bootstrap-datetimepicker.min.js"></script>
+
+        {/* <!-- Select2 --> */}
+        <script src="/admin/assets/js/select2.min.js"></script>
+
+        {/* <!-- Custom JS --> */}
+        <script src="/admin/assets/js/app.js"></script>
+
+        {/* <!-- AngularJS chỉ load 1 lần --> */}
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-route/1.8.3/angular-route.min.js"></script>
+
+      </Helmet>
+      <div className="admin-layout">
+        <Header username={user.username} />
+        <Sidebar />
+        <main className="main-content mt-5">
+          <Outlet />
+        </main>
+      </div>
+    </>
   );
 };
 

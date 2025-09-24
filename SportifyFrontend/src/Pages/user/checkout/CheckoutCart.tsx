@@ -91,124 +91,161 @@ const CheckoutCart: React.FC = () => {
   );
 
   return (
-    <div className="container py-5">
-      <h2 className="mb-4 text-center">Thanh toán giỏ hàng</h2>
-      <div className="row">
-        <div className="col-md-6 mb-4">
-          <div className="card shadow">
-            <div className="card-header bg-primary text-white">
-              <h5 className="mb-0">Thông tin khách hàng</h5>
+    <>
+      {/* background */}
+      <section className="hero-wrap hero-wrap-2"
+        style={{ backgroundImage: "url('/user/images/bg_product.png')" }}
+        data-stellar-background-ratio="0.5">
+        <div className="overlay"></div>
+        <div className="container">
+          <div className="row no-gutters slider-text align-items-end justify-content-center">
+            <div className="col-md-9 mb-5 text-center">
+              <p className="breadcrumbs mb-0">
+                <span className="mr-2"><a href="index.html">Trang Chủ <i className="fa fa-chevron-right"></i></a></span> 
+                <span>Cửa hàng<i className="fa fa-chevron-right"></i></span>
+              </p>
+              <h2 className="mb-0 bread">Thanh Toán</h2>
             </div>
-            <div className="card-body">
-              <div className="d-flex align-items-center mb-3">
-                <img
-                  src={user.image ? `/user/images/${user.image}` : "/user/images/noavatar.jpg"}
-                  alt="avatar"
-                  className="rounded-circle border"
-                  style={{ width: 60, height: 60, marginRight: 16 }}
-                />
-                <div>
-                  <div className="fw-bold">{user.firstname} {user.lastname}</div>
-                  <div className="text-muted">{user.email}</div>
+          </div>
+        </div>
+      </section>
+
+      <section className="ftco-section">
+        <div className="container">
+          <div className="row justify-content-center">
+            {/* Form điền thông tin để thanh toán */}
+            <div className="col-xl-10">
+              <form action="#" className="billing-form" style={{ background: "white" }}>
+                <h3 className="mb-4 billing-heading">Chi tiết thanh toán đơn hàng</h3>
+                <div className="row align-items-end">
+                  <div className="col-md-6">
+                    <div className="form-group">
+                      <label htmlFor="firstname">Họ: </label> 
+                      <input type="text" className="form-control" value={user.firstname} readOnly />
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="form-group">
+                      <label htmlFor="lastname">Tên: </label> 
+                      <input type="text" className="form-control" value={user.lastname} readOnly />
+                    </div>
+                  </div>
+                  <div className="w-100"></div>
+                  <div className="w-100"></div>
+                  <div className="col-md-6">
+                    <div className="form-group">
+                      <label htmlFor="streetaddress">Địa chỉ nhận hàng: </label> 
+                      <input type="text" className="form-control" value={user.address} readOnly />
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="form-group">
+                      <label htmlFor="streetaddress">Ngày đặt hàng: </label> 
+                      <input type="text" className="form-control" value={new Date().toLocaleDateString('vi-VN')} readOnly />
+                    </div>
+                  </div>
+                  <div className="w-100"></div>
+                  <div className="w-100"></div>
+                  <div className="col-md-6">
+                    <div className="form-group">
+                      <label htmlFor="phone">Số điện thoại: </label> 
+                      <input type="text" className="form-control" value={user.phone} readOnly />
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="form-group">
+                      <label htmlFor="emailaddress">Email: </label> 
+                      <input type="text" className="form-control" value={user.email} readOnly />
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div>
-                <div><strong>Địa chỉ:</strong> {user.address}</div>
-                <div><strong>SĐT:</strong> {user.phone}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-6 mb-4">
-          <div className="card shadow">
-            <div className="card-header bg-success text-white">
-              <h5 className="mb-0">Sản phẩm trong giỏ</h5>
-            </div>
-            <div className="card-body">
-              <table className="table table-bordered mb-0">
-                <thead>
-                  <tr>
-                    <th>Hình</th>
-                    <th>Tên sản phẩm</th>
-                    <th>Giá</th>
-                    <th>Số lượng</th>
-                    <th>Thành tiền</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((item) => (
-                    <tr key={item.cartItemId}>
-                      <td>
-                        {item.image ? (
-                          <img
-                            src={`/user/images/products_img/${item.image}`}
-                            alt="sp"
-                            style={{ width: 50, height: 50 }}
-                          />
-                        ) : (
-                          <span className="text-muted">No image</span>
-                        )}
-                      </td>
-                      <td>{item.productName || `#${item.cartItemId}`}</td>
-                      <td>
-                        {(item.price - item.discountprice).toLocaleString("vi-VN", {
-                          style: "currency",
-                          currency: "VND",
-                        })}
-                      </td>
-                      <td>{item.quantity}</td>
-                      <td>
-                        {(item.quantity * (item.price - item.discountprice)).toLocaleString("vi-VN", {
-                          style: "currency",
-                          currency: "VND",
-                        })}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <div className="mt-3 text-end">
-                <span className="fw-bold fs-5">
-                  Tổng tiền:{" "}
-                  <span className="text-success">
-                    {totalPrice.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
-                  </span>
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      
-      <div className="row mt-5 pt-3 d-flex">
-        <div className="col-md-6">
-          <div className="cart-detail p-3 p-md-4" style={{ backgroundColor: "#F1F6F9" }}>
-            <h3 className="billing-heading mb-4">Hình thức thanh toán</h3>
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <div className="col-md-12">
-                  <div className="radio">
-                    <label>
-                      <input type="radio" checked name="optradio" className="mr-2" readOnly />
-                      <img style={{ width: "12%", height: "14%" }} src="/user/images/iconVNP.png" alt="VNPay" /> VNPay
-                    </label>
+              </form>
+              {/* END */}
+
+              {/* khu hình thức thanh toán */}
+              <hr />
+              <div className="row mt-5 pt-3 d-flex">
+                <div className="col-md-6 d-flex">
+                  <div className="cart-detail cart-total p-3 p-md-4" style={{ background: "white" }}>
+                    <h3>Chi tiết giỏ hàng</h3>
+                    
+                    {/* Hiển thị danh sách sản phẩm */}
+                    <div className="mb-3">
+                      {items.map((item) => (
+                        <div key={item.cartItemId} className="d-flex align-items-center mb-2 pb-2 border-bottom">
+                          <div className="img mr-3" style={{ width: 50, height: 50 }}>
+                            {item.image ? (
+                              <img
+                                src={`/user/images/products_img/${item.image}`}
+                                alt="sp"
+                                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                              />
+                            ) : (
+                              <div className="bg-light d-flex align-items-center justify-content-center" 
+                                   style={{ width: "100%", height: "100%" }}>
+                                <span className="text-muted">No image</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="text flex-grow-1">
+                            <h6 className="mb-1">{item.productName || `#${item.cartItemId}`}</h6>
+                            <p className="mb-0">
+                              <span className="quantity">Số lượng: {item.quantity}</span>
+                              <span className="price ml-3">
+                                {(item.quantity * (item.price - item.discountprice)).toLocaleString("vi-VN")}đ
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <p className="d-flex">
+                      <span>Tạm tính: </span> 
+                      <span>{totalPrice.toLocaleString("vi-VN")}đ</span>
+                    </p>
+                    <p className="d-flex">
+                      <span>Phí vận chuyển: </span> 
+                      <span>0đ</span>
+                    </p>
+                    <hr />
+                    <p className="d-flex total-price">
+                      <span>Thành tiền</span> 
+                      <span>{totalPrice.toLocaleString("vi-VN")}đ</span>
+                    </p>
+                  </div>
+                </div>
+                <div className="col-md-6">
+                  <div className="cart-detail p-3 p-md-4" style={{ background: "white" }}>
+                    <h3 className="billing-heading mb-4">Hình thức thanh toán</h3>
+                    <form onSubmit={handleSubmit}>
+                      <div className="form-group">
+                        <div className="col-md-12">
+                          <div className="radio">
+                            <label>
+                              <input type="radio" checked name="optradio" className="mr-2" readOnly />
+                              <img style={{ width: "12%", height: "14%" }} src="/user/images/iconVNP.png" alt="VNPay" /> VNPay
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ color: "black" }} className="font-italic">
+                        Khi nhấn vào nút này bạn công nhận mình đã đọc và đồng ý với các
+                        <a href="/sportify/quydinh" style={{ color: "blue" }}> Điều khoản & Điều kiện </a> và
+                        <a href="/sportify/chinhsach" style={{ color: "blue" }}> Chính sách quyền riêng tư</a> của Sportify.
+                        <p>
+                          <button type="submit" className="btn btn-primary py-3 px-4 mt-3">Thanh toán</button>
+                        </p>
+                      </div>
+                    </form>
                   </div>
                 </div>
               </div>
-              <div style={{ color: "black" }} className="font-italic">
-                Khi nhấn vào nút này bạn công nhận mình đã đọc và đồng ý với các
-                <a href="/sportify/quydinh" style={{ color: "blue" }}> Điều khoản & Điều kiện </a> và
-                <a href="/sportify/chinhsach" style={{ color: "blue" }}> Chính sách quyền riêng tư</a> của Sportify.
-                <p>
-                  <button type="submit" className="btn btn-primary py-3 px-4 mt-3">Thanh toán</button>
-                </p>
-              </div>
-            </form>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-      </div>
-
+      </section>
+    </>
   );
 };
 

@@ -5,20 +5,24 @@ const Regulations: React.FC = () => {
  
   return (
     <>
-    <Nav_contact title={'Quy Định - Điều Khoản'} />
+      <Nav_contact title={'Quy Định - Điều Khoản'} />
+      
+    
+
       <section className="ftco-section ftco-no-pb">
         <div className="container">
           <div className="row">
-            <div className="col-md-12 img img-3 justify-content-center align-items-center" style={{ backgroundImage: "url(/user/images/Logo3.png)" }}>
+            <div className="col-md-12 img img-3 justify-content-center align-items-center" 
+              style={{ backgroundImage: "url(/user/images/Logo3.png)" }}>
             </div>
-            <div className="col-md-12 wrap-about pl-md-5 ftco-animate py-5">
+            <div className="col-md-12 wrap-about pl-md-5 py-5">
               <div className="heading-section">
                 <h2 className="mb-4">Sportify - Nền tảng đa năng cho đặt sân, tạo đội và mua sắm sản phẩm thể thao</h2>
                 
                 <h4 style={{ color: 'green', fontWeight: 'bold' }}>1. Quy định chung</h4>
                 <p>
                   Mỗi khách hàng phải tuân thủ các quy định khi sử dụng dịch vụ tại
-                  <b className="font-weight-bold">Sportify</b>.
+                  <b className="font-weight-bold"> Sportify</b>.
                 </p>
                 <p>
                   (a). <b className="font-weight-bold text-info">Đăng ký và đặt sân:</b> Người dùng phải đăng ký tài khoản và đặt sân trước khi sử dụng dịch vụ sân thể thao. Quy định này giúp quản lý lịch trình sử dụng sân và tránh tình trạng quá tải.<br /> (b). <b className="font-weight-bold text-info">Thanh toán và hủy đặt:</b> Người dùng phải thực hiện thanh toán trước hoặc cọc một phần tiền trước khi đặt sân. Nếu có yêu cầu hủy đặt sân, người dùng nên tuân thủ quy định và thời hạn hủy đặt để tránh mất phí hoặc hạn chế.<br /> (c). <b className="font-weight-bold text-info">Tuân thủ quy tắc và luật lệ:</b> Người dùng phải tuân thủ quy tắc và luật lệ của sân thể thao trong quá trình sử dụng dịch vụ. Điều này bao gồm việc không vi phạm các quy định về an toàn, không gây ảnh hưởng đến người chơi khác và không gây ra tình trạng hỗn loạn.<br />
@@ -32,7 +36,7 @@ const Regulations: React.FC = () => {
                   - Các giờ đặt từ <b className="font-weight-bold text-info">18h00 đến 06h00 sáng hôm sau</b> chúng tôi sẽ tính phí phụ thu ( các dịch vụ ban đêm ) <b className="font-weight-bold text-danger">thêm 30%</b> theo giá sân gốc. <b className="font-weight-bold text-secondary">Rất mong sự đồng cảm dịch vụ này đến từ quý khách !</b> <br />
                   - Khi đặt sân quý khách phải thanh toán cọc trước <b className="font-weight-bold text-danger">30%</b> tổng giá trị <b className="font-weight-bold text-danger">Thành Tiền</b> của đơn booking. <br />
                   - Để nhằm đảm bảo thông tin chính xác, yêu cầu quý khách kiểm tra kỹ thông tin phiếu Booking trước khi thanh toán cọc. <br />
-                  - Các bước đặt sân chi tiết: <b className="font-weight-bold text-info">Đăng Nhập {'>'} Tìm Sân Cụ Thể {'>'} Chọn Ngày {'>'} Chọn Ca Chơi {'>'} Đặt Sân {'>'} Kiểm Tra Thông Tin Phiếu Booking {'>'} Nhập Voucher giảm giá ( nếu có ) {'>'} Thanh Toán Tiền Cọc Giữ Sân</b> <br />
+                  - Các bước đặt sân chi tiết: <b className="font-weight-bold text-info">Đăng Nhập {'=>'} Tìm Sân Cụ Thể {'=>'} Chọn Ngày {'=>'} Chọn Ca Chơi {'=>'} Đặt Sân {'=>'} Kiểm Tra Thông Tin Phiếu Booking {'=>'} Nhập Voucher giảm giá ( nếu có ) {'=>'} Thanh Toán Tiền Cọc Giữ Sân</b> <br />
                   - Để đảm bảo sự uy tín cung cấp và sử dụng dịch vụ giữa 2 bên, chúng tôi <b className="font-weight-bold text-danger">Không hỗ trợ Hủy lịch hoặc đổi lịch</b> khi đã đặt thành công.
                 </p>
                 <h4 style={{ color: 'green', fontWeight: 'bold' }}>3. Quy định & Điều kiện Minishop:</h4>
@@ -61,7 +65,6 @@ const Regulations: React.FC = () => {
           </div>
         </div>
       </section>
-
     </>
   );
 };

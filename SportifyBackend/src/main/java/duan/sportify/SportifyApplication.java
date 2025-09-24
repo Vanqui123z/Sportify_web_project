@@ -10,4 +10,5 @@ public class SportifyApplication {
 		SpringApplication.run(SportifyApplication.class, args);
 	}
 
+	
 }

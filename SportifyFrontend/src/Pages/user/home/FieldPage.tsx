@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Loader from "../../../components/user/Loader";
-import getImageUrl from "../../../utils/getImageUrl ";
+import getImageUrl from "../../../utils/getImageUrl";
+import { useFtcoAnimation } from "../../../utils/useFtcoAnimation";
 type Category = {
   sporttypeid: string;
   categoryname: string;
@@ -28,7 +29,6 @@ type FieldItem = {
 export default function FieldPage() {
   const [loading, setLoading] = useState(true);
   const [cates, setCates] = useState<Category[]>([]);
-  const [cateNotAll, setCateNotAll] = useState<Category[]>([]);
   const [shift, setShift] = useState<Shift[]>([]);
   const [fieldList, setFieldList] = useState<FieldItem[]>([]);
 
@@ -51,7 +51,6 @@ export default function FieldPage() {
       .then((res) => res.json())
       .then((data) => {
         setCates(data.cates || []);
-        setCateNotAll(data.cateNotAll || []);
         setShift(data.shift || []);
         setFieldList(data.fieldList || []);
       })
@@ -79,105 +78,239 @@ export default function FieldPage() {
   const handleSort = (order: "asc" | "desc" | "") => {
     setSortOrder(order);
   };
-
   return (
     <div>
- 
-
-      <section className="py-5" style={{ backgroundImage: "url('/user/images/backgroundField.gif')", backgroundSize: 'cover' }}>
-        <div className="container text-center text-white">
-          <h2 className="display-5">Sân</h2>
+      <section className="hero-wrap hero-wrap-2"
+        style={{ backgroundImage: "url('/user/images/backgroundField.gif')" }}
+        data-stellar-background-ratio="0.5">
+        <div className="overlay"></div>
+        <div className="container">
+          <div className="row no-gutters slider-text align-items-end justify-content-center">
+            <div className="col-md-9  mb-5 text-center">
+              <p className="breadcrumbs mb-0">
+                <span className="mr-2">
+                  <a href="/sportify">Trang Chủ <i className="fa fa-chevron-right"></i></a>
+                </span> 
+                <span>Sân</span>
+              </p>
+              <h2 className="mb-0 bread">Sân</h2>
+            </div>
+          </div>
         </div>
       </section>
 
-      <main className="container my-5">
-        <div className="row">
-          <div className="col-12 mb-4 text-center">
-            <h4 className="text-start">Tìm kiếm sân trống</h4>
-          </div>
-
-          <div className="col-12">
-            <form className="row g-2 align-items-center">
-              <div className="col-md-3">
-                <input
-                  id="dateInput"
-                  type="date"
-                  className="form-control"
-                  value={dateInput}
-                  onChange={(e) => setDateInput(e.target.value)}
-                  min={dateInput}
-                />
-              </div>
-
-              <div className="col-md-3">
-                <select className="form-select" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
-                  {cateNotAll.length > 0 && cateNotAll.map((c) => (
-                    <option key={c.sporttypeid} value={c.sporttypeid}>{c.categoryname}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="col-md-3">
-                <select className="form-select" value={selectedShift} onChange={(e) => setSelectedShift(e.target.value ? Number(e.target.value) : "") }>
-                  <option value="">Chọn ca</option>
-                  {shift.map((s) => (
-                    <option key={s.shiftid} value={s.shiftid}>{s.nameshift}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="col-md-3 d-flex">
-                <button type="button" className="btn btn-success me-2" onClick={() => handleSort("")}>Mặc định</button>
-                <button type="button" className="btn btn-outline-success me-2" onClick={() => handleSort("asc")}>Giá tăng dần</button>
-                <button type="button" className="btn btn-outline-success" onClick={() => handleSort("desc")}>Giá giảm dần</button>
-              </div>
-            </form>
-          </div>
-
-          <aside className="col-md-3 mt-4">
-            <div className="list-group">
-              <h5 className="list-group-item">LOẠI SÂN</h5>
-              {cates.map((c) => (
-                <button key={c.sporttypeid} type="button" className={`list-group-item list-group-item-action ${c.sporttypeid === selectedCategory ? 'active' : ''}`} onClick={() => setSelectedCategory(c.sporttypeid)}>
-                  {c.categoryname}
-                </button>
-              ))}
+      <section className="ftco-section">
+        <div className="container">
+          <div className="row">
+            <div className="col-11 d-flex justify-content-center">
+              <h4 className="col-9"
+                style={{ color: '#187498', fontFamily: 'times-new-roman', fontWeight: 600, paddingLeft: '0px' }}>
+                Tìm kiếm sân trống
+              </h4>
             </div>
-          </aside>
 
-          <section className="col-md-9 mt-4">
-            <div className="row g-4">
-              {filtered.length === 0 ? (
-                <div className="col-12">
-                  <div className="alert alert-info">Không có sân phù hợp.</div>
+            <div className="col-12 mb-4 pb-4 d-flex justify-content-center">
+              <div className="row w-100 align-items-center">
+                <div className="col-md-2">
+                  <input
+                    style={{
+                      borderTop: '3px solid #28a745',
+                      borderLeft: '3px solid #28a745',
+                      borderBottom: '3px solid #28a745',
+                      fontWeight: 'lighter'
+                    }}
+                    id="dateInput"
+                    name="dateInput"
+                    value={dateInput}
+                    required
+                    className="form-control rounded-0"
+                    type="date"
+                    placeholder="Search"
+                    aria-label="Search"
+                    onChange={(e) => setDateInput(e.target.value)}
+                    min={dateInput}
+                  />
                 </div>
-              ) : (
-                filtered.map((e) => (
-                  <div key={e.fieldid} className="col-lg-6">
-                    <div className="card h-100 shadow-sm">
-                      <div style={{ position: 'relative' }}>
-                        <img src={getImageUrl(e.image)} className="card-img-top" alt={e.namefield} style={{ height: 220, objectFit: 'cover' }} />
-                        <span className="badge bg-danger rounded-pill" style={{ position: 'absolute', right: 12, top: 12 }}>
-                          {e.price.toLocaleString()} VND
-                        </span>
-                      </div>
-                      <div className="card-body d-flex flex-column">
-                        <h5 className="card-title"><a href={`/sportify/field/detail/${e.fieldid}`} className="text-decoration-none">{e.namefield}</a></h5>
-                        <p className="text-muted mb-2"><i className="fas fa-map-marker-alt me-1"></i>{e.address}</p>
-                        <p className="text-truncate" style={{ maxHeight: 72 }}>{e.descriptionfield}</p>
-                        <div className="mt-auto d-flex justify-content-end">
-                          <a href={`/sportify/field/detail/${e.fieldid}`} className="btn btn-success">Chọn sân này</a>
+                
+                <div className="col-md-2">
+                  <select
+                    style={{
+                      borderTop: '3px solid #28a745',
+                      borderLeft: '3px solid #28a745',
+                      borderBottom: '3px solid #28a745',
+                      fontWeight: 'lighter'
+                    }}
+                    name="categorySelect"
+                    className="form-control rounded-0 custom-select"
+                    id="inputGroupSelect01"
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                  >
+                    {cates.map((c) => (
+                      <option key={c.sporttypeid} value={c.sporttypeid}>
+                        {c.categoryname}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="col-md-3">
+                  <select
+                    style={{
+                      borderTop: '3px solid #28a745',
+                      borderLeft: '3px solid #28a745',
+                      borderBottom: '3px solid #28a745',
+                      fontWeight: 'lighter'
+                    }}
+                    name="shiftSelect"
+                    className="form-control rounded-0 custom-select"
+                    aria-label="Tìm kiếm theo tên"
+                    id="inputGroupSelect02"
+                    value={selectedShift}
+                    onChange={(e) => setSelectedShift(e.target.value ? Number(e.target.value) : "")}
+                  >
+                    <option value="">Chọn ca</option>
+                    {shift.map((s) => (
+                      <option key={s.shiftid} value={s.shiftid}>
+                        {s.nameshift}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="col-md-2">
+                  <button
+                    style={{ border: '3px solid #28a745' }}
+                    className="rounded-0 btn btn-success w-100"
+                    type="button"
+                    onClick={() => handleSort("")}
+                  >
+                    Tìm kiếm
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="col-md-3">
+              <div className="sidebar-box ">
+                <div className="list-group">
+                  <h4 className="text-center border-bottom font-weight-bold text-success py-2">
+                    LOẠI SÂN
+                  </h4>
+                  {cates.map((c) => (
+                    <button
+                      key={c.sporttypeid}
+                      type="button"
+                      style={{ fontSize: '18px' }}
+                      className={`list-group-item list-group-item-action ${
+                        c.sporttypeid === selectedCategory 
+                          ? 'active bg-success text-white' 
+                          : ''
+                      }`}
+                      onClick={() => setSelectedCategory(c.sporttypeid)}
+                    >
+                      {c.categoryname}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="col-md-9">
+              <div className="row mb-4">
+                <div className="col-md-12 d-flex justify-content-end align-items-center">
+                  <div className="dropdown filter">
+                    <button
+                      className="btn btn-success dropdown-toggle"
+                      type="button"
+                      id="dropdownMenuButton"
+                      data-bs-toggle="dropdown"
+                      aria-haspopup="true"
+                      aria-expanded="false"
+                    >
+                      Lọc
+                    </button>
+                    <div className="dropdown-menu dropdown-menu-end filter-item" aria-labelledby="dropdownMenuButton">
+                      <button className="dropdown-item" type="button" onClick={() => handleSort("")}>
+                        Mặc định
+                      </button>
+                      <button className="dropdown-item" type="button" onClick={() => handleSort("asc")}>
+                        Giá tăng dần
+                      </button>
+                      <button className="dropdown-item" type="button" onClick={() => handleSort("desc")}>
+                        Giá giảm dần
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="row d-flex">
+                {filtered.length === 0 ? (
+                  <div className="col-12">
+                    <div className="alert alert-info text-center">Không có sân phù hợp.</div>
+                  </div>
+                ) : (
+                  filtered.map((e) => (
+                    <div key={e.fieldid} className="col-lg-12 d-flex align-items-stretch  mb-3">
+                      <div className="blog-entry d-flex w-100 shadow-sm" style={{ borderRadius: '8px', overflow: 'hidden' }}>
+                        <div style={{ flexShrink: 0, width: '200px', height: '200px' }}>
+                          <img
+                            className="img"
+                            src={getImageUrl(e.image)}
+                            alt="Image"
+                            style={{ 
+                              width: '100%', 
+                              height: '100%', 
+                              objectFit: 'cover' 
+                            }}
+                          />
+                        </div>
+                        <div className="text p-4 bg-light d-flex flex-column" style={{ flex: 1 }}>
+                          <div className="meta mb-2">
+                            <div>
+                              <span className="text-info">
+                                <i className="fa fa-map-marker mr-2"></i>
+                                {e.address}
+                              </span>
+                            </div>
+                          </div>
+                          <h3 className="heading mb-2">
+                            <a 
+                              href={`/sportify/field/detail/${e.fieldid}`}
+                              className="text-decoration-none text-dark"
+                              style={{ fontSize: '1.5rem', fontWeight: '600' }}
+                            >
+                              {e.namefield}
+                            </a>
+                          </h3>
+                          <p className="font-weight-bold mb-2">
+                            Loại sân: {' '}
+                            <span className="text-success">
+                              {e.sporttype?.categoryname}
+                            </span>
+                          </p>
+                          <div className="d-flex align-items-center justify-content-between mt-auto">
+                            <a
+                              href={`/sportify/field/detail/${e.fieldid}`}
+                              className="btn btn-success px-4 py-2"
+                            >
+                              Chọn sân này
+                            </a>
+                            <span className="text-danger font-weight-bold" style={{ fontSize: '1.25rem' }}>
+                              {e.price.toLocaleString()} VND
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))
-              )}
+                  ))
+                )}
+              </div>
             </div>
-          </section>
+          </div>
         </div>
-      </main>
-
+      </section>
     </div>
   );
 }

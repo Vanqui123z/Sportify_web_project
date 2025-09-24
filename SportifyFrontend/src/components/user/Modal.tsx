@@ -11,10 +11,29 @@ interface ConfirmModalProps {
 export default function ConfirmModal({ show, title, message, onConfirm, onCancel }: ConfirmModalProps) {
   if (!show) return null;
 
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onCancel();
+    }
+  };
+
   return (
-    <div className="modal d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+    <div 
+      className="modal d-block" 
+      tabIndex={-1} 
+      style={{ 
+        backgroundColor: 'rgba(0,0,0,0.5)', 
+        zIndex: 9999,
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%'
+      }}
+      onClick={handleOverlayClick}
+    >
       <div className="modal-dialog modal-dialog-centered">
-        <div className="modal-content">
+        <div className="modal-content" style={{ position: 'relative', zIndex: 10000 }}>
           <div className="modal-header">
             <h5 className="modal-title">{title}</h5>
             <button 

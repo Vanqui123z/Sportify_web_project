@@ -69,10 +69,10 @@ public class Admin_ProductRestController {
 	    if (product.getProductid() != null && productDAO.existsById(product.getProductid())) {
 	        return ResponseEntity.badRequest().body("Product đã tồn tại");
 	    }
-	    productDAO.save(product);
 	    if (imageFile != null && !imageFile.isEmpty()) {
 	        try {
 	            String imageUrl = uploadService.uploadImage(imageFile, "product_images");
+	            System.out.println("imageUrl"+imageUrl);
 	            product.setImage(imageUrl);
 	            productDAO.save(product);
 	        } catch (Exception e) {
@@ -82,6 +82,7 @@ public class Admin_ProductRestController {
 	    return ResponseEntity.ok(product);
 	}
 
+	
 	@PutMapping("update/{id}")
 	public ResponseEntity<Products> update(@PathVariable("id") Integer id, @Valid @RequestBody Products product) {
 		if(!productDAO.existsById(id)) {

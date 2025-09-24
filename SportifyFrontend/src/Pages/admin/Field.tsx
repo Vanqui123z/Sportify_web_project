@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import BootstrapModal from "../../components/admin/BootstrapModal";
+import "../../styles/AdminModal.css";
 
 interface Field {
   fieldid: number;
@@ -180,7 +182,7 @@ const FieldPage: React.FC = () => {
   const formatCurrency = (value: number) => value?.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 
   return (
-    <div className="container-fluid page-wrapper py-4">
+    <div className=" page-wrapper py-4">
       <div className="container bg-white rounded shadow-sm p-4">
         {/* Page Header */}
         <div className="row align-items-center mb-4">
@@ -249,7 +251,6 @@ const FieldPage: React.FC = () => {
                     <th>Giá</th>
                     <th>Trạng thái</th>
                     <th>Địa chỉ</th>
-                    <th>Mô tả</th>
                     <th className="text-center">Action</th>
                   </tr>
                 </thead>
@@ -281,7 +282,6 @@ const FieldPage: React.FC = () => {
                       <td>{formatCurrency(item.price)}</td>
                       <td>{item.status ? "Đang hoạt động" : "Ngưng hoạt động"}</td>
                       <td>{item.address}</td>
-                      <td>{item.descriptionfield}</td>
                       <td className="text-center">
                         <button className="btn btn-outline-primary btn-sm me-2"
                           onClick={() => openEditModal(item)}>
@@ -301,273 +301,272 @@ const FieldPage: React.FC = () => {
         </div>
 
         {/* Add Modal */}
-        {showAdd && (
-          <div className="modal fade show" style={{ display: "block" }}>
-            <div className="modal-dialog modal-lg modal-dialog-centered">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">Thêm mới sân thể thao</h5>
-                  <button type="button" className="btn-close" onClick={() => setShowAdd(false)}></button>
+        <BootstrapModal
+          show={showAdd}
+          onHide={() => setShowAdd(false)}
+          title="Thêm mới sân thể thao"
+          size="lg"
+          className="custom-modal"
+          bodyClassName="modal-body"
+          footer={
+            <button type="button" className="btn btn-primary" onClick={handleAddField}>
+              Thêm sân thể thao
+            </button>
+          }
+        >
+          <form>
+            <div className="row g-3">
+              <div className="col-sm-12 text-center mb-3">
+                <label htmlFor="image" className="form-label">
+                  <img
+                    src={
+                      form.image
+                        ? form.image.startsWith("v") // hoặc form.image.includes("/")
+                          ? `${VITE_CLOUDINARY_BASE_URL}/${form.image}`
+                          : `/user/images/${form.image}`
+                        : "/user/images/default.png" // fallback nếu null
+                    }
+                    alt=""
+                    style={{
+                      width: 120,
+                      height: 120,
+                      objectFit: "cover",
+                      borderRadius: 12,
+                      border: "1px solid #eee",
+                      background: "#fafbfc"
+                    }}
+                  />
+                </label>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Tên sân thể thao <span className="text-danger">*</span></label>
+                  <input className="form-control" type="text"
+                    value={form.namefield || ""}
+                    onChange={e => handleFormChange("namefield", e.target.value)}
+                  />
+                  {errors.filter(e => e.field === "namefield").map((e, i) => (
+                    <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                  ))}
                 </div>
-                <div className="modal-body">
-                  <form>
-                    <div className="row g-3">
-                      <div className="col-sm-12 text-center mb-3">
-                        <label htmlFor="image" className="form-label">
-                          <img
-                            src={
-                              form.image
-                                ? form.image.startsWith("v") // hoặc form.image.includes("/")
-                                  ? `${VITE_CLOUDINARY_BASE_URL}/${form.image}`
-                                  : `/user/images/${form.image}`
-                                : "/user/images/default.png" // fallback nếu null
-                            }
-                            alt=""
-                            style={{
-                              width: 120,
-                              height: 120,
-                              objectFit: "cover",
-                              borderRadius: 12,
-                              border: "1px solid #eee",
-                              background: "#fafbfc"
-                            }}
-                          />
-                        </label>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Tên sân thể thao <span className="text-danger">*</span></label>
-                          <input className="form-control" type="text"
-                            value={form.namefield || ""}
-                            onChange={e => handleFormChange("namefield", e.target.value)}
-                          />
-                          {errors.filter(e => e.field === "namefield").map((e, i) => (
-                            <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Hình ảnh <span className="text-danger">*</span></label>
-                          <input type="file"
-                            className="form-control"
-                            id="image"
-                            onChange={e => handleImageChange(e.target.files)}
-                          />
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Giá sân <span className="text-danger">*</span></label>
-                          <input className="form-control" type="number"
-                            value={form.price || ""}
-                            onChange={e => handleFormChange("price", Number(e.target.value))}
-                          />
-                          {errors.filter(e => e.field === "price").map((e, i) => (
-                            <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Địa chỉ <span className="text-danger">*</span></label>
-                          <input className="form-control" type="text"
-                            value={form.address || ""}
-                            onChange={e => handleFormChange("address", e.target.value)}
-                          />
-                          {errors.filter(e => e.field === "address").map((e, i) => (
-                            <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Môn thể thao <span className="text-danger">*</span></label>
-                          <select
-                            className="form-select"
-                            value={form.sporttypeid || ""}
-                            onChange={e => handleFormChange("sporttypeid", e.target.value)}
-                          >
-                            <option value="">-- Chọn môn thể thao --</option>
-                            {sportTypes.map(st => (
-                              <option key={st.sporttypeid} value={st.sporttypeid}>
-                                {st.categoryname}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Trạng thái <span className="text-danger">*</span></label>
-                          <select className="form-select"
-                            value={form.status === undefined ? "1" : form.status ? "1" : "0"}
-                            onChange={e => handleFormChange("status", e.target.value === "1")}
-                          >
-                            <option value="1">Đang hoạt động</option>
-                            <option value="0">Ngưng hoạt động</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="col-sm-12">
-                        <div className="form-group">
-                          <label>Mô tả <span className="text-danger">*</span></label>
-                          <textarea className="form-control"
-                            value={form.descriptionfield || ""}
-                            onChange={e => handleFormChange("descriptionfield", e.target.value)}
-                          />
-                          {errors.filter(e => e.field === "descriptionfield").map((e, i) => (
-                            <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-4 text-end">
-                      <button type="button" className="btn btn-primary" onClick={handleAddField}>
-                        Thêm sân thể thao
-                      </button>
-                    </div>
-                  </form>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Hình ảnh <span className="text-danger">*</span></label>
+                  <input type="file"
+                    className="form-control"
+                    id="image"
+                    onChange={e => handleImageChange(e.target.files)}
+                  />
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Giá sân <span className="text-danger">*</span></label>
+                  <input className="form-control" type="number"
+                    value={form.price || ""}
+                    onChange={e => handleFormChange("price", Number(e.target.value))}
+                  />
+                  {errors.filter(e => e.field === "price").map((e, i) => (
+                    <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                  ))}
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Địa chỉ <span className="text-danger">*</span></label>
+                  <input className="form-control" type="text"
+                    value={form.address || ""}
+                    onChange={e => handleFormChange("address", e.target.value)}
+                  />
+                  {errors.filter(e => e.field === "address").map((e, i) => (
+                    <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                  ))}
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Môn thể thao <span className="text-danger">*</span></label>
+                  <select
+                    className="form-select"
+                    value={form.sporttypeid || ""}
+                    onChange={e => handleFormChange("sporttypeid", e.target.value)}
+                  >
+                    <option value="">-- Chọn môn thể thao --</option>
+                    {sportTypes.map(st => (
+                      <option key={st.sporttypeid} value={st.sporttypeid}>
+                        {st.categoryname}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Trạng thái <span className="text-danger">*</span></label>
+                  <select className="form-select"
+                    value={form.status === undefined ? "1" : form.status ? "1" : "0"}
+                    onChange={e => handleFormChange("status", e.target.value === "1")}
+                  >
+                    <option value="1">Đang hoạt động</option>
+                    <option value="0">Ngưng hoạt động</option>
+                  </select>
+                </div>
+              </div>
+              <div className="col-sm-12">
+                <div className="form-group">
+                  <label>Mô tả <span className="text-danger">*</span></label>
+                  <textarea className="form-control"
+                    value={form.descriptionfield || ""}
+                    onChange={e => handleFormChange("descriptionfield", e.target.value)}
+                  />
+                  {errors.filter(e => e.field === "descriptionfield").map((e, i) => (
+                    <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                  ))}
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          </form>
+        </BootstrapModal>
 
         {/* Edit Modal */}
-        {showEdit && (
-          <div className="modal fade show" style={{ display: "block" }}>
-            <div className="modal-dialog modal-lg modal-dialog-centered">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">Chỉnh sửa sân</h5>
-                  <button type="button" className="btn-close" onClick={() => setShowEdit(false)}></button>
-                </div>
-                <div className="modal-body">
-                  <form>
-                    <div className="row g-3">
-                      <div className="col-sm-12 text-center mb-3">
-                        <label htmlFor="image" className="form-label">
-                          <img
-                            src={
-                              form.image
-                                ? form.image.startsWith("v") // hoặc form.image.includes("/")
-                                  ? `${VITE_CLOUDINARY_BASE_URL}/${form.image}`
-                                  : `/user/images/${form.image}`
-                                : "/user/images/default.png" // fallback nếu null
-                            }
-                            alt=""
-                            style={{
-                              width: "70%",
+        <BootstrapModal
+          show={showEdit}
+          onHide={() => setShowEdit(false)}
+          title="Chỉnh sửa sân thể thao"
+          size="lg"
+          className="fade show"
+          bodyClassName=""
+          footer={
+            <div className="text-end">
+              <button type="button" className="btn btn-primary" onClick={handleEditField}>
+                Chỉnh sửa sân thể thao
+              </button>
+              <button type="button" className="btn btn-danger ms-2" onClick={() => handleDeleteField(form.fieldid as number)}>
+                Xóa sân thể thao
+              </button>
+            </div>
+          }
+        >
+          <form>
+            <div className="row g-3">
+              <div className="col-sm-12 text-center mb-3">
+                <label htmlFor="image" className="form-label">
+                  <img
+                    src={
+                      form.image
+                        ? form.image.startsWith("v") // hoặc form.image.includes("/")
+                          ? `${VITE_CLOUDINARY_BASE_URL}/${form.image}`
+                          : `/user/images/${form.image}`
+                        : "/user/images/default.png" // fallback nếu null
+                    }
+                    alt=""
+                    style={{
+                      width: "70%",
 
-                              objectFit: "cover",
-                              borderRadius: 12,
-                              border: "1px solid #eee",
-                              background: "#fafbfc"
-                            }}
-                          />
-                        </label>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Tên sân thể thao <span className="text-danger">*</span></label>
-                          <input className="form-control" type="text"
-                            value={form.namefield || ""}
-                            onChange={e => handleFormChange("namefield", e.target.value)}
-                          />
-                          {errors.filter(e => e.field === "namefield").map((e, i) => (
-                            <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Hình ảnh <span className="text-danger">*</span></label>
-                          <input type="file"
-                            className="form-control"
-                            id="image"
-                            onChange={e => handleImageChange(e.target.files)}
-                          />
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Giá sân <span className="text-danger">*</span></label>
-                          <input className="form-control" type="number"
-                            value={form.price || ""}
-                            onChange={e => handleFormChange("price", Number(e.target.value))}
-                          />
-                          {errors.filter(e => e.field === "price").map((e, i) => (
-                            <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Địa chỉ <span className="text-danger">*</span></label>
-                          <input className="form-control" type="text"
-                            value={form.address || ""}
-                            onChange={e => handleFormChange("address", e.target.value)}
-                          />
-                          {errors.filter(e => e.field === "address").map((e, i) => (
-                            <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Môn thể thao <span className="text-danger">*</span></label>
-                          <select
-                            className="form-select"
-                            value={form.sporttypeid || ""}
-                            onChange={e => handleFormChange("sporttypeid", e.target.value)}
-                          >
-                            <option value="">-- Chọn môn thể thao --</option>
-                            {sportTypes.map(st => (
-                              <option key={st.sporttypeid} value={st.sporttypeid}>
-                                {st.categoryname}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Trạng thái <span className="text-danger">*</span></label>
-                          <select className="form-select"
-                            value={form.status === undefined ? "1" : form.status ? "1" : "0"}
-                            onChange={e => handleFormChange("status", e.target.value === "1")}
-                          >
-                            <option value="1">Đang hoạt động</option>
-                            <option value="0">Ngưng hoạt động</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="col-sm-12">
-                        <div className="form-group">
-                          <label>Mô tả <span className="text-danger">*</span></label>
-                          <textarea className="form-control"
-                            value={form.descriptionfield || ""}
-                            onChange={e => handleFormChange("descriptionfield", e.target.value)}
-                          />
-                          {errors.filter(e => e.field === "descriptionfield").map((e, i) => (
-                            <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-4 text-end">
-                      <button type="button" className="btn btn-primary" onClick={handleEditField}>
-                        Chỉnh sửa sân thể thao
-                      </button>
-                    </div>
-                  </form>
+                      objectFit: "cover",
+                      borderRadius: 12,
+                      border: "1px solid #eee",
+                      background: "#fafbfc"
+                    }}
+                  />
+                </label>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Tên sân thể thao <span className="text-danger">*</span></label>
+                  <input className="form-control" type="text"
+                    value={form.namefield || ""}
+                    onChange={e => handleFormChange("namefield", e.target.value)}
+                  />
+                  {errors.filter(e => e.field === "namefield").map((e, i) => (
+                    <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                  ))}
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Hình ảnh <span className="text-danger">*</span></label>
+                  <input type="file"
+                    className="form-control"
+                    id="image"
+                    onChange={e => handleImageChange(e.target.files)}
+                  />
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Giá sân <span className="text-danger">*</span></label>
+                  <input className="form-control" type="number"
+                    value={form.price || ""}
+                    onChange={e => handleFormChange("price", Number(e.target.value))}
+                  />
+                  {errors.filter(e => e.field === "price").map((e, i) => (
+                    <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                  ))}
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Địa chỉ <span className="text-danger">*</span></label>
+                  <input className="form-control" type="text"
+                    value={form.address || ""}
+                    onChange={e => handleFormChange("address", e.target.value)}
+                  />
+                  {errors.filter(e => e.field === "address").map((e, i) => (
+                    <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                  ))}
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Môn thể thao <span className="text-danger">*</span></label>
+                  <select
+                    className="form-select"
+                    value={form.sporttypeid || ""}
+                    onChange={e => handleFormChange("sporttypeid", e.target.value)}
+                  >
+                    <option value="">-- Chọn môn thể thao --</option>
+                    {sportTypes.map(st => (
+                      <option key={st.sporttypeid} value={st.sporttypeid}>
+                        {st.categoryname}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Trạng thái <span className="text-danger">*</span></label>
+                  <select className="form-select"
+                    value={form.status === undefined ? "1" : form.status ? "1" : "0"}
+                    onChange={e => handleFormChange("status", e.target.value === "1")}
+                  >
+                    <option value="1">Đang hoạt động</option>
+                    <option value="0">Ngưng hoạt động</option>
+                  </select>
+                </div>
+              </div>
+              <div className="col-sm-12">
+                <div className="form-group">
+                  <label>Mô tả <span className="text-danger">*</span></label>
+                  <textarea className="form-control"
+                    value={form.descriptionfield || ""}
+                    onChange={e => handleFormChange("descriptionfield", e.target.value)}
+                  />
+                  {errors.filter(e => e.field === "descriptionfield").map((e, i) => (
+                    <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                  ))}
                 </div>
               </div>
             </div>
-          </div>
-        )}
-
+            <div className="mt-4 text-end">
+              <button type="button" className="btn btn-primary" onClick={handleEditField}>
+                Chỉnh sửa sân thể thao
+              </button>
+            </div>
+          </form>
+        </BootstrapModal>
         {/* Toast/Notification */}
         <div id="toast"></div>
       </div>

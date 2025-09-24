@@ -15,13 +15,15 @@ const Policy: React.FC = () => {
 
   return (
     <>
-        <Nav_contact title='Chính Sách - Quy Định' />
+      <Nav_contact title='Chính Sách - Quy Định' />
+      
       <section className="ftco-section ftco-no-pb">
         <div className="container">
           <div className="row">
-            <div className="col-md-12 img img-3 justify-content-center align-items-center" style={{ backgroundImage: "url(/user/images/Logo3.png)" }}>
+            <div className="col-md-12 img img-3 justify-content-center align-items-center" 
+              style={{ backgroundImage: "url(/user/images/Logo3.png)" }}>
             </div>
-            <div className="col-md-12 wrap-about pl-md-5 ftco-animate py-5">
+            <div className="col-md-12 wrap-about pl-md-5 py-5">
               <div className="heading-section">
                 <h2 className="mb-4">Sportify - Nền tảng đa năng cho đặt sân, tạo đội và mua sắm sản phẩm thể thao</h2>
 
@@ -40,12 +42,10 @@ const Policy: React.FC = () => {
                 <p>(b) Chúng tôi sẽ <b className="font-weight-bold">Không hoàn tiền</b> đã thanh toán thành công khi hàng bị lỗi hoặc không như mong muốn đã <b className="font-weight-bold">bị mất tem hoặc không có video bóc hàng chứng minh.</b></p>
                 <p>(c) Chúng tôi sẽ <b className="font-weight-bold">Không hoàn tiền Phí ship</b> đã thanh toán thành công khi hàng được shipper liên hệ giao cho quý khách không nghe máy hoặc lý do khác.</p>
               </div>
-
             </div>
           </div>
         </div>
       </section>
-
     </>
   );
 };

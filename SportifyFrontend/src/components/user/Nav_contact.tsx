@@ -9,7 +9,7 @@ export default function Nav_contact({ title }: Props)  {
         <div className="overlay"></div>
         <div className="container">
           <div className="row no-gutters slider-text align-items-end justify-content-center">
-            <div className="col-md-9 ftco-animate mb-5 text-center">
+            <div className="col-md-9  mb-5 text-center">
               <p className="breadcrumbs mb-0">
                 <span className="mr-2 "><a href="/sportify/contact">Liên hệ <i className="fa fa-chevron-right"></i></a></span>
                 <span className="m-2"><a href="/sportify/policy">Chính sách <i className="fa fa-chevron-right"></i></a></span>

@@ -249,14 +249,14 @@ if ($("#messageDiv1").length) {
 	showMessage1($("#messageText1").text());
 }
 // Thêm sự kiện click vào nút đóng
-document
-	.getElementById("closeButton")
-	.addEventListener(
-		"click",
-		function() {
-			// Ẩn thẻ <div> khi nút đóng được bấm
-			document.getElementById("descriptionModal").style.display = "none";
-		});
+// document
+// 	.getElementById("closeButton")
+// 	.addEventListener(
+// 		"click",
+// 		function() {
+// 			// Ẩn thẻ <div> khi nút đóng được bấm
+// 			document.getElementById("descriptionModal").style.display = "none";
+// 		});
 // sự kiện nút xem thêm Teamdetail
 function showMore(event) {
 	event.preventDefault(); // Ngăn chặn hành vi mặc định khi click vào thẻ <a>

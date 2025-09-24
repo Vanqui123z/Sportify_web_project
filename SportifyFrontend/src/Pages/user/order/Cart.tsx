@@ -95,7 +95,34 @@ const Cart: React.FC = () => {
 
   return (
     <div>
-      {/* ...existing head, nav, and header code as JSX or in layout... */}
+      <style>
+        {`
+          body {
+            background-image: url('/user/images/bgAll.png');
+            background-repeat: repeat;
+            background-size: 100% 100%;
+          }
+        `}
+      </style>
+
+      {/* Background */}
+      <section className="hero-wrap hero-wrap-2"
+        style={{ backgroundImage: "url('/user/images/bg_product.png')" }}
+        data-stellar-background-ratio="0.5">
+        <div className="overlay"></div>
+        <div className="container">
+          <div className="row no-gutters slider-text align-items-end justify-content-center">
+            <div className="col-md-9 mb-5 text-center">
+              <p className="breadcrumbs mb-0">
+                <span className="mr-2"><a href="index.html">Trang Chủ <i className="fa fa-chevron-right"></i></a></span> 
+                <span>Cửa hàng <i className="fa fa-chevron-right"></i></span>
+              </p>
+              <h2 className="mb-0 bread">Giỏ Hàng</h2>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="ftco-section">
         <div className="container">
           <div className="row">
@@ -116,24 +143,16 @@ const Cart: React.FC = () => {
                     cart.items.map((item, idx) => (
                       <tr className="alert" role="alert" key={item.cartItemId}>
                         <td>
-                          {/* Nếu có image thì hiển thị, nếu không thì để trống hoặc icon mặc định */}
-                          {item.image ? (
-                            <img className="img" alt="Error" src={`/user/images/products_img/${item.image}`} style={{ maxWidth: "80px" }} />
-                          ) : (
-                            <span className="text-muted">No image</span>
-                          )}
+                          <img className="img" alt="Error" src={`/user/images/${item.image}`} />
                         </td>
                         <td>
                           <div className="email">
-                            {/* Nếu có productname thì hiển thị, nếu không thì để trống hoặc id */}
-                            <span>{item.productName || `#${item.cartItemId}`}</span>
+                            <span>{item.productName}</span>
+                            <span></span>
                           </div>
                         </td>
                         <td className="price-tag">
-                          {(item.price - item.discountprice).toLocaleString("vi-VN", {
-                            style: "currency",
-                            currency: "VND",
-                          })}
+                          {(item.price - item.discountprice).toLocaleString()}đ
                         </td>
                         <td className="quantity">
                           <div className="input-group">
@@ -149,21 +168,17 @@ const Cart: React.FC = () => {
                           </div>
                         </td>
                         <td className="price-tag total-price">
-                          {(item.quantity * (item.price - item.discountprice)).toLocaleString("vi-VN", {
-                            style: "currency",
-                            currency: "VND",
-                          })}
+                          {(item.quantity * (item.price - item.discountprice)).toLocaleString()}đ
                         </td>
                         <td>
                           <button
                             type="button"
                             className="close"
+                            data-dismiss="alert"
                             aria-label="Close"
                             onClick={() => removeProduct(item.cartItemId)}
                           >
-                            <span aria-hidden="true">
-                              X
-                            </span>
+                            <span aria-hidden="true"><i className="fa fa-close"></i></span>
                           </button>
                         </td>
                       </tr>
@@ -186,21 +201,21 @@ const Cart: React.FC = () => {
           </div>
           <br />
           <div className="row justify-content-end">
-            <div className="col col-lg-5 col-md-6 mt-5 cart-wrap ftco-animate" style={{ background: "white" }}>
+            <div className="col col-lg-5 col-md-6 mt-5 cart-wrap" style={{ background: "white" }}>
               <div className="cart-total mb-3">
                 <h3>Thanh toán giỏ hàng</h3>
                 <p className="d-flex">
-                  <span>Tạm tính: </span>{" "}
-                  <span>{totalPrice.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}</span>
+                  <span>Tạm tính: </span>
+                  <span>{totalPrice.toLocaleString()}đ</span>
                 </p>
                 <p className="d-flex">
-                  <span>Phí vận chuyển: </span>{" "}
-                  <span>{shippingFee.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}</span>
+                  <span>Phí vận chuyển: </span>
+                  <span>{shippingFee.toLocaleString()}đ</span>
                 </p>
                 <hr />
                 <p className="d-flex total-price">
-                  <span>Thành tiền</span>{" "}
-                  <span>{updateTotalPrice.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}</span>
+                  <span>Thành tiền</span>
+                  <span>{updateTotalPrice.toLocaleString()}đ</span>
                 </p>
               </div>
               <p className="text-center">
@@ -212,7 +227,6 @@ const Cart: React.FC = () => {
           </div>
         </div>
       </section>
-      {/* ...existing footer code as JSX or in layout... */}
     </div>
   );
 };

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import getImageUrl from '../../../utils/getImageUrl ';
 
 interface EventDetailData {
   eventdetail: EventItem;
@@ -51,98 +50,136 @@ const EventDetail: React.FC = () => {
 
   return (
     <div>
-      <section
+      <section 
         className="hero-wrap hero-wrap-2"
         style={{
-          backgroundImage: event.image ? `url('/user/images/${event.image}')` : `url('/user/images/eventbanner.png')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          minHeight: 240
+          backgroundImage: event.image ? `url('/user/images/${event.image}')` : `url('/user/images/eventbanner.png')`
         }}
+        data-stellar-background-ratio="0.5"
       >
-        <div className="overlay" />
+        <div className="overlay"></div>
         <div className="container">
           <div className="row no-gutters slider-text align-items-end justify-content-center">
-            <div className="col-md-9 ftco-animate mb-5 text-center">
+            <div className="col-md-9 mb-5 text-center">
               <p className="breadcrumbs mb-0">
-                <span className="mr-2"><Link to="/">Trang Chủ <i className="fa fa-chevron-right" /></Link></span>
-                <span className="mr-2"><Link to="/sportify/event">Tin Tức <i className="fa fa-chevron-right" /></Link></span>
-                <span>{event.nameevent}</span>
+                <span className="mr-2">
+                  <Link to="/">Trang Chủ <i className="fa fa-chevron-right"></i></Link>
+                </span>
+                <span className="mr-2">
+                  <Link to="/sportify/event">Sự Kiện <i className="fa fa-chevron-right"></i></Link>
+                </span>
+                <span>Chi Tiết tin Tức <i className="fa fa-chevron-right"></i></span>
               </p>
-              <h2 className="mb-0 bread text-white">{event.nameevent}</h2>
+              <h2 className="mb-0 bread">Chi Tiết Tin Tức</h2>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="ftco-section" style={{ backgroundImage: `url('/user/images/bgAll.png')`, backgroundRepeat: 'repeat', backgroundSize: '100% 100%' }}>
+      <section 
+        className="ftco-section ftco-degree-bg" 
+        style={{ 
+          backgroundImage: "url('/user/images/bgAll.png')", 
+          backgroundRepeat: 'repeat', 
+          backgroundSize: '100% 100%' 
+        }}
+      >
         <div className="container">
           <div className="row">
             <div className="col-lg-8">
-              <div className="card shadow-sm mb-4">
-                {event.image && (
-                  <img src={getImageUrl(event.image)} alt={event.nameevent} className="card-img-top img-fluid" style={{ objectFit: 'cover', height: 400 }} />
+              <h2 className="mb-3">{event.nameevent}</h2>
+              <div className="meta d-block col-12 row">
+                <div className="row col-6">
+                  <span className="fa fa-calendar m-2"></span>
+                  <label className="m-1">Ngày bắt đầu:</label>
+                  <p className="m-1" style={{ color: 'blue' }}>
+                    {new Date(event.datestart).toLocaleDateString('vi-VN')}
+                  </p>
+                </div>
+                {event.dateend && (
+                  <div className="row col-6">
+                    <span className="fa fa-calendar m-2"></span>
+                    <label className="m-1">Ngày kết thúc:</label>
+                    <p className="m-1" style={{ color: 'red' }}>
+                      {new Date(event.dateend).toLocaleDateString('vi-VN')}
+                    </p>
+                  </div>
                 )}
-                <div className="card-body">
-                  <div className="mb-3 d-flex justify-content-between align-items-center">
-                    <div>
-                      <small className="text-muted me-3"><i className="fa fa-calendar me-1" /> {new Date(event.datestart).toLocaleDateString()}</small>
-                      {event.dateend && (
-                        <small className="text-muted"><i className="fa fa-calendar-o me-1" /> {new Date(event.dateend).toLocaleDateString()}</small>
-                      )}
-                    </div>
-                    <div>
-                      <span className="badge bg-primary">{event.eventtype || 'Sự kiện'}</span>
-                    </div>
-                  </div>
-
-                  <div style={{ whiteSpace: 'pre-line', lineHeight: 1.8, fontSize: '1rem' }} className="text-dark">
-                    {event.descriptions}
-                  </div>
-
-                  <div className="mt-4">
-                    <Link to="/sportify/event" className="btn btn-outline-secondary me-2">Quay lại</Link>
-                    <a href={`/user/images/${event.image}`} target="_blank" rel="noreferrer" className="btn btn-outline-primary">Xem ảnh lớn</a>
-                  </div>
-                </div>
               </div>
-
+              <p>
+                <img 
+                  src={event.image ? `/user/images/${event.image}` : '/user/images/eventbanner.png'} 
+                  alt={event.nameevent} 
+                  style={{ height: '600px', width: '900px' }}
+                  className="img-fluid"
+                />
+              </p>
+              <p 
+                className="event-description" 
+                style={{ color: 'black', fontSize: '18px', whiteSpace: 'pre-line' }}
+              >
+                {event.descriptions}
+              </p>
             </div>
 
-            <div className="col-lg-4">
-              <div className="card shadow-sm mb-4">
-                <div className="card-header bg-white">
-                  <h5 className="mb-0">Sự kiện liên quan</h5>
-                </div>
-                <div className="list-group list-group-flush">
-                  {related && related.length > 0 ? (
-                    related.map((r) => (
-                      <Link key={r.eventid} to={`/sportify/eventdetail/${r.eventid}`} className="list-group-item list-group-item-action d-flex align-items-start">
-                        <img src={r.image ? `/user/images/${r.image}` : '/user/images/event3.png'} alt={r.nameevent} style={{ width: 72, height: 64, objectFit: 'cover' }} className="me-3 rounded" />
-                        <div>
-                          <div className="fw-bold">{r.nameevent}</div>
-                          <small className="text-muted">{new Date(r.datestart).toLocaleDateString()}</small>
-                        </div>
+            {/* Sidebar */}
+            <div className="col-lg-4 sidebar pl-lg-5">
+              <h3 className="d-flex">Tin Tức Trong Tháng</h3>
+              
+              {related && related.length > 0 ? (
+                related.map((r) => (
+                  <div 
+                    key={r.eventid}
+                    className="block-25 mb-4 d-flex bg-light" 
+                    style={{
+                      borderRadius: '5px',
+                      width: '380px',
+                      height: '180px',
+                      boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)'
+                    }}
+                  >
+                    <div className="img-tintuc">
+                      <Link to={`/sportify/eventdetail/${r.eventid}`}>
+                        <img 
+                          className="blog-img mr-4" 
+                          alt="Image" 
+                          src={r.image ? `/user/images/${r.image}` : '/user/images/event3.png'}
+                          style={{ width: '180px', height: '180px', objectFit: 'fill' }}
+                        />
                       </Link>
-                    ))
-                  ) : (
-                    <div className="p-3 text-muted">Không có sự kiện liên quan.</div>
-                  )}
-                </div>
-              </div>
-
-              <div className="card shadow-sm">
-                <div className="card-body">
-                  <h6 className="card-title">Liên hệ</h6>
-                  <p className="card-text text-muted">Nếu cần hỗ trợ thêm, vui lòng liên hệ: <br /> <a href="tel:0123456789">0123456789</a> | <a href="mailto:sportify@gmail.com">sportify@gmail.com</a></p>
-                </div>
-              </div>
+                    </div>
+                    
+                    <div className="text">
+                      <h3 className="mt-3 heading limited-length3">
+                        <Link to={`/sportify/eventdetail/${r.eventid}`}>
+                          {r.nameevent}
+                        </Link>
+                      </h3>
+                      <div className="meta">
+                        <div className="meta d-flex">
+                          <span className="fa fa-calendar mt-2"></span>
+                          <p className="m-1" style={{ color: 'blue' }}>
+                            {new Date(r.datestart).toLocaleDateString('vi-VN')}
+                          </p>
+                          <p className="mt-1 ml-3 mr-3"> | </p>
+                          <p className="m-1" style={{ color: 'blue' }}>
+                            {r.eventtype || 'Sự kiện'}
+                          </p>
+                        </div>
+                        <div className="meta d-flex">
+                          <p className="limited-length4">{r.descriptions}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="p-3 text-muted">Không có sự kiện liên quan.</div>
+              )}
             </div>
-
           </div>
         </div>
       </section>
-
     </div>
   );
 };

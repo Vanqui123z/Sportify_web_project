@@ -96,7 +96,8 @@ const Contact: React.FC = () => {
 
   return (
     <>
-    <Nav_contact title="Liên Hệ - Góp Ý" />
+      <Nav_contact title="Liên Hệ - Góp Ý" />
+
       <section className="ftco-section" style={{ backgroundImage: `url('/user/images/bgAll.png')`, backgroundRepeat: 'repeat', backgroundSize: '100% 100%' }}>
         <div className="container">
           <div className="row justify-content-center">
@@ -130,16 +131,42 @@ const Contact: React.FC = () => {
                           <div className="col-md-12">
                             <div className="form-group">
                               <label className="label" htmlFor="title">Tiêu đề</label>
-                              <input type="text" className="form-control" name="title" id="title" placeholder="Nhập tiêu đề..." maxLength={250} value={title} onChange={(e) => setTitle(e.target.value)} />
-                              {errorTitle && <div className="text-danger" style={{ marginTop: 6 }}>{errorTitle}</div>}
+                              <input 
+                                type="text" 
+                                className="form-control" 
+                                name="title" 
+                                id="title" 
+                                placeholder="Nhập tiêu đề..." 
+                                maxLength={250} 
+                                value={title} 
+                                onChange={(e) => setTitle(e.target.value)} 
+                              />
+                              {errorTitle && (
+                                <span className="error-message" style={{ display: 'block' }}>
+                                  <div className="text-danger" style={{ marginTop: 6 }}>{errorTitle}</div>
+                                </span>
+                              )}
                             </div>
                           </div>
 
                           <div className="col-md-12">
                             <div className="form-group">
                               <label className="label">Nội dung</label>
-                              <textarea className="form-control" id="meesagecontact" maxLength={800} cols={30} rows={4} placeholder="Nhập nội dung..." value={meesagecontact} onChange={(e) => setMeesagecontact(e.target.value)} />
-                              {errorMessage && <div className="text-danger" style={{ marginTop: 6 }}>{errorMessage}</div>}
+                              <textarea 
+                                className="form-control" 
+                                id="meesagecontact" 
+                                maxLength={800}
+                                cols={30} 
+                                rows={4} 
+                                placeholder="Nhập nội dung..." 
+                                value={meesagecontact} 
+                                onChange={(e) => setMeesagecontact(e.target.value)} 
+                              />
+                              {errorMessage && (
+                                <span className="error-message2" style={{ display: 'block' }}>
+                                  <div className="text-danger" style={{ marginTop: 6 }}>{errorMessage}</div>
+                                </span>
+                              )}
                             </div>
                           </div>
 
@@ -150,106 +177,98 @@ const Contact: React.FC = () => {
                           </div>
 
                           {message && (
-                            <div className="col-12 fixed-top" style={{ position: 'fixed', top: 0, right: 0, zIndex: 9999 }}>
-                              <div className="col-3 alert alert-success" style={{ fontSize: 15 }}>
+                            <div className="col-12 fixed-top" id="messageDiv" style={{ display: 'block' }}>
+                              <div className="col-3 alert alert-success"
+                                style={{ position: 'fixed', top: '0px', right: '0px', zIndex: 9999, fontSize: '15px' }}>
                                 <p>{message}</p>
                               </div>
                             </div>
                           )}
 
                           {message1 && (
-                            <div className="col-12 fixed-top" style={{ position: 'fixed', top: 0, right: 0, zIndex: 9999 }}>
-                              <div className="col-3 alert alert-warning" style={{ fontSize: 15 }}>
+                            <div className="col-12 fixed-top" id="messageDiv1" style={{ display: 'block' }}>
+                              <div className="col-3 alert alert-warning"
+                                style={{ position: 'fixed', top: '0px', right: '0px', zIndex: 9999, fontSize: '15px' }}>
                                 <p>{message1}</p>
                               </div>
                             </div>
                           )}
-
                         </div>
                       </form>
                     </div>
-
                   </div>
 
                   <div className="col-md-5 order-md-first d-flex align-items-stretch" style={{ border: '3px solid #2E7D32' }}>
                     <iframe
                       title="location"
-                       src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.85816909105!2d106.68427047451765!3d10.822164158349457!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3174deb3ef536f31%3A0x8b7bb8b7c956157b!2zVHLGsOG7nW5nIMSQ4bqhaSBo4buNYyBDw7RuZyBuZ2hp4buHcCBUUC5IQ00!5e0!3m2!1svi!2s!4v1757651843247!5m2!1svi!2s" 
-                      width="600"
-                      height="100%"
-                      style={{ border: 0 }}
-                      loading="lazy"
+                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.4435924064874!2d106.62525347460408!3d10.853826357762184!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752b161f50ae47%3A0x2328d1d1acc3b11a!2sFPT%20Polytechnic%20-%20T%C3%B2a%20F!5e0!3m2!1svi!2s!4v1691058165130!5m2!1svi!2s"
+                      width="600" 
+                      height="100%" 
+                      style={{ border: 0 }} 
+                      allowFullScreen={true}
+                      loading="lazy" 
                       referrerPolicy="no-referrer-when-downgrade"
                     />
-
                   </div>
                 </div>
-
-                <br />
-                <br />
-                <div className="row mb-5">
-                  <div className="col-md-3">
-                    <div className="dbox w-100 text-center">
-                      <div className="icon d-flex align-items-center justify-content-center">
-                        <span className="fa fa-map-marker"></span>
-                      </div>
-                      <div className="text">
-                        <p>
-                          <span>Address: </span> Đại học Công nghiệp Thành Phố Hồ Chí Minh, 12 Nguyễn Văn Bảo, Phường 4, Quận Gò Vấp, TP.HCM    
-                        </p>
-                      </div>
+              </div>
+              <br />
+              <br />
+              <div className="row mb-5">
+                <div className="col-md-3">
+                  <div className="dbox w-100 text-center">
+                    <div className="icon d-flex align-items-center justify-content-center">
+                      <span className="fa fa-map-marker"></span>
                     </div>
-                  </div>
-
-                  <div className="col-md-3">
-                    <div className="dbox w-100 text-center">
-                      <div className="icon d-flex align-items-center justify-content-center">
-                        <span className="fa fa-phone"></span>
-                      </div>
-                      <div className="text">
-                        <p>
-                          <span>Phone:</span> + 1235 2355 98
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="col-md-3">
-                    <div className="dbox w-100 text-center">
-                      <div className="icon d-flex align-items-center justify-content-center">
-                        <span className="fa fa-paper-plane"></span>
-                      </div>
-                      <div className="text">
-                        <p>
-                          <span>Email:</span> <a href="mailto:info@yoursite.com">sportify@gmail.com</a>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="col-md-3">
-                    <div className="dbox w-100 text-center">
-                      <div className="icon d-flex align-items-center justify-content-center">
-                        <span className="fa fa-globe"></span>
-                      </div>
-                      <div className="text">
-                        <p>
-                          <span>Website</span> <a href="#">sportify</a>
-                        </p>
-                      </div>
+                    <div className="text">
+                      <p>
+                        <span>Address: </span> Công viên phần mềm Quang Trung QTSC Building
+                        1, Quận 12, Thành phố Hồ Chí Minh, Việt Nam
+                      </p>
                     </div>
                   </div>
                 </div>
-
+                <div className="col-md-3">
+                  <div className="dbox w-100 text-center">
+                    <div className="icon d-flex align-items-center justify-content-center">
+                      <span className="fa fa-phone"></span>
+                    </div>
+                    <div className="text">
+                      <p>
+                        <span>Phone:</span> + 1235 2355 98
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-md-3">
+                  <div className="dbox w-100 text-center">
+                    <div className="icon d-flex align-items-center justify-content-center">
+                      <span className="fa fa-paper-plane"></span>
+                    </div>
+                    <div className="text">
+                      <p>
+                        <span>Email:</span> <a href="mailto:info@yoursite.com">sportify@gmail.com</a>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-md-3">
+                  <div className="dbox w-100 text-center">
+                    <div className="icon d-flex align-items-center justify-content-center">
+                      <span className="fa fa-globe"></span>
+                    </div>
+                    <div className="text">
+                      <p>
+                        <span>Website</span> <a href="#">sportify</a>
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
-
-  
-
-      {/* loader placeholder if needed elsewhere */}
     </>
   );
 };

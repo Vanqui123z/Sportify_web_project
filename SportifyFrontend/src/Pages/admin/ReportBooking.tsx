@@ -54,7 +54,7 @@ const ReportBookingPage: React.FC = () => {
   };
 
   return (
-    <div className="container-fluid page-wrapper py-4">
+    <div className=" page-wrapper py-4">
       <div className="container bg-white rounded shadow-sm p-4">
         {/* Page Header */}
         <div className="row align-items-center mb-4">

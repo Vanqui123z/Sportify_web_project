@@ -9138,10 +9138,11 @@ h1, h2, h3, h4, h5,
 textarea.form-control {
   height: inherit !important; }
 
+/* Add this to your CSS or a style tag in your component */
 .ftco-animate {
-  opacity: 0;
-  visibility: hidden; }
-
+  opacity: 1;
+  visibility: hidden ;
+}
 .bg-primary {
   background: #2E7D32 !important; }
 

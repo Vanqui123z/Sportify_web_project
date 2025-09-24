@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import CustomCard from '../../../components/user/CustomCard';
-import getImageUrl from '../../../utils/getImageUrl ';
+import getImageUrl from '../../../utils/getImageUrl';
 
 interface Category {
   categoryid: number;
@@ -60,54 +60,129 @@ const Product: React.FC = () => {
 
   return (
     <div>
-      <section className="ftco-section m-2">
+      {/* background */}
+      <section className="hero-wrap hero-wrap-2"
+        style={{backgroundImage: "url('/user/images/bg_product.png')"}}
+        data-stellar-background-ratio="0.5">
+        <div className="overlay"></div>
+        <div className="container">
+          <div className="row no-gutters slider-text align-items-end justify-content-center">
+            <div className="col-md-9 mb-5 text-center">
+              <p className="breadcrumbs mb-0">
+                <span className="mr-2"><a href="/sportify">Trang Chủ <i className="fa fa-chevron-right"></i></a></span> 
+                <span>Sản Phẩm <i className="fa fa-chevron-right"></i></span>
+              </p>
+              <h2 className="mb-0 bread">Sản Phẩm</h2>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* container sản phẩm */}
+      <section className="ftco-section">
         <div className="container">
           <div className="row">
+            {/* Search form */}
             <form onSubmit={handleSearchSubmit} className="mb-0 d-flex justify-content-center col-md-12">
-              <input value={searchText} onChange={(e) => setSearchText(e.target.value)} name="searchText" className="form-control me-2 col-6" type="search" placeholder="Tìm kiếm theo tên" aria-label="Search" />
+              <input 
+                value={searchText} 
+                onChange={(e) => setSearchText(e.target.value)} 
+                name="searchText"
+                className="form-control me-2 col-6" 
+                type="search"
+                placeholder="Tìm kiếm theo tên" 
+                aria-label="Search" 
+              />
               <button className="btn btn-outline-success col-2" type="submit">Search</button>
             </form>
 
+            {/* Search results message */}
             <div className="d-flex justify-content-center col-md-12 mt-1">
-              <div className="mr-4 col-md-8" />
+              <div className="mr-4 col-md-8"></div>
             </div>
+            <br />
 
+            {/* show sản phẩm */}
             <div className="col-md-9">
-              <div className="col-md-12" />
+              {/* No products found message */}
+              <div className="col-md-12">
+                {filteredProducts.length === 0 && searchText && (
+                  <div>Không tìm thấy sản phẩm nào phù hợp với từ khóa "{searchText}"</div>
+                )}
+              </div>
 
+              {/* Product grid */}
               <div className="row">
                 {filteredProducts.map((product) => (
                   <div key={product.productid} className="d-flex col-xl-4 col-lg-4 col-md-6 col-sm-12">
-                    <CustomCard id={product.productid}
-                      title={product.productname}
-                      link={`/sportify/product-single/${product.productid}`}
-                     image={getImageUrl(product.image)}
-                      badgeText={formatPrice(product.discountprice)}
-                      badgeColor="bg-success"
-                      description={product.descriptions} 
-                        extraInfo={product.categories ? product.categories.categoryname : 'Chưa phân loại'}
-                        buttonText="Xem chi tiết"
-                        buttonColor="btn-success"
-                      />
+                    <div className="product" style={{backgroundColor: '#EEEEEE'}}>
+                      <div className="d-flex align-items-center justify-content-center">
+                        <img
+                          className="img d-flex align-items-center justify-content-center"
+                          src={getImageUrl(product.image)}
+                          alt="Error"
+                          style={{height: '250px', width: '255px', objectFit: 'fill'}}
+                        />
+                      </div>
+                      <div className="text text-center">
+                        <div className="row hoverIcons col-12">
+                          <div className="col-12 mb-2">
+                            <a 
+                              href={`/sportify/product-single/${product.productid}`}
+                              className="btn btn-success btn-sm"
+                            >
+                              Xem chi tiết
+                            </a>
+                          </div>
+                        </div>
+                        <h2>{product.productname}</h2>
+                        <p className="mb-0">
+                          <p>
+                            Giá gốc:
+                            <del>{formatPrice(product.price)}</del>
+                          </p>
+                          <p>
+                            Giá bán: <span className="price">{formatPrice(product.discountprice)}</span>
+                          </p>
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
 
+              <div className="row mt-5">
+                {/* Pagination can be added here if needed */}
+              </div>
             </div>
 
+            {/* Sidebar */}
             <div className="col-md-3">
-              <div className="sidebar-box ftco-animate">
+              {/* Category sidebar */}
+              <div className="sidebar-box">
                 <div className="categories">
-                  <h5 className="mb-3">Loại sản phẩm</h5>
-                  <ul className="list-unstyled">
-                    <li className="mb-2">
-                      <button type="button" className={`btn btn-sm btn-link ${selectedCategory === null ? 'fw-bold text-primary' : 'text-muted'}`} onClick={() => setSelectedCategory(null)}>
+                  <h3>
+                    <a href="/sportify/product">Loại sản phẩm</a>
+                  </h3>
+                  <ul className="p-0">
+                    <li>
+                      <button 
+                        type="button" 
+                        className={`btn btn-link ${selectedCategory === null ? 'fw-bold text-primary' : 'text-muted'}`} 
+                        onClick={() => setSelectedCategory(null)}
+                        style={{textDecoration: 'none', padding: 0, border: 'none', background: 'none'}}
+                      >
                         Tất cả
                       </button>
                     </li>
                     {categoryList.map((category) => (
-                      <li key={category.categoryid} className="mb-2">
-                        <button type="button" className={`btn btn-sm btn-link ${selectedCategory === category.categoryid ? 'fw-bold text-primary' : 'text-muted'}`} onClick={() => setSelectedCategory(category.categoryid)}>
+                      <li key={category.categoryid}>
+                        <button 
+                          type="button" 
+                          className={`btn btn-link ${selectedCategory === category.categoryid ? 'fw-bold text-primary' : 'text-muted'}`} 
+                          onClick={() => setSelectedCategory(category.categoryid)}
+                          style={{textDecoration: 'none', padding: 0, border: 'none', background: 'none'}}
+                        >
                           {category.categoryname}
                         </button>
                       </li>
@@ -116,12 +191,9 @@ const Product: React.FC = () => {
                 </div>
               </div>
             </div>
-
           </div>
         </div>
       </section>
-
-  
     </div>
   );
 };

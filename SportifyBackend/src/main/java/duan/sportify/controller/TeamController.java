@@ -36,6 +36,7 @@ import duan.sportify.entities.Teams;
 import duan.sportify.service.SportTypeService;
 import duan.sportify.service.TeamDetailService;
 import duan.sportify.service.TeamService;
+import duan.sportify.service.UploadService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -67,6 +68,9 @@ public class TeamController {
 
 	@Autowired
 	SportTypeService sportTypeService;
+	
+	@Autowired
+	UploadService uploadService;
 
 	// Đỗ danh Sách bộ Lọc
 	@ModelAttribute("sporttypeList")
@@ -519,21 +523,16 @@ public ResponseEntity<?> createTeam(
     newTeam.setUsername(usernameLogin);
     newTeam.setCreatedate(LocalDate.now());
 
-    // Lưu ảnh nếu có
+//   Lưu ảnh 
     if (newAvatar != null && !newAvatar.isEmpty()) {
-        try {
-            String fileName = System.currentTimeMillis() + "_" + newAvatar.getOriginalFilename();
-            Path uploadDir = Paths.get(System.getProperty("user.dir"), "src/main/resources/static/user/images/team_img");
-            Files.createDirectories(uploadDir);
-            Path filePath = uploadDir.resolve(fileName);
-            Files.write(filePath, newAvatar.getBytes());
-            newTeam.setAvatar(fileName);
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("success", false, "message", "Lỗi khi lưu ảnh: " + e.getMessage()));
-        }
-    }
-
+		try {
+			// Upload ảnh lên Cloudinary
+			String imageUrl = uploadService.uploadImage(newAvatar, "field_images");
+			newTeam.setAvatar(imageUrl);
+		} catch (Exception e) {
+			return ResponseEntity.status(500).body("Upload avatar thất bại: " + e.getMessage());
+		}
+	}
     teamdao.save(newTeam);
 
     // Thêm đội trưởng

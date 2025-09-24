@@ -222,116 +222,225 @@ export default function Profile(): React.ReactElement {
   if (loading) return <div>Đang tải...</div>;
 
   return (
-    <div className="container d-flex justify-content-center rounded mt-5 mb-5">
-      <div className="col-md-12 bg-white d-flex rounded" id="profiles">
-        <form onSubmit={handleSubmit} className="d-flex" encType="multipart/form-data">
-          <div className="col-md-5">
-            <div className="d-flex flex-column align-items-center text-center p-3 py-5">
-              <div style={{ position: 'relative' }}>
-                <img
-                  id="previewAvatar"
-                  className="border border-dark rounded-circle mt-5"
-                  width={250}
-                  height={250}
-                  src={avatarPreview || "/user/images/noavatar.jpg"}
-                  alt="avatar"
-                  style={{ cursor: "pointer" }}
-                  onClick={() => document.getElementById('avatarFileInput')?.click()}
-                />
-                {/* Ẩn input file, chỉ trigger khi click avatar */}
-                <input
-                  style={{ display: 'none' }}
-                  id="avatarFileInput"
-                  className="form-control-file"
-                  type="file"
-                  name="avatarFile"
-                  accept="image/*"
-                  onChange={handleAvatarChange}
-                />
-                <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', zIndex: 1 }}>
-                  <label htmlFor="avatarFileInput" style={{ cursor: "pointer" }}>
-                    <i style={{ fontSize: 25, color: 'black' }} className="fa fa-camera" />
-                  </label>
-                </div>
-              </div>
-              <br />
-              <h3>{firstname + ' ' + lastname}</h3>
-              <span className="font-weight-bold rounded" style={{ padding: 3, color: '#4682A9', marginBottom: '10%' }}>{role}</span>
-            </div>
-          </div>
+    <>
+      <div className="container d-flex justify-content-center rounded mt-5 mb-5 ">
+        <div className="col-md-12 bg-white d-flex rounded" id="profiles">
+          <form onSubmit={handleSubmit} className="d-flex" encType="multipart/form-data">
+            <div className="col-md-5">
+              <div className="d-flex flex-column align-items-center text-center p-3 py-5">
+                <div style={{ position: 'relative' }}>
+                  <img 
+                    id="previewAvatar"
+                    className="border border-dark rounded-circle mt-5" 
+                    width="250px"
+                    height="250px" 
+                    src={avatarPreview || "/user/images/noavatar.jpg"}
+                    alt=""
+                    style={{ cursor: "pointer" }}
+                    onClick={() => document.getElementById('avatarFileInput')?.click()}
+                  />
+                  <input 
+                    type="hidden" 
+                    name="avatarProfile"
+                    value={avatarProfile || ''}
+                  />
 
-          <div className="col-md-6">
-            <div className="p-3 py-5">
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <h4 className="text-right text-uppercase">Thông tin cá nhân</h4>
-              </div>
-
-              <div className="row">
-                <div className="col-md-6">
-                  <label className="labels">Họ</label> <span className="text-danger">*</span>
-                  <input className="form-control" name="firstname" value={firstname} onChange={e => setFirstname(e.target.value)} onBlur={e => setFirstnameError(validators.firstname(e.target.value))} />
-                  {firstnameError && <div className="error-message text-danger">{firstnameError}</div>}
-                </div>
-
-                <div className="col-md-6">
-                  <label className="labels">Tên</label> <span className="text-danger">*</span>
-                  <input className="form-control" name="lastname" value={lastname} onChange={e => setLastname(e.target.value)} onBlur={e => setLastnameError(validators.lastname(e.target.value))} />
-                  {lastnameError && <div className="error-message text-danger">{lastnameError}</div>}
-                </div>
-
-                <div className="col-md-12">
-                  <label className="labels">Tài khoản</label>
-                  <input type="text" className="form-control" readOnly name="username" value={profile?.username || ''} />
-                </div>
-
-                {/* Removed the blocks for current/new/confirm passwords from here.
-                    Replaced with a button to open the change-password modal. */}
-
-                <div className="col-md-12 mt-3">
-                  <label className="labels">Số điện thoại</label> <span className="text-danger">*</span>
-                  <input className="form-control" name="phone" value={phone} onChange={e => setPhone(e.target.value)} onBlur={e => setPhoneError(validators.phone(e.target.value))} />
-                  {phoneError && <div className="error-message text-danger">{phoneError}</div>}
-                </div>
-
-                <div className="col-md-12 mt-3">
-                  <label className="labels">Email</label>
-                  <input className="form-control" name="email" value={email} onChange={e => setEmail(e.target.value)} onBlur={e => setEmailError(validators.email(e.target.value))} />
-                  {emailError && <div className="error-message text-danger">{emailError}</div>}
-                </div>
-
-                <div className="col-md-12 mt-3">
-                  <label className="labels">Giới tính</label> <span className="text-danger">*</span>
-                  <div className="d-flex">
-                    <div className="radio-container mr-4">
-                      <input type="radio" name="gender" id="male" value="true" className="form-control mr-1" checked={gender === true} onChange={() => setGender(true)} /> <span>Nam</span>
-                    </div>
-                    <div className="radio-container">
-                      <input type="radio" name="gender" id="female" value="false" className="form-control mr-1" checked={gender === false} onChange={() => setGender(false)} /> <span>Nữ</span>
-                    </div>
+                  <div style={{ position: 'absolute', bottom: '0px', left: '50%', transform: 'translateX(-50%)', zIndex: 1 }}>
+                    <label htmlFor="avatarFileInput">
+                      <i style={{ fontSize: '25px', color: 'black' }} className="fa fa-camera"></i>
+                    </label>
+                    <input 
+                      style={{ display: 'none' }} 
+                      id="avatarFileInput"
+                      className="form-control-file" 
+                      type="file" 
+                      name="avatarFile" 
+                      accept="image/*"
+                      onChange={handleAvatarChange}
+                    />
                   </div>
                 </div>
+                <br />
+                <h3 className="">{firstname + ' ' + lastname}</h3>
+                <span 
+                  className="font-weight-bold rounded"
+                  style={{ padding: '3px', color: '#4682A9', marginBottom: '10%' }}
+                >
+                  {role}
+                </span>
+              </div>
+            </div>
+            
+            <div className="col-md-6">
+              <div className="p-3 py-5">
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                  <h4 className="text-right text-uppercase">Thông tin cá nhân</h4>
+                </div>
+                
+                <div className="row">
+                  <div className="col-md-6">
+                    <label className="labels">Họ</label> <span className="text-danger">*</span>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      name="firstname"
+                      value={firstname}
+                      onChange={e => setFirstname(e.target.value)}
+                      onBlur={e => setFirstnameError(validators.firstname(e.target.value))}
+                    />
+                    {firstnameError && <div className="error-message text-danger">{firstnameError}</div>}
+                  </div>
+                  
+                  <div className="col-md-6">
+                    <label className="labels">Tên</label> <span className="text-danger">*</span>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      name="lastname"
+                      value={lastname}
+                      onChange={e => setLastname(e.target.value)}
+                      onBlur={e => setLastnameError(validators.lastname(e.target.value))}
+                    />
+                    {lastnameError && <div className="error-message text-danger">{lastnameError}</div>}
+                  </div>
+                </div>
+                
+                <div className="row">
+                  <div className="col-md-12">
+                    <label className="labels">Tài khoản</label>
+                    <input 
+                      type="text"
+                      className="form-control" 
+                      readOnly 
+                      name="username"
+                      value={profile?.username || ''}
+                    />
+                  </div>
 
-                <div className="col-md-12 mt-3">
-                  <label className="labels">Địa chỉ</label>
-                  <input className="form-control" name="address" value={address} onChange={e => setAddress(e.target.value)} onBlur={e => setAddressError(validators.address(e.target.value))} />
-                  {addressError && <div className="error-message text-danger">{addressError}</div>}
+                  <div className="col-md-12">
+                    <label className="labels">Mật khẩu</label>
+                    <div className="d-flex">
+                      <input 
+                        readOnly 
+                        type="password" 
+                        className="form-control col-md-12"
+                        value="••••••••••"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-md-12">
+                    <button
+                      type="button"
+                      className="btn btn-outline-secondary btn-sm mt-2"
+                      onClick={() => setShowChangePwdModal(true)}
+                    >
+                      Đổi mật khẩu
+                    </button>
+                  </div>
+
+                  <div className="col-md-12">
+                    <label className="labels">Số điện thoại</label> <span className="text-danger">*</span>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      name="phone"
+                      value={phone}
+                      onChange={e => setPhone(e.target.value)}
+                      onBlur={e => setPhoneError(validators.phone(e.target.value))}
+                    />
+                    {phoneError && <div className="error-message text-danger">{phoneError}</div>}
+                  </div>
+                  
+                  <div className="col-md-12">
+                    <label className="labels">Email</label>
+                    <input 
+                      type="text"
+                      className="form-control" 
+                      name="email"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      onBlur={e => setEmailError(validators.email(e.target.value))}
+                    />
+                    {emailError && <div className="error-message text-danger">{emailError}</div>}
+                  </div>
+                  
+                  <div className="col-md-12">
+                    <label className="labels">Giới tính</label> <span className="text-danger">*</span>
+                    <div className="d-flex">
+                      <div className="form-check mr-4">
+                        <input 
+                          type="radio" 
+                          name="gender" 
+                          id="male" 
+                          value="true" 
+                          className="form-check-input"
+                          checked={gender === true}
+                          onChange={() => setGender(true)}
+                        />
+                        <label className="form-check-label" htmlFor="male">Nam</label>
+                      </div>
+                      <div className="form-check">
+                        <input 
+                          type="radio" 
+                          name="gender" 
+                          id="female" 
+                          value="false" 
+                          className="form-check-input"
+                          checked={gender === false}
+                          onChange={() => setGender(false)}
+                        />
+                        <label className="form-check-label" htmlFor="female">Nữ</label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="col-md-12">
+                    <label className="labels">Địa chỉ</label>
+                    <input 
+                      type="text"
+                      className="form-control" 
+                      name="address"
+                      value={address}
+                      onChange={e => setAddress(e.target.value)}
+                      onBlur={e => setAddressError(validators.address(e.target.value))}
+                    />
+                    {addressError && <div className="error-message text-danger">{addressError}</div>}
+                  </div>
+                </div>
+                
+                <div className="mt-5 text-center">
+                  <button 
+                    className="btn btn-outline-success" 
+                    type="submit"
+                  >
+                    Cập nhật hồ sơ
+                  </button>
                 </div>
               </div>
-
-              <div className="mt-4 d-flex justify-content-between">
-                <button className="btn btn-outline-secondary" type="button" onClick={() => setShowChangePwdModal(true)}>
-                  Đổi mật khẩu
-                </button>
-
-                <button className="btn btn-outline-success" type="submit">Cập nhật hồ sơ</button>
-              </div>
-
-              {message && <div className="mt-3 alert alert-success">{message}</div>}
-              {messageError && <div className="mt-3 alert alert-danger">{messageError}</div>}
             </div>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
+
+      {/* Đoạn mã để hiển thị thông báo nếu có */}
+      {message && (
+        <div className="col-12 fixed-top" id="messageDiv" style={{ display: 'block' }}>
+          <div className="col-3 alert alert-success"
+            style={{ position: 'fixed', top: '0px', right: '0px', zIndex: 9999, fontSize: '20px' }}>
+            <p>{message}</p>
+          </div>
+        </div>
+      )}
+      
+      {messageError && (
+        <div className="col-12 fixed-top" id="messageDiv1" style={{ display: 'block' }}>
+          <div className="col-3 alert alert-danger"
+            style={{ position: 'fixed', top: '0px', right: '0px', zIndex: 9999, fontSize: '20px' }}>
+            <p>{messageError}</p>
+          </div>
+        </div>
+      )}
 
       {/* CHANGE PASSWORD MODAL */}
       {showChangePwdModal && (
@@ -340,24 +449,83 @@ export default function Profile(): React.ReactElement {
         }}>
           <div className="card p-3" style={{ width: 480 }}>
             <h5 className="mb-3">Đổi mật khẩu</h5>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              if (!validateModalPasswords(modalNewPassword, modalConfirmPassword)) return;
+              
+              setModalSubmitting(true);
+              try {
+                const res = await fetch(`${API_BASE}/api/user/profile/change-password`, {
+                  method: 'POST',
+                  credentials: "include",
+                  headers: {
+                    "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify({
+                    newPassword: modalNewPassword
+                  })
+                });
+                
+                if (!res.ok) {
+                  const text = await res.text();
+                  throw new Error(text || 'Lỗi khi đổi mật khẩu');
+                }
+                
+                setModalMessage('Đổi mật khẩu thành công');
+                setTimeout(() => {
+                  setShowChangePwdModal(false);
+                  setModalNewPassword('');
+                  setModalConfirmPassword('');
+                  setModalPasswordError('');
+                  setModalMessage('');
+                }, 1500);
+              } catch (err: any) {
+                setModalPasswordError(err.message || 'Đổi mật khẩu không thành công');
+              } finally {
+                setModalSubmitting(false);
+              }
+            }}>
               <div className="form-group">
                 <label>Mật khẩu mới</label>
-                <input type="password" className="form-control" value={modalNewPassword} onChange={e => setModalNewPassword(e.target.value)} />
+                <input 
+                  type="password" 
+                  className="form-control" 
+                  value={modalNewPassword} 
+                  onChange={e => setModalNewPassword(e.target.value)} 
+                />
               </div>
               <div className="form-group">
                 <label>Xác nhận mật khẩu mới</label>
-                <input type="password" className="form-control" value={modalConfirmPassword} onChange={e => setModalConfirmPassword(e.target.value)} />
+                <input 
+                  type="password" 
+                  className="form-control" 
+                  value={modalConfirmPassword} 
+                  onChange={e => setModalConfirmPassword(e.target.value)} 
+                />
               </div>
 
               {modalPasswordError && <div className="text-danger mb-2">{modalPasswordError}</div>}
               {modalMessage && <div className="text-success mb-2">{modalMessage}</div>}
 
               <div className="d-flex justify-content-end">
-                <button type="button" className="btn btn-secondary mr-2" onClick={() => { setShowChangePwdModal(false); setModalPasswordError(''); }}>
+                <button 
+                  type="button" 
+                  className="btn btn-secondary mr-2" 
+                  onClick={() => { 
+                    setShowChangePwdModal(false); 
+                    setModalPasswordError(''); 
+                    setModalNewPassword('');
+                    setModalConfirmPassword('');
+                    setModalMessage('');
+                  }}
+                >
                   Hủy
                 </button>
-                <button type="submit" className="btn btn-primary" disabled={modalSubmitting}>
+                <button 
+                  type="submit" 
+                  className="btn btn-primary" 
+                  disabled={modalSubmitting}
+                >
                   {modalSubmitting ? 'Đang gửi...' : 'Lưu mật khẩu'}
                 </button>
               </div>
@@ -365,6 +533,6 @@ export default function Profile(): React.ReactElement {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

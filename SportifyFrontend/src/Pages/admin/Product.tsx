@@ -1,4 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
+import BootstrapModal from "../../components/admin/BootstrapModal";
+import "../../styles/AdminModal.css";
+import getImageUrl from "../../utils/getImageUrl";
 
 interface Category {
   categoryid: number;
@@ -23,7 +26,6 @@ interface ErrorField {
   field?: string;
   message: string;
 }
-const VITE_CLOUDINARY_BASE_URL = import.meta.env.VITE_CLOUDINARY_BASE_URL || "";
 const ProductPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -96,6 +98,8 @@ const ProductPage: React.FC = () => {
       })
         .then(async res => {
           if (!res.ok) {
+            alert("Thêm sản phẩm thất bại. Vui lòng kiểm tra lại thông tin.");
+            setShowAdd(true);
             const err = await res.json();
             setErrors((err.errors || []).map((msg: string) => ({ message: msg })));
             return;
@@ -103,7 +107,6 @@ const ProductPage: React.FC = () => {
           return res.json();
         })
         .then(data => {
-          alert("Thêm sản phẩm thành công");
           if (data) {
             setProducts(prev => [...prev, data]);
             setShowAdd(false);
@@ -188,71 +191,84 @@ const ProductPage: React.FC = () => {
   };
 
   return (
-    <div className="container-fluid page-wrapper py-4">
-      <div className="container bg-white rounded shadow-sm p-4">
+    <div className="page-wrapper">
+      {/* Page Content */}
+      <div className="content ">
         {/* Page Header */}
-        <div className="row align-items-center mb-4">
-          <div className="col">
-            <h3 className="mb-0">Sản phẩm</h3>
-            <nav aria-label="breadcrumb">
-              <ol className="breadcrumb bg-transparent p-0">
-                <li className="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
-                <li className="breadcrumb-item active" aria-current="page">Sản phẩm</li>
-              </ol>
-            </nav>
-          </div>
-          <div className="col-auto">
-            <button className="btn btn-primary" onClick={() => { setShowAdd(true); setForm({}); setErrors([]); }}>
-              <i className="fa fa-plus"></i> Thêm mới sản phẩm
-            </button>
+        <div className="page-header">
+          <div className="row align-items-center">
+            <div className="col">
+              <h3 className="page-title">Sản phẩm</h3>
+              <ul className="breadcrumb">
+                <li className="breadcrumb-item"><a href="/admin/index.html">Dashboard</a></li>
+                <li className="breadcrumb-item active">Sản phẩm</li>
+              </ul>
+            </div>
+            <div className="col-auto float-right ml-auto">
+              <button  className="btn add-btn" onClick={() => { setShowAdd(true); setForm({}); setErrors([]); }}>
+                <i className="fa fa-plus"></i> Thêm mới sản phẩm
+              </button>
+            </div>
           </div>
         </div>
         {/* /Page Header */}
 
         {/* Search Filter */}
-        <form className="row g-2 mb-3">
+        <div className="row filter-row">
           <div className="col-sm-6 col-md-3">
-            <input type="text" className="form-control"
-              placeholder="Tên sản phẩm"
-              value={search.searchName}
-              onChange={e => setSearch(s => ({ ...s, searchName: e.target.value }))}
-            />
+            <div className="form-group form-focus">
+              <input type="text" className="form-control floating"
+                value={search.searchName}
+                onChange={e => setSearch(s => ({ ...s, searchName: e.target.value }))}
+              />
+              <label className="focus-label">Tên sản phẩm</label>
+            </div>
           </div>
           <div className="col-sm-6 col-md-3">
-            <select className="form-select"
-              value={search.searchCate}
-              onChange={e => setSearch(s => ({ ...s, searchCate: e.target.value }))}
-            >
-              <option value="">Tất cả</option>
-              {categories.map(c => (
-                <option key={c.categoryid} value={c.categoryid}>{c.categoryname}</option>
-              ))}
-            </select>
+            <div className="form-group form-focus select-focus">
+              <select className="select floating"
+                value={search.searchCate}
+                onChange={e => setSearch(s => ({ ...s, searchCate: e.target.value }))}
+              >
+                <option value="">Tất cả</option>
+                {categories.map(c => (
+                  <option key={c.categoryid} value={c.categoryid}>{c.categoryname}</option>
+                ))}
+              </select>
+              <label className="focus-label">Loại sản phẩm</label>
+            </div>
           </div>
           <div className="col-sm-6 col-md-2">
-            <select className="form-select"
-              value={search.searchStatus}
-              onChange={e => setSearch(s => ({ ...s, searchStatus: e.target.value }))}
-            >
-              <option value="">Tất cả</option>
-              <option value="1">Đang bán</option>
-              <option value="0">Ngưng bán</option>
-            </select>
+            <div className="form-group form-focus select-focus">
+              <select className="select floating"
+                value={search.searchStatus}
+                onChange={e => setSearch(s => ({ ...s, searchStatus: e.target.value }))}
+              >
+                <option value="">Tất cả</option>
+                <option value="1">Đang bán</option>
+                <option value="0">Ngưng bán</option>
+              </select>
+              <label className="focus-label">Trạng thái</label>
+            </div>
           </div>
           <div className="col-sm-6 col-md-2">
-            <button type="button" className="btn btn-success w-100" onClick={handleSearch}>Tìm kiếm</button>
+            <button  className="btn btn-success btn-block" onClick={handleSearch}>
+              Tìm kiếm
+            </button>
           </div>
           <div className="col-sm-6 col-md-2">
-            <button type="button" className="btn btn-secondary w-100" onClick={handleRefresh}>Làm mới</button>
+            <button  className="btn btn-success btn-block" onClick={handleRefresh}>
+              Làm mới
+            </button>
           </div>
-        </form>
-        {/* /Search Filter */}
+        </div>
+        {/* Search Filter */}
 
         <div className="row">
-          <div className="col-12">
+          <div className="col-md-12">
             <div className="table-responsive">
-              <table className="table table-bordered table-hover align-middle">
-                <thead className="table-light">
+              <table className="table table-striped custom-table">
+                <thead>
                   <tr>
                     <th>#</th>
                     <th>Loại sản phẩm</th>
@@ -275,31 +291,22 @@ const ProductPage: React.FC = () => {
                       <td>
                         <img
                           src={
-                            item.image
-                              ? item.image.startsWith("v")
-                                ? `${VITE_CLOUDINARY_BASE_URL}/${item.image}`
-                                : `/user/images/${item.image}`
-                              : "/user/images/default.png"
+                           getImageUrl(item.image)
                           }
-                          width={100}
-                          height={100}
-                          style={{ objectFit: "cover", borderRadius: 8, border: "1px solid #eee", background: "#fafbfc" }}
+                          width="100px"
+                          height="100px"
                           alt={item.productname}
                         />
                       </td>
-                      <td>{formatCurrency(item.discountprice)}</td>
+                      <td>{item.discountprice}</td>
                       <td>{formatDate(item.datecreate)}</td>
                       <td>{formatCurrency(item.price)}</td>
-                      <td>{item.productstatus ? "Đang bán" : "Ngưng bán"}</td>
+                      <td>{item.productstatus ? "Đang bán" : "Ngưng Bán"}</td>
                       <td>{item.quantity}</td>
                       <td className="text-center">
-                        <button className="btn btn-outline-primary btn-sm me-2"
+                        <button className="btn btn-danger btn-block"
                           onClick={() => openEditModal(item)}>
-                          <i className="fa fa-pencil me-1"></i> Xem chi tiết
-                        </button>
-                        <button className="btn btn-outline-danger btn-sm"
-                          onClick={() => handleDeleteProduct(item.productid)}>
-                          <i className="fa fa-trash me-1"></i> Xóa
+                          <i className="fa fa-pencil m-r-5"></i> Xem chi tiết
                         </button>
                       </td>
                     </tr>
@@ -309,310 +316,298 @@ const ProductPage: React.FC = () => {
             </div>
           </div>
         </div>
+      </div>
+      {/* /Page Content */}
 
-        {/* Add Modal */}
-        {showAdd && (
-          <div className="modal fade show" style={{ display: "block" }}>
-            <div className="modal-dialog modal-lg modal-dialog-centered">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">Thêm mới sản phẩm</h5>
-                  <button type="button" className="btn-close" onClick={() => setShowAdd(false)}></button>
-                </div>
-                <div className="modal-body">
-                  <form>
-                    <div className="row g-3">
-                      <div className="col-sm-12 text-center mb-3">
-                        <label htmlFor="image" className="form-label">
-                          <img
-                            src={
-                              form.image
-                                ? form.image.startsWith("v") // hoặc form.image.includes("/")
-                                  ? `${VITE_CLOUDINARY_BASE_URL}/${form.image}`
-                                  : `/user/images/${form.image}`
-                                : "/user/images/default.png" // fallback nếu null
-                            }
-                            width="70%"
-                            style={{ objectFit: "cover", borderRadius: 8, border: "1px solid #eee", background: "#fafbfc" }}
-                            alt={form.productname}
-                          />
-                        </label>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Tên sản phẩm <span className="text-danger">*</span></label>
-                          <input className="form-control" type="text"
-                            value={form.productname || ""}
-                            onChange={e => handleFormChange("productname", e.target.value)}
-                          />
-                          {errors.filter(e => e.field === "productname").map((e, i) => (
-                            <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Giảm giá <span className="text-danger">*</span></label>
-                          <input className="form-control" type="number"
-                            value={form.discountprice || ""}
-                            onChange={e => handleFormChange("discountprice", Number(e.target.value))}
-                          />
-                          {errors.filter(e => e.field === "discountprice").map((e, i) => (
-                            <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Hình ảnh <span className="text-danger">*</span></label>
-                          <input type="file"
-                            className="form-control"
-                            id="image"
-                            onChange={e => handleImageChange(e.target.files)}
-                          />
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Ngày tạo <span className="text-danger">*</span></label>
-                          <input className="form-control" type="date"
-                            value={form.datecreate || ""}
-                            onChange={e => handleFormChange("datecreate", e.target.value)}
-                          />
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Trạng thái <span className="text-danger">*</span></label>
-                          <select className="form-select"
-                            value={form.productstatus === undefined ? "" : form.productstatus ? "1" : "0"}
-                            onChange={e => handleFormChange("productstatus", e.target.value === "1")}
-                          >
-                            <option value="1">Đang bán</option>
-                            <option value="0">Ngưng bán</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Số lượng <span className="text-danger">*</span></label>
-                          <input type="number"
-                            className="form-control"
-                            value={form.quantity || ""}
-                            onChange={e => handleFormChange("quantity", Number(e.target.value))}
-                          />
-                          {errors.filter(e => e.field === "quantity").map((e, i) => (
-                            <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Loại sản phẩm <span className="text-danger">*</span></label>
-                          <select className="form-select"
-                            value={form.categoryid || ""}
-                            onChange={e => handleFormChange("categoryid", Number(e.target.value))}
-                          >
-                            <option value="">Chọn loại sản phẩm</option>
-                            {categories.map(c => (
-                              <option key={c.categoryid} value={c.categoryid}>{c.categoryname}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Giá <span className="text-danger">*</span></label>
-                          <input type="number"
-                            className="form-control"
-                            value={form.price || ""}
-                            onChange={e => handleFormChange("price", Number(e.target.value))}
-                          />
-                          {errors.filter(e => e.field === "price").map((e, i) => (
-                            <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="col-sm-12">
-                        <div className="form-group">
-                          <label>Mô tả <span className="text-danger">*</span></label>
-                          <textarea className="form-control"
-                            value={form.descriptions || ""}
-                            onChange={e => handleFormChange("descriptions", e.target.value)}
-                          />
-                          {errors.filter(e => e.field === "descriptions").map((e, i) => (
-                            <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-4 text-end">
-                      <button type="button" className="btn btn-primary" onClick={handleAddProduct}>
-                        Thêm sản phẩm
-                      </button>
-                    </div>
-                  </form>
-                </div>
+      {/* Add Modal */}
+      <BootstrapModal
+        show={showAdd}
+        onHide={() => setShowAdd(false)}
+        title="Thêm mới sản phẩm"
+        size="lg"
+        className="custom-modal"
+        bodyClassName="modal-body"
+        footer={
+          <button type="button" className="btn btn-primary" onClick={handleAddProduct}>
+            Thêm sản phẩm
+          </button>
+        }
+      >
+        <form>
+          <div className="row">
+            <div className="col-sm-12">
+              <div className="form-group d-flex justify-content-center">
+                <label htmlFor="image" className="col-form-label">
+                  <img
+                    src={
+                      form.image? getImageUrl(form.image): "/user/images/default.png"
+                    }
+                    style={{ maxWidth: "100%", height: "200px" }}
+                    alt={form.productname}
+                  />
+                </label>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label>Tên sản phẩm <span className="text-danger">*</span></label>
+                <input className="form-control" type="text"
+                  value={form.productname || ""}
+                  onChange={e => handleFormChange("productname", e.target.value)}
+                />
+                {errors.filter(e => e.field === "productname").map((e, i) => (
+                  <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                ))}
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label>Giảm giá <span className="text-danger">*</span></label>
+                <input className="form-control" type="number"
+                  value={form.discountprice || ""}
+                  onChange={e => handleFormChange("discountprice", Number(e.target.value))}
+                />
+                {errors.filter(e => e.field === "discountprice").map((e, i) => (
+                  <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                ))}
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label>Hình ảnh <span className="text-danger">*</span></label>
+                <input type="file"
+                  className="form-control"
+                  id="image"
+                  onChange={e => handleImageChange(e.target.files)}
+                />
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label>Ngày tạo <span className="text-danger">*</span></label>
+                <input className="form-control" type="date"
+                  value={form.datecreate || ""}
+                  onChange={e => handleFormChange("datecreate", e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label>Trạng thái <span className="text-danger">*</span></label> 
+                <select className="form-select"
+                  value={form.productstatus === undefined ? "" : form.productstatus ? "1" : "0"}
+                  onChange={e => handleFormChange("productstatus", e.target.value === "1")}
+                >
+                  <option value="1">Đang bán</option>
+                  <option value="0">Ngưng bán</option>
+                </select>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label>Số lượng <span className="text-danger">*</span></label>
+                <input type="number"
+                  className="form-control"
+                  value={form.quantity || ""}
+                  onChange={e => handleFormChange("quantity", Number(e.target.value))}
+                />
+                {errors.filter(e => e.field === "quantity").map((e, i) => (
+                  <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                ))}
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label>Loại sản phẩm <span className="text-danger">*</span></label>
+                <select className="form-select"
+                  value={form.categoryid || ""}
+                  onChange={e => handleFormChange("categoryid", Number(e.target.value))}
+                >
+                  <option value="">Chọn loại sản phẩm</option>
+                  {categories.map(c => (
+                    <option key={c.categoryid} value={c.categoryid}>{c.categoryname}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label>Giá <span className="text-danger">*</span></label>
+                <input type="number"
+                  className="form-control"
+                  value={form.price || ""}
+                  onChange={e => handleFormChange("price", Number(e.target.value))}
+                />
+                {errors.filter(e => e.field === "price").map((e, i) => (
+                  <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                ))}
+              </div>
+            </div>
+            <div className="col-sm-12">
+              <div className="form-group">
+                <label>Mô tả <span className="text-danger">*</span></label>
+                <textarea className="form-control"
+                  value={form.descriptions || ""}
+                  onChange={e => handleFormChange("descriptions", e.target.value)}
+                />
+                {errors.filter(e => e.field === "descriptions").map((e, i) => (
+                  <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                ))}
               </div>
             </div>
           </div>
-        )}
+        </form>
+      </BootstrapModal>
 
         {/* Edit Modal */}
-        {showEdit && (
-          <div className="modal fade show" style={{ display: "block" }}>
-            <div className="modal-dialog modal-lg modal-dialog-centered">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">Chỉnh sửa sản phẩm</h5>
-                  <button type="button" className="btn-close" onClick={() => setShowEdit(false)}></button>
+        <BootstrapModal
+          show={showEdit}
+          onHide={() => setShowEdit(false)}
+          title="Chỉnh sửa sản phẩm"
+          size="lg"
+          className="fade show"
+          bodyClassName=""
+          footer={
+            <div className="text-end">
+              <button type="button" className="btn btn-primary" onClick={handleEditProduct}>
+                Chỉnh sửa sản phẩm
+              </button>
+              <button type="button" className="btn btn-danger ms-2" onClick={() => handleDeleteProduct(form.productid as number)}>
+                Xóa sản phẩm
+              </button>
+            </div>
+          }
+        >
+          <form>
+            <div className="row g-3">
+              <div className="col-sm-12 text-center mb-3">
+                <label htmlFor="image" className="form-label">
+                  <img
+                    src={
+                      form.image
+                        ? getImageUrl(form.image)
+                        : "/user/images/default.png" // fallback nếu null
+                    }
+                    width="60%"
+                    style={{ objectFit: "cover", borderRadius: 8, border: "1px solid #eee", background: "#fafbfc" }}
+                    alt={form.productname}
+                  />    
+                </label>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Tên sản phẩm <span className="text-danger">*</span></label>
+                  <input className="form-control" type="text"
+                    value={form.productname || ""}
+                    onChange={e => handleFormChange("productname", e.target.value)}
+                  />
+                  {errors.filter(e => e.field === "productname").map((e, i) => (
+                    <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                  ))}
                 </div>
-                <div className="modal-body">
-                  <form>
-                    <div className="row g-3">
-                      <div className="col-sm-12 text-center mb-3">
-                        <label htmlFor="image" className="form-label">
-                        <img
-                            src={
-                              form.image
-                                ? form.image.startsWith("v") // hoặc form.image.includes("/")
-                                  ? `${VITE_CLOUDINARY_BASE_URL}/${form.image}`
-                                  : `/user/images/${form.image}`
-                                : "/user/images/default.png" // fallback nếu null
-                            }
-                            width="60%"
-                            style={{ objectFit: "cover", borderRadius: 8, border: "1px solid #eee", background: "#fafbfc" }}
-                            alt={form.productname}
-                          />    
-                        </label>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Tên sản phẩm <span className="text-danger">*</span></label>
-                          <input className="form-control" type="text"
-                            value={form.productname || ""}
-                            onChange={e => handleFormChange("productname", e.target.value)}
-                          />
-                          {errors.filter(e => e.field === "productname").map((e, i) => (
-                            <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Giảm giá <span className="text-danger">*</span></label>
-                          <input className="form-control" type="number"
-                            value={form.discountprice || ""}
-                            onChange={e => handleFormChange("discountprice", Number(e.target.value))}
-                          />
-                          {errors.filter(e => e.field === "discountprice").map((e, i) => (
-                            <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Hình ảnh <span className="text-danger">*</span></label>
-                          <input type="file"
-                            className="form-control"
-                            id="image"
-                            onChange={e => handleImageChange(e.target.files)}
-                          />
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Ngày tạo <span className="text-danger">*</span></label>
-                          <input className="form-control" type="date"
-                            value={form.datecreate || ""}
-                            onChange={e => handleFormChange("datecreate", e.target.value)}
-                          />
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Trạng thái <span className="text-danger">*</span></label>
-                          <select className="form-select"
-                            value={form.productstatus === undefined ? "" : form.productstatus ? "1" : "0"}
-                            onChange={e => handleFormChange("productstatus", e.target.value === "1")}
-                          >
-                            <option value="1">Đang bán</option>
-                            <option value="0">Ngưng bán</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Số lượng <span className="text-danger">*</span></label>
-                          <input type="number"
-                            className="form-control"
-                            value={form.quantity || ""}
-                            onChange={e => handleFormChange("quantity", Number(e.target.value))}
-                          />
-                          {errors.filter(e => e.field === "quantity").map((e, i) => (
-                            <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Loại sản phẩm <span className="text-danger">*</span></label>
-                          <select className="form-select"
-                            value={form.categoryid || ""}
-                            onChange={e => handleFormChange("categoryid", Number(e.target.value))}
-                          >
-                            <option value="">Chọn loại sản phẩm</option>
-                            {categories.map(c => (
-                              <option key={c.categoryid} value={c.categoryid}>{c.categoryname}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Giá <span className="text-danger">*</span></label>
-                          <input type="number"
-                            className="form-control"
-                            value={form.price || ""}
-                            onChange={e => handleFormChange("price", Number(e.target.value))}
-                          />
-                          {errors.filter(e => e.field === "price").map((e, i) => (
-                            <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="col-sm-12">
-                        <div className="form-group">
-                          <label>Mô tả <span className="text-danger">*</span></label>
-                          <textarea className="form-control"
-                            value={form.descriptions || ""}
-                            onChange={e => handleFormChange("descriptions", e.target.value)}
-                          />
-                          {errors.filter(e => e.field === "descriptions").map((e, i) => (
-                            <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-4 text-end">
-                      <button type="button" className="btn btn-primary" onClick={handleEditProduct}>
-                        Chỉnh sửa sản phẩm
-                      </button>
-                      <button type="button" className="btn btn-danger ms-2" onClick={() => handleDeleteProduct(form.productid as number)}>
-                        Xóa sản phẩm
-                      </button>
-                    </div>
-                  </form>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Giảm giá <span className="text-danger">*</span></label>
+                  <input className="form-control" type="number"
+                    value={form.discountprice || ""}
+                    onChange={e => handleFormChange("discountprice", Number(e.target.value))}
+                  />
+                  {errors.filter(e => e.field === "discountprice").map((e, i) => (
+                    <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                  ))}
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Hình ảnh <span className="text-danger">*</span></label>
+                  <input type="file"
+                    className="form-control"
+                    id="image"
+                    onChange={e => handleImageChange(e.target.files)}
+                  />
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Ngày tạo <span className="text-danger">*</span></label>
+                  <input className="form-control" type="date"
+                    value={form.datecreate || ""}
+                    onChange={e => handleFormChange("datecreate", e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Trạng thái <span className="text-danger">*</span></label>
+                  <select className="form-select"
+                    value={form.productstatus === undefined ? "" : form.productstatus ? "1" : "0"}
+                    onChange={e => handleFormChange("productstatus", e.target.value === "1")}
+                  >
+                    <option value="1">Đang bán</option>
+                    <option value="0">Ngưng bán</option>
+                  </select>
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Số lượng <span className="text-danger">*</span></label>
+                  <input type="number"
+                    className="form-control"
+                    value={form.quantity || ""}
+                    onChange={e => handleFormChange("quantity", Number(e.target.value))}
+                  />
+                  {errors.filter(e => e.field === "quantity").map((e, i) => (
+                    <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                  ))}
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Loại sản phẩm <span className="text-danger">*</span></label>
+                  <select className="form-select"
+                    value={form.categoryid || ""}
+                    onChange={e => handleFormChange("categoryid", Number(e.target.value))}
+                  >
+                    <option value="">Chọn loại sản phẩm</option>
+                    {categories.map(c => (
+                      <option key={c.categoryid} value={c.categoryid}>{c.categoryname}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Giá <span className="text-danger">*</span></label>
+                  <input type="number"
+                    className="form-control"
+                    value={form.price || ""}
+                    onChange={e => handleFormChange("price", Number(e.target.value))}
+                  />
+                  {errors.filter(e => e.field === "price").map((e, i) => (
+                    <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                  ))}
+                </div>
+              </div>
+              <div className="col-sm-12">
+                <div className="form-group">
+                  <label>Mô tả <span className="text-danger">*</span></label>
+                  <textarea className="form-control"
+                    value={form.descriptions || ""}
+                    onChange={e => handleFormChange("descriptions", e.target.value)}
+                  />
+                  {errors.filter(e => e.field === "descriptions").map((e, i) => (
+                    <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                  ))}
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          </form>
+        </BootstrapModal>
 
         {/* Toast/Notification */}
         <div id="toast"></div>
       </div>
-    </div>
   );
 };
 

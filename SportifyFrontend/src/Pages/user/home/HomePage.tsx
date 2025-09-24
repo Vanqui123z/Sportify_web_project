@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import Loader from "../../../components/user/Loader";
 import type { Field, Product } from "../../../Types/interface";
-import getImageUrl from "../../../utils/getImageUrl ";
+import getImageUrl from "../../../utils/getImageUrl";
+import { useFtcoAnimation } from "../../../utils/useFtcoAnimation";
 
 
 // Add body background style
@@ -33,146 +34,79 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Add required fonts and stylesheets to document head
-    const links = [
-      {
-        href: "https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,200;0,300;0,400;0,500;0,700;0,800;1,200;1,300;1,400;1,500;1,700&display=swap",
-        rel: "stylesheet"
-      },
-      {
-        href: "https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css",
-        rel: "stylesheet"
-      }
-    ];
+  
 
-    const addedLinks: HTMLLinkElement[] = [];
+    // Fetch data with better error handling
+    const fetchData = async () => {
+      try {
+        console.log("Fetching data from APIs...");
+        
+        const [mainResponse, eventResponse] = await Promise.all([
+          fetch("http://localhost:8081/api/sportify"),
+          fetch("http://localhost:8081/api/sportify/event")
+        ]);
 
-    links.forEach(linkInfo => {
-      if (!document.querySelector(`link[href="${linkInfo.href}"]`)) {
-        const link = document.createElement('link');
-        link.href = linkInfo.href;
-        link.rel = linkInfo.rel;
-        document.head.appendChild(link);
-        addedLinks.push(link);
-      }
-    });
+        if (!mainResponse.ok) {
+          throw new Error(`Main API error: ${mainResponse.status}`);
+        }
+        if (!eventResponse.ok) {
+          throw new Error(`Event API error: ${eventResponse.status}`);
+        }
 
-    Promise.all([
-      fetch("http://localhost:8081/api/sportify").then(res => res.json()),
-      fetch("http://localhost:8081/api/sportify/event").then(res => res.json())
-    ])
-      .then(([mainData, eventData]) => {
-        // Transform fieldList array data to objects
-        const transformedFields = mainData.fieldList.map((field: any[]) => ({
-          id: field[0],
-          code: field[1],
-          name: field[2],
-          description: field[3],
-          price: field[4],
-          image: field[5],
-          address: field[6],
-          isActive: field[7]
-        }));
+        const mainData = await mainResponse.json();
+        const eventData = await eventResponse.json();
 
-        // Transform topproduct array data to objects
-        const transformedProducts = mainData.topproduct.map((product: any[]) => ({
-          id: product[0],
-          name: product[1],
-          count: product[2],
-          image: product[3],
-          price: product[4],
-          description: product[5]
-        }));
+     
 
-        setFieldList(transformedFields);
-        setTopProduct(transformedProducts);
-        setEventList(eventData.content || []);
-      })
-      .catch(error => {
-        console.error("Error fetching data:", error);
+        // Check if data exists and is in expected format
+        if (mainData && mainData.fieldList && Array.isArray(mainData.fieldList)) {
+          const transformedFields = mainData.fieldList.map((field: any[]) => ({
+            id: field[0],
+            code: field[1],
+            name: field[2],
+            description: field[3],
+            price: field[4],
+            image: field[5],
+            address: field[6],
+            isActive: field[7]
+          }));
+          setFieldList(transformedFields);
+        } else {
+          setFieldList([]);
+        }
+
+        if (mainData && mainData.topproduct && Array.isArray(mainData.topproduct)) {
+          const transformedProducts = mainData.topproduct.map((product: any[]) => ({
+            id: product[0],
+            name: product[1],
+            count: product[2],
+            image: product[3],
+            price: product[4],
+            description: product[5]
+          }));
+          setTopProduct(transformedProducts);
+        } else {
+          setTopProduct([]);
+        }
+
+        if (eventData && eventData.content && Array.isArray(eventData.content)) {
+          setEventList(eventData.content);
+        } else {
+          setEventList([]);
+        }
+
+      } catch (error) {
         setFieldList([]);
         setTopProduct([]);
         setEventList([]);
-      })
-      .finally(() => setLoading(false));
-
-    // Load required scripts for the functionality
-
-    // js script
-    const scripts = [
-      "/user/js/jquery.min.js",
-      "/user/js/jquery-migrate-3.0.1.min.js",
-      "/user/js/popper.min.js",
-      "/user/js/bootstrap.min.js",
-      "/user/js/jquery.easing.1.3.js",
-      "/user/js/jquery.waypoints.min.js",
-      "/user/js/jquery.stellar.min.js",
-      "/user/js/owl.carousel.min.js",
-      "/user/js/jquery.magnific-popup.min.js",
-      "/user/js/jquery.animateNumber.min.js",
-      "/user/js/scrollax.min.js",
-      "/user/js/main.js"
-    ];
-
-    const loadedScripts: HTMLScriptElement[] = [];
-    scripts.forEach(src => {
-      if (!document.querySelector(`script[src="${src}"]`)) {
-        const script = document.createElement("script");
-        script.src = src;
-        script.async = false; // để đảm bảo thứ tự load
-        document.body.appendChild(script);
-        loadedScripts.push(script);
+      } finally {
+        setLoading(false);
       }
-    });
-
-    // Initialize owl carousel after scripts are loaded
-    const initCarousel = () => {
-      setTimeout(() => {
-        const $ = (window as any).$;
-        if ($ && $.fn.owlCarousel) {
-          $('.carousel-testimony').owlCarousel({
-            center: true,
-            loop: true,
-            items: 1,
-            margin: 30,
-            stagePadding: 0,
-            nav: false,
-            dots: true,
-            autoplay: true,
-            autoplayTimeout: 5000,
-            navText: ['<span class="fa fa-chevron-left">', '<span class="fa fa-chevron-right">'],
-            responsive: {
-              0: {
-                items: 1
-              },
-              600: {
-                items: 1
-              },
-              1000: {
-                items: 1
-              }
-            }
-          });
-        }
-      }, 1500);
     };
 
-    // Load scripts and then initialize carousel
-    Promise.all(loadedScripts.map(script => {
-      return new Promise((resolve) => {
-        script.onload = resolve;
-        script.onerror = resolve;
-        // If script is already loaded
-        if ((script as any).readyState === 'complete') resolve(script);
-      });
-    })).then(() => {
-      initCarousel();
-    });
+    fetchData();
 
-    return () => {
-      loadedScripts.forEach(s => s.remove());
-      addedLinks.forEach(l => l.remove());
-    };
+  
   }, []);
 
   // Additional useEffect to ensure carousel initialization
@@ -211,6 +145,9 @@ export default function HomePage() {
       setTimeout(initCarouselAgain, 2000);
     }
   }, [loading]);
+
+  // Add this useEffect after your existing useEffects
+  useFtcoAnimation(loading);
 
   if (loading) return <Loader />;
 
@@ -579,9 +516,7 @@ export default function HomePage() {
         </div>
       </section>
 
-   
 
-   
     </>
   );
 }

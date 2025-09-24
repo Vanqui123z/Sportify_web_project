@@ -1,6 +1,6 @@
 import React, {type  FC, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import getImageUrl from "../../../utils/getImageUrl ";
+import getImageUrl from "../../../utils/getImageUrl";
 
 type TeamRow = any[]; // raw array from API
 type Team = {

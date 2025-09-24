@@ -9,10 +9,13 @@ export interface User {
 // Sân thể thao
 export interface Field {
   id: number;
+  code: string;
   name: string;
+  description: string;
   price: number;
   image: string;
   address: string;
+  isActive: boolean;
 }
 
 // Sản phẩm

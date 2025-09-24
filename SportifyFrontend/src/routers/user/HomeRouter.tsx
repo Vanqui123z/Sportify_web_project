@@ -13,16 +13,16 @@ import Regulations from "../../Pages/user/home/Regulations";
 import Profile from "../../Pages/user/home/Profile";
 import TeamPage from "../../Pages/user/home/TeamPage";
 import TeamDetail from "../../Pages/user/home/TeamDetail";
-import OrderList from "../../Pages/user/order/OrderList";
-import LichSuDatSan from "../../Pages/user/order/lichsudatsan";
 import CheckoutDatSan from "../../Pages/user/checkout/CheckoutDatSan";
-import LichSuDatSanDetail from "../../Pages/user/order/LichSuDatSanDetail";
-import OrderDetailPage from "../../Pages/user/order/OrderDetail";
+import OrderDetailPage from "../../Pages/user/order/OrderHistoryListDetail";
 import Cart from "../../Pages/user/order/Cart";
 import CheckoutCart from "../../Pages/user/checkout/CheckoutCart";
 import FootballPredictionPage from "../../Pages/user/home/FootballPredictionPage";
 import FootballTestPage from "../../Pages/user/home/FootballTestPage";
-import PaymentResult from "../../Pages/user/checkout/PaymentResult";
+import FieldHistoryList from "../../Pages/user/order/FieldHistoryList";
+import FieldHistoryListDetail from "../../Pages/user/order/FieldHistoryListDetail";
+import OrderHistoryList from "../../Pages/user/order/OrderHistoryList";
+import OrderHistoryListDetail from "../../Pages/user/order/OrderHistoryListDetail";
 
 
 const UserRoutes: React.FC = () => (
@@ -51,14 +51,14 @@ const UserRoutes: React.FC = () => (
     <Route path="field/:cid" element={<FieldPage />} />
     <Route path="field/detail/:idField" element={<DetailFields />} />
     <Route path="field/booking/:idField" element={<CheckoutDatSan />} />
-    <Route path="field/profile/historybooking" element={<LichSuDatSan />} />
-    <Route path="field/profile/historybooking/detail" element={<LichSuDatSanDetail />} />
+    <Route path="field/profile/historybooking" element={<FieldHistoryList />} />
+    <Route path="field/profile/historybooking/detail" element={<FieldHistoryListDetail />} />
 
     {/* Order */}
     {/* <Route path="order/cart" element={<OrderCart />} />*/}
     <Route path="order/checkout" element={<OrderDetailPage />} /> 
-    <Route path="order/historyList" element={<OrderList />} />
-     <Route path="order/historyList/detail/:id" element={<OrderDetailPage />} />
+    <Route path="order/historyList" element={<OrderHistoryList />} />
+     <Route path="order/historyList/detail/:id" element={<OrderHistoryListDetail />} />
    
    
     {/*Product */}

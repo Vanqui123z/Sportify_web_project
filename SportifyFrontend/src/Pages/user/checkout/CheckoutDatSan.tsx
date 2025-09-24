@@ -138,13 +138,44 @@ const CheckoutDatSan: React.FC = () => {
 
   return (
     <div>
-      {/* ...navbar/header code nếu cần... */}
+      <style>{`
+        .info-content {
+          display: none;
+          background-color: #FAF0E4;
+          color: #606C5D;
+          font-weight: bold;
+          padding: 5px;
+          border: 1px solid #ccc;
+          position: absolute;
+          top: 20px;
+          left: 0;
+          z-index: 1;
+          border-radius: 5px;
+        }
+
+        .info-icon {
+          display: inline-block;
+          width: 15px;
+          height: 15px;
+          background-color: #F2BE22;
+          color: white;
+          text-align: center;
+          line-height: 15px;
+          border-radius: 50%;
+          cursor: pointer;
+          position: relative;
+        }
+
+        .info-container:hover .info-content {
+          display: block;
+        }
+      `}</style>
       <section className="hero-wrap hero-wrap-2"
         style={{ backgroundImage: "url('/user/images/bgcheckoutField.png')" }}>
         <div className="overlay"></div>
         <div className="container">
           <div className="row no-gutters slider-text align-items-end justify-content-center">
-            <div className="col-md-9 ftco-animate mb-5 text-center">
+            <div className="col-md-9  mb-5 text-center">
               <p className="breadcrumbs mb-0">
                 <span className="mr-2"><a href="/sportify">Trang Chủ <i className="fa fa-chevron-right"></i></a></span>
                 <span className="mr-2"><a href="/sportify/field">Sân <i className="fa fa-chevron-right"></i></a></span>
@@ -160,146 +191,188 @@ const CheckoutDatSan: React.FC = () => {
       <form onSubmit={handleSubmit}>
         <section className="ftco-section">
           <div className="container">
-            <div className="row justify-content-center">
-              <div className="col-xl-10 ftco-animate">
-                <h1 style={{ fontWeight: "bold" }} className="mb-4 d-flex justify-content-center">
-                  PHIẾU ĐẶT SÂN THỂ THAO
-                </h1>
-                <div className="row mt-5 pt-3 d-flex" style={{ backgroundColor: "white", borderRadius: 15 }}>
-                  <div className="col-md-7 d-flex">
-                    <div className="cart-detail cart-total p-3 p-md-4">
-                      <div className="form-group">
-                        <div>
-                          <label>Tên khách hàng:</label>
-                          <span style={{ color: "#1D5D9B", fontWeight: "bold" }}>{user?.firstname}</span>
-                          <span style={{ color: "#1D5D9B", fontWeight: "bold", fontSize: "larger" }}>{user?.lastname}</span>
+            <div className="container">
+              <div className="row justify-content-center">
+                <div className="col-xl-10 ">
+                  <h1 style={{ fontWeight: "bold" }} className="mb-4 d-flex justify-content-center">
+                    PHIẾU ĐẶT SÂN THỂ THAO
+                  </h1>
+
+                  <div className="row mt-5 pt-3 d-flex" style={{ backgroundColor: "white", borderRadius: "15px" }}>
+                    <div className="col-md-7 d-flex">
+                      <div className="cart-detail cart-total p-3 p-md-4">
+                        <div className="form-group">
+                          <div>
+                            <label>Tên khách hàng:</label> 
+                            <span style={{ color: "#1D5D9B", fontWeight: "bold" }}>{user?.firstname}</span>
+                            <span style={{ color: "#1D5D9B", fontWeight: "bold", fontSize: "larger" }}>{user?.lastname}</span>
+                          </div>
+                          <div>
+                            <label>Số điện thoại </label> 
+                            <span className="info-container">
+                              <span className="info-icon">i</span> 
+                              <span className="info-content">
+                                <p>Số điện thoại để đối chiếu khi đến nhận sân.</p>
+                              </span>
+                            </span>: 
+                            <span style={{ color: "#1D5D9B", fontWeight: "bold" }}>{user?.phone}</span> 
+                            <input type="hidden" name="phone" readOnly value={user?.phone || ""} className="form-control" />
+                          </div>
+                          <div>
+                            <label htmlFor="Mail">Email</label> 
+                            <span className="info-container">
+                              <span className="info-icon">i</span> 
+                              <span className="info-content">
+                                <p>Email để nhận thông báo thông tin dặt sân, được lấy từ tài khoản của bạn.</p>
+                              </span> 
+                            </span>: 
+                            <span style={{ color: "#1D5D9B", fontWeight: "bold" }}>{user?.email || ''}</span>
+                            <input readOnly value={user?.email || ''} type="hidden" className="form-control" />
+                          </div>
+                          <div>
+                            <label>Ghi chú thông tin ( nếu cần ) :</label>
+                            <textarea name="note" value={note} onChange={handleNoteChange} className="form-control"></textarea>
+                            {error && <span className="text-danger">{error}</span>}
+                          </div>
                         </div>
-                        <div>
-                          <label>Số điện thoại </label>
-                          <span style={{ color: "#1D5D9B", fontWeight: "bold" }}>{user?.phone}</span>
-                          <input type="hidden" name="phone" value={user?.phone || ""} readOnly className="form-control" />
-                        </div>
-                        <div>
-                          <label>Email</label>
-                          <span style={{ color: "#1D5D9B", fontWeight: "bold" }}>{user?.email}</span>
-                          <input type="hidden" name="email" value={user?.email || ""} readOnly className="form-control" />
-                        </div>
-                        <div>
-                          <label>Ghi chú thông tin ( nếu cần ) :</label>
-                          <textarea value={note} onChange={handleNoteChange} className="form-control" />
-                          {error && <span className="text-danger">{error}</span>}
+                      </div>
+                    </div>
+                    <div className="col-md-5 d-flex">
+                      <div className="cart-detail cart-total p-3 p-md-4">
+                        <div className="">
+                          <div className="form-group">
+                            <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+                              <img src="/user/images/Logo3.png" style={{ width: 40, marginRight: 10 }} alt="" />
+                              <h5 style={{ color: "green", paddingTop: 20, fontWeight: "bold" }}>{field?.namefield}</h5>
+                              <input type="hidden" name="fieldid" value={field?.fieldid || ""} />
+                            </div>
+                            <div>
+                              <div style={{ paddingLeft: 10 }}>
+                                <span>Ngày nhận sân:</span> &nbsp; 
+                                <span style={{ color: "black" }}>{dateselect}</span> 
+                                <input type="hidden" name="playdate" value={dateselect} />
+                              </div>
+                              <div style={{ paddingLeft: 10 }}>
+                                <span>Giờ chơi:</span> &nbsp; 
+                                <span id="nameshift-input" style={{ color: "black" }}>{nameshift}</span> 
+                                <input type="hidden" name="shiftid" value={shiftid} />
+                              </div>
+                            </div>
+                            <div className="d-flex">
+                              <img 
+                                style={{ width: "50%", height: "40%", marginRight: 20 }}
+                                src={field?.image ? `/user/images/${field.image}` : "/user/images/noimage.png"}
+                                alt="Image" 
+                              />
+                              <div className="" style={{ marginTop: 10 }}>
+                                &nbsp; 
+                                <span style={{ fontSize: "larger", fontWeight: "bold", color: "green" }}>
+                                  {field?.sporttype?.categoryname}
+                                </span>
+                                <br />
+                                <img src="https://d1785e74lyxkqq.cloudfront.net/_next/static/v2/0/01cf1090e2f434a7d63f1cbca912ef44.svg" />
+                                &nbsp; <span style={{ color: "green" }}>Wifi miễn phí</span> <br />
+                                <img src="https://d1785e74lyxkqq.cloudfront.net/_next/static/v2/2/252a55e9e8b214950105d0335e27a25e.svg" />
+                                &nbsp; <span style={{ color: "green" }}>Có phục vụ nước uống</span>
+                              </div>
+                            </div>
+                            <div>
+                              <img src="https://d1785e74lyxkqq.cloudfront.net/_next/static/v2/7/721a32c1f29c2034bf8f5659dc65b73e.svg" />
+                              &nbsp; <span>Không áp dụng đổi lịch</span>
+                            </div>
+                            <div>
+                              <img src="https://d1785e74lyxkqq.cloudfront.net/_next/static/v2/a/ac4257c709f6621e4c315f641f60202f.svg" />
+                              &nbsp; <span>Không hoàn tiền đã cọc</span>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div className="col-md-5 d-flex">
-                    <div className="cart-detail cart-total p-3 p-md-4">
-                      <div className="form-group">
-                        <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-                          <img src="/user/images/Logo3.png" style={{ width: 40, marginRight: 10 }} alt="" />
-                          <h5 style={{ color: "green", paddingTop: 20, fontWeight: "bold" }}>{field?.namefield}</h5>
-                          <input type="hidden" name="fieldid" value={field?.fieldid || ""} />
-                        </div>
-                        <div style={{ paddingLeft: 10 }}>
-                          <span>Ngày nhận sân:</span>
-                          <span style={{ color: "black", marginLeft: 10 }}>{dateselect}</span>
-                          <input type="hidden" name="playdate" value={dateselect} />
-                        </div>
-                        <div style={{ paddingLeft: 10 }}>
-                          <span>Giờ chơi:</span>
-                          <span style={{ color: "black", marginLeft: 10 }}>{nameshift}</span>
-                        </div>
-                        <div className="d-flex">
-                          <img
-                            src={field?.image ? `/user/images/${field.image}` : "/user/images/noimage.png"}
-                            alt={field?.namefield}
-                            style={{ maxWidth: 120, maxHeight: 80, marginRight: 20, borderRadius: 8, border: "1px solid #ccc" }}
-                          />
-                          <div style={{ marginTop: 10 }}>
-                            <span style={{ fontSize: "larger", fontWeight: "bold", color: "green" }}>
-                              {field?.sporttype?.categoryname}
-                            </span>
-                            <br />
-                            <div
-                              style={{
-                                color: "#606C5D",
-                                display: "-webkit-box",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                WebkitLineClamp: 3,
-                                WebkitBoxOrient: "vertical",
-                                maxWidth: 300,
-                                whiteSpace: "normal",
-                                wordBreak: "break-word"
-                              }}
-                            >
-                              {field?.descriptionfield}
+
+                  <div className="row mt-5 pt-3 d-flex">
+                    <div className="col-md-6 d-flex">
+                      <div className="cart-detail cart-total p-3 p-md-4" style={{ backgroundColor: "#F1F6F9", borderRadius: "12px" }}>
+                        <h3 className="billing-heading mb-4">Tóm tắt giá</h3>
+                        <div className="">
+                          <div className="form-group">
+                            <div className="d-flex">
+                              <label>Giá Tiền</label> 
+                              <span style={{ color: "black", fontWeight: "bold", marginLeft: "30px" }}>
+                                {pricefield.toLocaleString()}₫
+                              </span>
+                              <input type="hidden" name="pricefield" value={pricefield} />
                             </div>
                           </div>
                         </div>
+                        <hr />
                         <div>
-                          <span style={{ color: field?.status ? "green" : "red", fontWeight: "bold" }}>
-                            {field?.status ? "Hoạt động" : "Ngừng hoạt động"}
+                          <span>Tạm tính :</span> 
+                          <span style={{ color: "black" }}>{thanhtien.toLocaleString()}₫</span>
+                        </div>
+                        <div>
+                          <span>Giảm giá :</span> 
+                          <span style={{ color: "black" }}>0₫</span>
+                        </div>
+                        <hr />
+                        <div style={{ height: "40px", display: "flex", alignItems: "center" }}>
+                          <span style={{ color: "red" }}>Thành Tiền:</span> &nbsp; 
+                          <span style={{ color: "black", fontWeight: "bold" }}>
+                            {thanhtien.toLocaleString()}₫
+                          </span> 
+                          <input type="hidden" name="thanhtien" value={thanhtien} />
+                        </div>
+                        <div style={{ height: "40px", display: "flex", alignItems: "center" }}>
+                          <span style={{ color: "red" }}>Cọc trước 30% 
+                            <span className="info-container">
+                              <span className="info-icon">i</span>
+                              <span className="info-content">
+                                <p>Tiền quý khách thanh toán cọc giữ chổ theo quy định</p>
+                              </span>
+                            </span> &nbsp;
+                          </span> 
+                          <span style={{ color: "black", fontWeight: "bold" }}>
+                            {amount.toLocaleString()}₫
+                          </span> 
+                          <input type="hidden" id="amountInput" name="amount" value={amount} />
+                        </div>
+                        <div style={{ height: "40px", display: "flex", alignItems: "center" }}>
+                          <span style={{ color: "red" }}>Thanh toán khi nhận sân:</span>
+                          &nbsp; 
+                          <span style={{ color: "black", fontWeight: "bold" }}>
+                            {(thanhtien - amount).toLocaleString()}₫
                           </span>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-                {/* ...tóm tắt giá, hình thức thanh toán... */}
-                <div className="row mt-5 pt-3 d-flex">
-                  <div className="col-md-6 d-flex">
-                    <div className="cart-detail cart-total p-3 p-md-4" style={{ backgroundColor: "#F1F6F9", borderRadius: 12 }}>
-                      <h3 className="billing-heading mb-4">Tóm tắt giá</h3>
-                      <div className="form-group">
-                        <div className="d-flex">
-                          <label>Giá Tiền</label>
-                          <span style={{ color: "black", fontWeight: "bold", marginLeft: 30 }}>{pricefield.toLocaleString()}₫</span>
-                          <input type="hidden" name="pricefield" value={pricefield} />
-                        </div>
-                        <div className="d-flex">
-                          <label>Thành Tiền:</label>
-                          <span style={{ color: "black", fontWeight: "bold", marginLeft: 30 }}>{thanhtien.toLocaleString()}₫</span>
-                          <input type="hidden" name="thanhtien" value={thanhtien} />
-                        </div>
-                        <div className="d-flex">
-                          <label>Cọc trước 30%:</label>
-                          <span style={{ color: "black", fontWeight: "bold", marginLeft: 30 }}>{amount.toLocaleString()}₫</span>
-                          <input type="hidden" name="amount" value={amount} />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-md-6">
-                    <div className="cart-detail p-3 p-md-4" style={{ backgroundColor: "#F1F6F9" }}>
-                      <h3 className="billing-heading mb-4">Hình thức thanh toán</h3>
-                      <div className="form-group">
-                        <div className="col-md-12">
-                          <div className="radio">
-                            <label>
-                              <input type="radio" checked name="optradio" className="mr-2" readOnly />
-                              <img style={{ width: "12%", height: "14%" }} src="/user/images/iconVNP.png" alt="VNPay" /> VNPay
-                            </label>
+                    <div className="col-md-6">
+                      <div className="cart-detail p-3 p-md-4" style={{ backgroundColor: "#F1F6F9" }}>
+                        <h3 className="billing-heading mb-4">Hình thức thanh toán</h3>
+                        <div className="form-group">
+                          <div className="col-md-12">
+                            <div className="radio">
+                              <label> 
+                                <input type="radio" checked name="optradio" className="mr-2" readOnly />
+                                <img style={{ width: "12%", height: "14%" }} src="/user/images/iconVNP.png" alt="VNPay" />VNPay
+                              </label>
+                            </div>
                           </div>
                         </div>
+
+                        <div style={{ color: "black" }} className="font-italic">
+                          Khi nhấn vào nút này bạn công nhận mình đã đọc và đồng ý với các 
+                          <a href="/sportify/quydinh" style={{ color: "blue" }}> Điều khoản & Điều kiện </a> và 
+                          <a href="/sportify/chinhsach" style={{ color: "blue" }}>Chính sách quyền riêng tư</a> của Sportify.
+                          <p>
+                            <button type="submit" className="btn btn-primary py-3 px-4 mt-3">Đặt Sân</button>
+                          </p>
+                        </div>
                       </div>
-                      <div style={{ color: "black" }} className="font-italic">
-                        Khi nhấn vào nút này bạn công nhận mình đã đọc và đồng ý với các
-                        <a href="/sportify/quydinh" style={{ color: "blue" }}> Điều khoản & Điều kiện </a> và
-                        <a href="/sportify/chinhsach" style={{ color: "blue" }}> Chính sách quyền riêng tư</a> của Sportify.
-                        <p>
-                          {/* Nút submit thực sự */}
-                          <button type="submit" className="btn btn-primary py-3 px-4 mt-3">Đặt Sân</button>
-                        </p>
-                      </div>
-                      {/* Trường ẩn bổ sung */}
-                      <input type="hidden" name="shiftid" value={shiftid} />
-                      <input type="hidden" name="playdate" value={dateselect} />
                     </div>
                   </div>
                 </div>
+                {/* .col-md-8 */}
               </div>
-              {/* .col-md-8 */}
             </div>
           </div>
         </section>

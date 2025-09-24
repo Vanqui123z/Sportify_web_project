@@ -8,6 +8,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -67,6 +68,40 @@ public class FieldController {
 	private String dateselect; // Ngày được chọn
 	String userlogin ; // username người dùng đã đăng nhập
 	String phone = null; // SĐT
+
+	// Helper method to clean model data for serialization
+	private Map<String, Object> cleanModelData(Model model) {
+		Map<String, Object> result = new HashMap<>();
+		Map<String, Object> modelMap = model.asMap();
+		
+		for (Map.Entry<String, Object> entry : modelMap.entrySet()) {
+			String key = entry.getKey();
+			Object value = entry.getValue();
+			
+			// Handle lists that may contain Hibernate proxies
+			if (value instanceof List) {
+				List<?> list = (List<?>) value;
+				if (!list.isEmpty() && list.get(0) instanceof Sporttype) {
+					List<Map<String, Object>> cleanList = new ArrayList<>();
+					for (Object item : list) {
+						Sporttype sporttype = (Sporttype) item;
+						Map<String, Object> cleanItem = new HashMap<>();
+						cleanItem.put("sporttypeid", sporttype.getSporttypeid());
+						cleanItem.put("categoryname", sporttype.getCategoryname());
+						// Add any other properties you need from Sporttype
+						cleanList.add(cleanItem);
+					}
+					result.put(key, cleanList);
+					continue;
+				}
+			}
+			
+			// Add other entries as is
+			result.put(key, value);
+		}
+		
+		return result;
+	}
 
 	// Tìm sân trống theo input: date, sportype, giờ chơi
 	@PostMapping("sportify/field/search")
@@ -134,7 +169,7 @@ public class FieldController {
 		model.addAttribute("cates", sporttypeList); // Tất cả các môn thể thao
 		model.addAttribute("fieldList", listsearch); // Danh sách sân thỏa mản khi tìm kiếm
 		// Chuyển hướng đến trang sân
-		return ResponseEntity.ok(model.asMap());
+		return ResponseEntity.ok(cleanModelData(model));
 	}
 
 	@GetMapping("sportify/field")
@@ -183,7 +218,7 @@ public class FieldController {
 		model.addAttribute("selectedSportTypeId", selectedSportTypeId); // Danh mục môn thể thao được chọn
 		model.addAttribute("cates", sporttypeList); // Category môn thể thao
 		// Chuyển hướng đến trang sân
-		return ResponseEntity.ok(model.asMap());
+		return ResponseEntity.ok(cleanModelData(model));
 	}
 
 	// View Field theo môn thể thao - input vào là ID sportype
@@ -237,7 +272,7 @@ public class FieldController {
 		model.addAttribute("cates", sporttypeList); // Tất cả môn thể thao đổ lên category
 		model.addAttribute("selectedSportTypeId", selectedSportTypeId); // Môn thể thao được chọn ở danh mục
 		// Chuyển hướng trang giao diện sân
-		return ResponseEntity.ok(model.asMap());
+		return ResponseEntity.ok(cleanModelData(model));
 
 	}
 
@@ -262,8 +297,7 @@ public class FieldController {
 		model.addAttribute("nameSportype", nameSportype); // Tên môn thể thao
 		model.addAttribute("fieldListById", fieldListById); // Thông tin sân đã chọn
 		// Trả dữ liệu vào sân detail
-		return ResponseEntity.ok(model.asMap());
-
+		return ResponseEntity.ok(cleanModelData(model));
 	}
 
 	LocalTime time = null; // giờ bắt đầu
@@ -364,7 +398,7 @@ public ResponseEntity<?> booking(
 		model.addAttribute("fieldListByIdSporttype", fieldListByIdSporttype);
 		model.addAttribute("nameSportype", nameSportype);
 		model.addAttribute("fieldListById", fieldListById);
-		return ResponseEntity.ok(model.asMap());
+		return ResponseEntity.ok(cleanModelData(model));
 	}
 
 	// Lịch sử đặt sân
@@ -378,7 +412,7 @@ public ResponseEntity<?> booking(
 		}
 		List<Object[]> listbooking = bookingservice.getBookingInfoByUsername(userlogin);
 		model.addAttribute("listbooking", listbooking);
-		return ResponseEntity.ok(model.asMap());
+		return ResponseEntity.ok(cleanModelData(model));
 	}
 
 	// Chi tiết lịch sử đặt sân
@@ -424,6 +458,6 @@ public ResponseEntity<?> booking(
 		model.addAttribute("tamtinh", tamtinh);
 		model.addAttribute("tiencoc", tiencoc);
 		model.addAttribute("listbooking", listbookingdetail);
-		return ResponseEntity.ok(model.asMap());
+		return ResponseEntity.ok(cleanModelData(model));
 	}
 }

@@ -27,7 +27,7 @@ export default function PaymentResult() {
   else if (isCart) description = "Thanh toán đơn hàng";
 
   return (
-    <div className="min-vh-100 d-flex align-items-center justify-content-center">
+    <div className="min-vh-100 d-flex align-items-center justify-content-center mt-2">
       <div className="container">
         <div className="row justify-content-center">
           <div className="col-lg-8 col-md-10">
@@ -54,7 +54,7 @@ export default function PaymentResult() {
                 {/* Thông tin giao dịch */}
                 <div className="mb-4">
                   <h5 className="text-dark fw-semibold mb-3">
-                    <i className="fas fa-info-circle text-primary me-2"></i>
+                    <i className="fa fa-info-circle text-primary me-2"></i>
                     Thông tin giao dịch
                   </h5>
                   <div className="bg-light rounded p-4">
@@ -84,11 +84,11 @@ export default function PaymentResult() {
                 {/* Trạng thái */}
                 <div className="mb-5">
                   <h5 className="text-dark fw-semibold mb-3">
-                    <i className="fas fa-check-circle text-success me-2"></i>
+                    <i className="fa fa-check-circle text-success me-2"></i>
                     Trạng thái giao dịch
                   </h5>
                   <div className={`alert ${isSuccess ? 'alert-success' : 'alert-danger'} d-flex align-items-center`}>
-                    <i className={`fas ${isSuccess ? 'fa-check-circle' : 'fa-times-circle'} fs-4 me-3`}></i>
+                    <i className={`fa ${isSuccess ? 'fa-check-circle' : 'fa-times-circle'} fs-4 me-3`}></i>
                     <div>
                       <h6 className="mb-1 fw-bold">{transactionStatus}</h6>
                       <small className="mb-0">
@@ -109,17 +109,17 @@ export default function PaymentResult() {
                 {/* Buttons */}
                 <div className="d-flex flex-column flex-sm-row gap-3 justify-content-center">
                   <a href="/sportify" className="btn btn-primary btn-lg px-4 text-decoration-none">
-                    <i className="fas fa-home me-2"></i>
+                    <i className="fa fa-home me-2"></i>
                     Về Trang Chủ
                   </a>
                   {isCart ? (
                     <a href="/sportify/order/historyList" className="btn btn-outline-primary btn-lg px-4 text-decoration-none">
-                      <i className="fas fa-history me-2"></i>
+                      <i className="fa fa-history me-2"></i>
                       Lịch Sử Đơn Hàng
                     </a>
                   ) : (
                     <a href="/sportify/field/profile/historybooking" className="btn btn-outline-primary btn-lg px-4 text-decoration-none">
-                      <i className="fas fa-history me-2"></i>
+                      <i className="fa fa-history me-2"></i>
                       Lịch Sử Đặt Sân
                     </a>
                   )}
@@ -128,7 +128,7 @@ export default function PaymentResult() {
 
               <div className="card-footer bg-light text-center py-3">
                 <small className="text-muted">
-                  <i className="fas fa-shield-alt me-1"></i>
+                  <i className="fa fa-shield me-1"></i>
                   Giao dịch được bảo mật bởi VNPAY
                 </small>
               </div>

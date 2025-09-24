@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import BootstrapModal from "../../components/admin/BootstrapModal";
+import getImageUrl from "../../utils/getImageUrl";
 
 interface Account {
   username: string;
@@ -127,15 +129,15 @@ const AccountPage: React.FC = () => {
     setErrors([]);
   };
 
-  const handleDelete=(username: string)=> {
+  const handleDeleteAccount = (username: String) => {
     axios.delete(`http://localhost:8081/api/rest/accounts/delete/${username}`)
-    .then(res => {
-      alert("Xóa tài khoản thành công");
-      setAccounts(prev => prev.filter(acc => acc.username !== username));
-    })
-    .catch(err => {
-      console.error("Failed to delete account:", err);
-    });
+      .then(res => {
+        alert("Xóa tài khoản thành công");
+        setAccounts(prev => prev.filter(acc => acc.username !== username));
+      })
+      .catch(err => {
+        console.error("Failed to delete account:", err);
+      });
   }
   // Toggle password visibility
   const togglePasswordVisibility = () => {
@@ -203,7 +205,7 @@ const AccountPage: React.FC = () => {
   };
 
   return (
-    <div className="container-fluid page-wrapper py-4">
+    <div className=" page-wrapper py-4">
       <div className="container bg-white rounded shadow-sm p-4">
         {/* Page Header */}
         <div className="row align-items-center mb-4">
@@ -217,10 +219,10 @@ const AccountPage: React.FC = () => {
             </nav>
           </div>
           <div className="col-auto">
-            <button className="btn btn-primary" onClick={() => { 
-              setShowAdd(true); 
+            <button className="btn btn-primary" onClick={() => {
+              setShowAdd(true);
               setForm({ gender: true, status: true }); // Thêm mặc định gender và status
-              setErrors([]); 
+              setErrors([]);
             }}>
               <i className="fa fa-plus"></i> Thêm tài khoản mới
             </button>
@@ -293,7 +295,7 @@ const AccountPage: React.FC = () => {
                       <td>{idx + 1}</td>
                       <td>
                         <div className="d-flex align-items-center">
-                          <img alt="" src={`${VITE_CLOUDINARY_BASE_URL}/${item.image}`} className="rounded-circle me-2" style={{ width: 40, height: 40, objectFit: "cover" }} />
+                          <img alt="" src={ getImageUrl(item.image)} className="rounded-circle me-2" style={{ width: 40, height: 40, objectFit: "cover" }} />
                           <div>
                             <div>{item.firstname + " " + item.lastname}</div>
                             <small className="text-muted">{item.username}</small>
@@ -306,7 +308,7 @@ const AccountPage: React.FC = () => {
                       <td>{item.gender ? "Nam" : "Nữ"}</td>
                       <td className="text-center">
                         <button className="btn btn-outline-danger btn-sm"
-                          onClick={() => handleDelete(item.username)}>
+                          onClick={() => handleDeleteAccount(item.username)}>
                           <i className="fa fa-pencil me-1"></i> Xóa
                         </button>
                         <button className="btn btn-outline-primary btn-sm"
@@ -324,375 +326,380 @@ const AccountPage: React.FC = () => {
       </div>
 
       {/* Add Modal */}
-      {showAdd && (
-        <div className="modal fade show" style={{ display: "block" }}>
-          <div className="modal-dialog modal-lg modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Thêm tài khoản mới</h5>
-                <button type="button" className="btn-close" onClick={() => setShowAdd(false)}></button>
+      <BootstrapModal
+        show={showAdd}
+        onHide={() => setShowAdd(false)}
+        title="Thêm mới tài khoản"
+        size="lg"
+        className="custom-modal"
+        bodyClassName="modal-body"
+        footer={
+          <button type="button" className="btn btn-primary" onClick={handleAddAccount}>
+            Thêm tài khoản
+          </button>
+        }
+      >
+        <form>
+          <div className="row g-3">
+            <div className="col-sm-12 text-center mb-3">
+              <label htmlFor="image" className="form-label">
+                <img
+                  src={imagePreview || "https://via.placeholder.com/200x200?text=Avatar"}
+                  style={{ maxWidth: "100%", height: 200, objectFit: "cover" }}
+                  alt="avatar"
+                />
+              </label>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label>Họ <span className="text-danger">*</span></label>
+                <input className="form-control" type="text"
+                  value={form.firstname || ""}
+                  onChange={e => handleFormChange("firstname", e.target.value)}
+                  onBlur={e => validateField("firstname", e.target.value)}
+                />
+                {/* Hiển thị lỗi realtime */}
+                {fieldErrors.firstname && (
+                  <div className="badge bg-danger mt-1">{fieldErrors.firstname}</div>
+                )}
+                {/* Hiển thị lỗi từ backend nếu có */}
+                {errors.filter(e => e.field === "firstname").map((e, i) => (
+                  <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                ))}
               </div>
-              <div className="modal-body">
-                <form>
-                  <div className="row g-3">
-                    <div className="col-sm-12 text-center mb-3">
-                      <label htmlFor="image" className="form-label">
-                        <img
-                          src={imagePreview || "https://via.placeholder.com/200x200?text=Avatar"}
-                          style={{ maxWidth: "100%", height: 200, objectFit: "cover" }}
-                          alt="avatar"
-                        />
-                      </label>
-                    </div>
-                    <div className="col-sm-6">
-                      <div className="form-group">
-                        <label>Họ <span className="text-danger">*</span></label>
-                        <input className="form-control" type="text"
-                          value={form.firstname || ""}
-                          onChange={e => handleFormChange("firstname", e.target.value)}
-                          onBlur={e => validateField("firstname", e.target.value)}
-                        />
-                        {/* Hiển thị lỗi realtime */}
-                        {fieldErrors.firstname && (
-                          <div className="badge bg-danger mt-1">{fieldErrors.firstname}</div>
-                        )}
-                        {/* Hiển thị lỗi từ backend nếu có */}
-                        {errors.filter(e => e.field === "firstname").map((e, i) => (
-                          <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="col-sm-6">
-                      <div className="form-group">
-                        <label>Tên</label>
-                        <input className="form-control" type="text"
-                          value={form.lastname || ""}
-                          onChange={e => handleFormChange("lastname", e.target.value)}
-                          onBlur={e => validateField("lastname", e.target.value)}
-                        />
-                        {/* Hiển thị lỗi realtime */}
-                        {fieldErrors.lastname && (
-                          <div className="badge bg-danger mt-1">{fieldErrors.lastname}</div>
-                        )}
-                        {/* Hiển thị lỗi từ backend nếu có */}
-                        {errors.filter(e => e.field === "lastname").map((e, i) => (
-                          <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="col-sm-6">
-                      <div className="form-group">
-                        <label>Username <span className="text-danger">*</span></label>
-                        <input className="form-control" type="text"
-                          value={form.username || ""}
-                          onChange={e => handleFormChange("username", e.target.value)}
-                          onBlur={e => validateField("username", e.target.value)}
-                        />
-                        {fieldErrors.username && (
-                          <div className="badge bg-danger mt-1">{fieldErrors.username}</div>
-                        )}
-                        {errors.filter(e => e.field === "username").map((e, i) => (
-                          <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="col-sm-6">
-                      <div className="form-group">
-                        <label>Email <span className="text-danger">*</span></label>
-                        <input className="form-control" type="email"
-                          value={form.email || ""}
-                          onChange={e => handleFormChange("email", e.target.value)}
-                          onBlur={e => validateField("email", e.target.value)}
-                        />
-                        {fieldErrors.email && (
-                          <div className="badge bg-danger mt-1">{fieldErrors.email}</div>
-                        )}
-                        {errors.filter(e => e.field === "email").map((e, i) => (
-                          <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="col-sm-6">
-                      <label>Mật khẩu <span className="text-danger">*</span></label>
-                      <div className="input-group">
-                        <input className="form-control"
-                          type={passwordFieldType}
-                          value={form.passwords || ""}
-                          onChange={e => handleFormChange("passwords", e.target.value)}
-                          onBlur={e => validateField("passwords", e.target.value)}
-                        />
-                        <button type="button" className="btn btn-outline-secondary" onClick={togglePasswordVisibility}>
-                          <i className={`fa ${passwordFieldType === "password" ? "fa-eye" : "fa-eye-slash"}`}></i>
-                        </button>
-                      </div>
-                      {errors.filter(e => e.field === "passwords").map((e, i) => (
-                        <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                      ))}
-                    </div>
-                    <div className="col-sm-6">
-                      <div className="form-group">
-                        <label>Địa chỉ <span className="text-danger">*</span></label>
-                        <input type="text"
-                          className="form-control"
-                          value={form.address || ""}
-                          onChange={e => handleFormChange("address", e.target.value)}
-                          onBlur={e => validateField("address", e.target.value)}
-                        />
-                        {fieldErrors.address && (
-                          <div className="badge bg-danger mt-1">{fieldErrors.address}</div>
-                        )}
-                        {errors.filter(e => e.field === "address").map((e, i) => (
-                          <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="col-sm-6">
-                      <div className="form-group">
-                        <label>Số điện thoại <span className="text-danger">*</span></label>
-                        <input type="text"
-                          className="form-control"
-                          value={form.phone || ""}
-                          onChange={e => handleFormChange("phone", e.target.value)}
-                          onBlur={e => validateField("phone", e.target.value)}
-                        />
-                        {fieldErrors.phone && (
-                          <div className="badge bg-danger mt-1">{fieldErrors.phone}</div>
-                        )}
-                        {errors.filter(e => e.field === "phone").map((e, i) => (
-                          <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="col-sm-6">
-                      <div className="form-group">
-                        <label>Hình ảnh <span className="text-danger">*</span></label>
-                        <input type="file"
-                          className="form-control"
-                          id="image"
-                          onChange={e => handleImageChange(e.target.files)}
-                        />
-                      </div>
-                    </div>
-                    <div className="col-sm-6">
-                      <div className="form-group">
-                        <label>Giới tính <span className="text-danger">*</span></label>
-                        <select className="form-select"
-                          value={form.gender === undefined ? "" : form.gender ? "true" : "false"}
-                          onChange={e => handleFormChange("gender", e.target.value === "true")}
-                        >
-                          <option value="true">Nam</option>
-                          <option value="false">Nữ</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div className="col-sm-6">
-                      <div className="form-group">
-                        <label>Trạng thái <span className="text-danger">*</span></label>
-                        <select className="form-select"
-                          value={form.status === undefined ? "" : form.status ? "true" : "false"}
-                          onChange={e => handleFormChange("status", e.target.value === "true")}
-                        >
-                          <option value="true">Còn hoạt động</option>
-                          <option value="false">Tắt hoạt động</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-4 text-end">
-                    <button type="button" className="btn btn-primary" onClick={handleAddAccount}>
-                      Thêm tài khoản mới
-                    </button>
-                  </div>
-                </form>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label>Tên</label>
+                <input className="form-control" type="text"
+                  value={form.lastname || ""}
+                  onChange={e => handleFormChange("lastname", e.target.value)}
+                  onBlur={e => validateField("lastname", e.target.value)}
+                />
+                {/* Hiển thị lỗi realtime */}
+                {fieldErrors.lastname && (
+                  <div className="badge bg-danger mt-1">{fieldErrors.lastname}</div>
+                )}
+                {/* Hiển thị lỗi từ backend nếu có */}
+                {errors.filter(e => e.field === "lastname").map((e, i) => (
+                  <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                ))}
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label>Username <span className="text-danger">*</span></label>
+                <input className="form-control" type="text"
+                  value={form.username || ""}
+                  onChange={e => handleFormChange("username", e.target.value)}
+                  onBlur={e => validateField("username", e.target.value)}
+                />
+                {fieldErrors.username && (
+                  <div className="badge bg-danger mt-1">{fieldErrors.username}</div>
+                )}
+                {errors.filter(e => e.field === "username").map((e, i) => (
+                  <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                ))}
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label>Email <span className="text-danger">*</span></label>
+                <input className="form-control" type="email"
+                  value={form.email || ""}
+                  onChange={e => handleFormChange("email", e.target.value)}
+                  onBlur={e => validateField("email", e.target.value)}
+                />
+                {fieldErrors.email && (
+                  <div className="badge bg-danger mt-1">{fieldErrors.email}</div>
+                )}
+                {errors.filter(e => e.field === "email").map((e, i) => (
+                  <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                ))}
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <label>Mật khẩu <span className="text-danger">*</span></label>
+              <div className="input-group">
+                <input className="form-control"
+                  type={passwordFieldType}
+                  value={form.passwords || ""}
+                  onChange={e => handleFormChange("passwords", e.target.value)}
+                  onBlur={e => validateField("passwords", e.target.value)}
+                />
+                <button type="button" className="btn btn-outline-secondary" onClick={togglePasswordVisibility}>
+                  <i className={`fa ${passwordFieldType === "password" ? "fa-eye" : "fa-eye-slash"}`}></i>
+                </button>
+              </div>
+              {errors.filter(e => e.field === "passwords").map((e, i) => (
+                <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+              ))}
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label>Địa chỉ <span className="text-danger">*</span></label>
+                <input type="text"
+                  className="form-control"
+                  value={form.address || ""}
+                  onChange={e => handleFormChange("address", e.target.value)}
+                  onBlur={e => validateField("address", e.target.value)}
+                />
+                {fieldErrors.address && (
+                  <div className="badge bg-danger mt-1">{fieldErrors.address}</div>
+                )}
+                {errors.filter(e => e.field === "address").map((e, i) => (
+                  <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                ))}
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label>Số điện thoại <span className="text-danger">*</span></label>
+                <input type="text"
+                  className="form-control"
+                  value={form.phone || ""}
+                  onChange={e => handleFormChange("phone", e.target.value)}
+                  onBlur={e => validateField("phone", e.target.value)}
+                />
+                {fieldErrors.phone && (
+                  <div className="badge bg-danger mt-1">{fieldErrors.phone}</div>
+                )}
+                {errors.filter(e => e.field === "phone").map((e, i) => (
+                  <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                ))}
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label>Hình ảnh <span className="text-danger">*</span></label>
+                <input type="file"
+                  className="form-control"
+                  id="image"
+                  onChange={e => handleImageChange(e.target.files)}
+                />
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label>Giới tính <span className="text-danger">*</span></label>
+                <select className="form-select"
+                  value={form.gender === undefined ? "" : form.gender ? "true" : "false"}
+                  onChange={e => handleFormChange("gender", e.target.value === "true")}
+                >
+                  <option value="true">Nam</option>
+                  <option value="false">Nữ</option>
+                </select>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label>Trạng thái <span className="text-danger">*</span></label>
+                <select className="form-select"
+                  value={form.status === undefined ? "" : form.status ? "true" : "false"}
+                  onChange={e => handleFormChange("status", e.target.value === "true")}
+                >
+                  <option value="true">Còn hoạt động</option>
+                  <option value="false">Tắt hoạt động</option>
+                </select>
               </div>
             </div>
           </div>
-        </div>
-      )}
+          <div className="mt-4 text-end">
+            <button type="button" className="btn btn-primary" onClick={handleAddAccount}>
+              Thêm tài khoản mới
+            </button>
+          </div>
+        </form>
+      </BootstrapModal>
 
       {/* Edit Modal */}
-      {showEdit && (
-        <div className="modal fade show" style={{ display: "block" }}>
-          <div className="modal-dialog modal-lg modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Chỉnh sửa tài khoản</h5>
-                <button type="button" className="btn-close" onClick={() => setShowEdit(false)}></button>
+      <BootstrapModal
+        show={showEdit}
+        onHide={() => setShowEdit(false)}
+        title="Chỉnh sửa tài khoản"
+        size="lg"
+        className="fade show"
+        bodyClassName=""
+        footer={
+          <div className="text-end">
+            <button type="button" className="btn btn-primary" onClick={handleEditAccount}>
+              Chỉnh sửa tài khoản
+            </button>
+            <button type="button" className="btn btn-danger ms-2" onClick={() => handleDeleteAccount(form.username as String)}>
+              Xóa tài khoản
+            </button>
+          </div>
+        }
+      >
+
+        <form>
+          <div className="row g-3">
+            <div className="col-sm-12 text-center mb-3">
+              <label htmlFor="image" className="form-label">
+                <img src={form.image ? `${VITE_CLOUDINARY_BASE_URL}/${form.image}` : "https://via.placeholder.com/200x200?text=Avatar"} style={{ maxWidth: "100%", height: 200, objectFit: "cover" }} alt="avatar" />
+              </label>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label>Họ <span className="text-danger">*</span></label>
+                <input className="form-control" type="text"
+                  value={form.firstname || ""}
+                  onChange={e => handleFormChange("firstname", e.target.value)}
+                  onBlur={e => validateField("firstname", e.target.value)}
+                />
+                {/* Hiển thị lỗi realtime */}
+                {fieldErrors.firstname && (
+                  <div className="badge bg-danger mt-1">{fieldErrors.firstname}</div>
+                )}
+                {/* Hiển thị lỗi từ backend nếu có */}
+                {errors.filter(e => e.field === "firstname").map((e, i) => (
+                  <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                ))}
               </div>
-              <div className="modal-body">
-                <form>
-                  <div className="row g-3">
-                    <div className="col-sm-12 text-center mb-3">
-                      <label htmlFor="image" className="form-label">
-                        <img src={form.image ? `${VITE_CLOUDINARY_BASE_URL}/${form.image}` : "https://via.placeholder.com/200x200?text=Avatar"} style={{ maxWidth: "100%", height: 200, objectFit: "cover" }} alt="avatar" />
-                      </label>
-                    </div>
-                    <div className="col-sm-6">
-                      <div className="form-group">
-                        <label>Họ <span className="text-danger">*</span></label>
-                        <input className="form-control" type="text"
-                          value={form.firstname || ""}
-                          onChange={e => handleFormChange("firstname", e.target.value)}
-                          onBlur={e => validateField("firstname", e.target.value)}
-                        />
-                        {/* Hiển thị lỗi realtime */}
-                        {fieldErrors.firstname && (
-                          <div className="badge bg-danger mt-1">{fieldErrors.firstname}</div>
-                        )}
-                        {/* Hiển thị lỗi từ backend nếu có */}
-                        {errors.filter(e => e.field === "firstname").map((e, i) => (
-                          <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="col-sm-6">
-                      <div className="form-group">
-                        <label>Tên</label>
-                        <input className="form-control" type="text"
-                          value={form.lastname || ""}
-                          onChange={e => handleFormChange("lastname", e.target.value)}
-                          onBlur={e => validateField("lastname", e.target.value)}
-                        />
-                        {/* Hiển thị lỗi realtime */}
-                        {fieldErrors.lastname && (
-                          <div className="badge bg-danger mt-1">{fieldErrors.lastname}</div>
-                        )}
-                        {/* Hiển thị lỗi từ backend nếu có */}
-                        {errors.filter(e => e.field === "lastname").map((e, i) => (
-                          <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="col-sm-6">
-                      <div className="form-group">
-                        <label>Username <span className="text-danger">*</span></label>
-                        <input className="form-control" type="text"
-                          value={form.username || ""}
-                          onChange={e => handleFormChange("username", e.target.value)}
-                          onBlur={e => validateField("username", e.target.value)}
-                        />
-                        {fieldErrors.username && (
-                          <div className="badge bg-danger mt-1">{fieldErrors.username}</div>
-                        )}
-                        {errors.filter(e => e.field === "username").map((e, i) => (
-                          <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="col-sm-6">
-                      <div className="form-group">
-                        <label>Email <span className="text-danger">*</span></label>
-                        <input className="form-control" type="email"
-                          value={form.email || ""}
-                          onChange={e => handleFormChange("email", e.target.value)}
-                          onBlur={e => validateField("email", e.target.value)}
-                        />
-                        {fieldErrors.email && (
-                          <div className="badge bg-danger mt-1">{fieldErrors.email}</div>
-                        )}
-                        {errors.filter(e => e.field === "email").map((e, i) => (
-                          <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="col-sm-6">
-                      <label>Mật khẩu <span className="text-danger">*</span></label>
-                      <div className="input-group">
-                        <input className="form-control"
-                          type={passwordFieldType}
-                          value={form.passwords || ""}
-                          onChange={e => handleFormChange("passwords", e.target.value)}
-                          onBlur={e => validateField("passwords", e.target.value)}
-                        />
-                        <button type="button" className="btn btn-outline-secondary" onClick={togglePasswordVisibility}>
-                          <i className={`fa ${passwordFieldType === "password" ? "fa-eye" : "fa-eye-slash"}`}></i>
-                        </button>
-                      </div>
-                      {errors.filter(e => e.field === "passwords").map((e, i) => (
-                        <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                      ))}
-                    </div>
-                    <div className="col-sm-6">
-                      <div className="form-group">
-                        <label>Địa chỉ <span className="text-danger">*</span></label>
-                        <input type="text"
-                          className="form-control"
-                          value={form.address || ""}
-                          onChange={e => handleFormChange("address", e.target.value)}
-                          onBlur={e => validateField("address", e.target.value)}
-                        />
-                        {fieldErrors.address && (
-                          <div className="badge bg-danger mt-1">{fieldErrors.address}</div>
-                        )}
-                        {errors.filter(e => e.field === "address").map((e, i) => (
-                          <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="col-sm-6">
-                      <div className="form-group">
-                        <label>Số điện thoại <span className="text-danger">*</span></label>
-                        <input type="text"
-                          className="form-control"
-                          value={form.phone || ""}
-                          onChange={e => handleFormChange("phone", e.target.value)}
-                          onBlur={e => validateField("phone", e.target.value)}
-                        />
-                        {fieldErrors.phone && (
-                          <div className="badge bg-danger mt-1">{fieldErrors.phone}</div>
-                        )}
-                        {errors.filter(e => e.field === "phone").map((e, i) => (
-                          <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="col-sm-6">
-                      <div className="form-group">
-                        <label>Hình ảnh <span className="text-danger">*</span></label>
-                        <input type="file"
-                          className="form-control"
-                          id="image"
-                          onChange={e => handleImageChange(e.target.files)}
-                        />
-                      </div>
-                    </div>
-                    <div className="col-sm-6">
-                      <div className="form-group">
-                        <label>Giới tính <span className="text-danger">*</span></label>
-                        <select className="form-select"
-                          value={form.gender === undefined ? "" : form.gender ? "true" : "false"}
-                          onChange={e => handleFormChange("gender", e.target.value === "true")}
-                        >
-                          <option value="true">Nam</option>
-                          <option value="false">Nữ</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div className="col-sm-6">
-                      <div className="form-group">
-                        <label>Trạng thái <span className="text-danger">*</span></label>
-                        <select className="form-select"
-                          value={form.status === undefined ? "" : form.status ? "true" : "false"}
-                          onChange={e => handleFormChange("status", e.target.value === "true")}
-                        >
-                          <option value="true">Còn hoạt động</option>
-                          <option value="false">Tắt hoạt động</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-4 text-end">
-                    <button type="button" className="btn btn-primary" onClick={handleEditAccount}>
-                      Chỉnh sửa tài khoản
-                    </button>
-                  </div>
-                </form>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label>Tên</label>
+                <input className="form-control" type="text"
+                  value={form.lastname || ""}
+                  onChange={e => handleFormChange("lastname", e.target.value)}
+                  onBlur={e => validateField("lastname", e.target.value)}
+                />
+                {/* Hiển thị lỗi realtime */}
+                {fieldErrors.lastname && (
+                  <div className="badge bg-danger mt-1">{fieldErrors.lastname}</div>
+                )}
+                {/* Hiển thị lỗi từ backend nếu có */}
+                {errors.filter(e => e.field === "lastname").map((e, i) => (
+                  <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                ))}
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label>Username <span className="text-danger">*</span></label>
+                <input className="form-control" type="text"
+                  value={form.username || ""}
+                  onChange={e => handleFormChange("username", e.target.value)}
+                  onBlur={e => validateField("username", e.target.value)}
+                />
+                {fieldErrors.username && (
+                  <div className="badge bg-danger mt-1">{fieldErrors.username}</div>
+                )}
+                {errors.filter(e => e.field === "username").map((e, i) => (
+                  <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                ))}
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label>Email <span className="text-danger">*</span></label>
+                <input className="form-control" type="email"
+                  value={form.email || ""}
+                  onChange={e => handleFormChange("email", e.target.value)}
+                  onBlur={e => validateField("email", e.target.value)}
+                />
+                {fieldErrors.email && (
+                  <div className="badge bg-danger mt-1">{fieldErrors.email}</div>
+                )}
+                {errors.filter(e => e.field === "email").map((e, i) => (
+                  <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                ))}
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <label>Mật khẩu <span className="text-danger">*</span></label>
+              <div className="input-group">
+                <input className="form-control"
+                  type={passwordFieldType}
+                  value={form.passwords || ""}
+                  onChange={e => handleFormChange("passwords", e.target.value)}
+                  onBlur={e => validateField("passwords", e.target.value)}
+                />
+                <button type="button" className="btn btn-outline-secondary" onClick={togglePasswordVisibility}>
+                  <i className={`fa ${passwordFieldType === "password" ? "fa-eye" : "fa-eye-slash"}`}></i>
+                </button>
+              </div>
+              {errors.filter(e => e.field === "passwords").map((e, i) => (
+                <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+              ))}
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label>Địa chỉ <span className="text-danger">*</span></label>
+                <input type="text"
+                  className="form-control"
+                  value={form.address || ""}
+                  onChange={e => handleFormChange("address", e.target.value)}
+                  onBlur={e => validateField("address", e.target.value)}
+                />
+                {fieldErrors.address && (
+                  <div className="badge bg-danger mt-1">{fieldErrors.address}</div>
+                )}
+                {errors.filter(e => e.field === "address").map((e, i) => (
+                  <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                ))}
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label>Số điện thoại <span className="text-danger">*</span></label>
+                <input type="text"
+                  className="form-control"
+                  value={form.phone || ""}
+                  onChange={e => handleFormChange("phone", e.target.value)}
+                  onBlur={e => validateField("phone", e.target.value)}
+                />
+                {fieldErrors.phone && (
+                  <div className="badge bg-danger mt-1">{fieldErrors.phone}</div>
+                )}
+                {errors.filter(e => e.field === "phone").map((e, i) => (
+                  <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                ))}
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label>Hình ảnh <span className="text-danger">*</span></label>
+                <input type="file"
+                  className="form-control"
+                  id="image"
+                  onChange={e => handleImageChange(e.target.files)}
+                />
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label>Giới tính <span className="text-danger">*</span></label>
+                <select className="form-select"
+                  value={form.gender === undefined ? "" : form.gender ? "true" : "false"}
+                  onChange={e => handleFormChange("gender", e.target.value === "true")}
+                >
+                  <option value="true">Nam</option>
+                  <option value="false">Nữ</option>
+                </select>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label>Trạng thái <span className="text-danger">*</span></label>
+                <select className="form-select"
+                  value={form.status === undefined ? "" : form.status ? "true" : "false"}
+                  onChange={e => handleFormChange("status", e.target.value === "true")}
+                >
+                  <option value="true">Còn hoạt động</option>
+                  <option value="false">Tắt hoạt động</option>
+                </select>
               </div>
             </div>
           </div>
-        </div>
-      )}
-
+          <div className="mt-4 text-end">
+            <button type="button" className="btn btn-primary" onClick={handleEditAccount}>
+              Chỉnh sửa tài khoản
+            </button>
+          </div>
+        </form>
+      </BootstrapModal>
       {/* Toast/Notification */}
       <div id="toast"></div>
     </div>
