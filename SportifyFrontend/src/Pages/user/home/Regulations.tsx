@@ -7,7 +7,6 @@ const Regulations: React.FC = () => {
     <>
       <Nav_contact title={'Quy Định - Điều Khoản'} />
       
-    
 
       <section className="ftco-section ftco-no-pb">
         <div className="container">

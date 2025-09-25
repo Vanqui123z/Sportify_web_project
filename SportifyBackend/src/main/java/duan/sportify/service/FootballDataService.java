@@ -62,7 +62,7 @@ public class FootballDataService {
                     if (processedCount >= 20) break; // Limit to 20 matches
                     
                     Map<String, Object> match = new HashMap<>();
-                    
+                    System.out.println("matchNode"+matchNode);
                     // Basic match info
                     match.put("id", matchNode.get("id").asLong());
                     match.put("homeTeam", matchNode.get("homeTeam").get("name").asText());
@@ -76,10 +76,26 @@ public class FootballDataService {
                     match.put("time", dateTime[1]);
                     
                     // Team logos (default paths)
-                    String homeTeam = matchNode.get("homeTeam").get("name").asText();
-                    String awayTeam = matchNode.get("awayTeam").get("name").asText();
-                    match.put("homeTeamLogo", getTeamLogo(homeTeam));
-                    match.put("awayTeamLogo", getTeamLogo(awayTeam));
+                    String homeTeamName = matchNode.get("homeTeam").get("name").asText();
+                    String awayTeamName = matchNode.get("awayTeam").get("name").asText();
+
+                    String homeTeam = matchNode.get("homeTeam").has("crest") 
+                            ? matchNode.get("homeTeam").get("crest").asText() 
+                            : null;
+
+                    String awayTeam = matchNode.get("awayTeam").has("crest") 
+                            ? matchNode.get("awayTeam").get("crest").asText() 
+                            : null;
+
+                    // Nếu API có crest thì dùng, nếu không thì fallback sang local map
+                    match.put("homeTeamLogo", (homeTeam != null && !homeTeam.isEmpty()) 
+                            ? homeTeam 
+                            : getTeamLogo(homeTeamName));
+
+                    match.put("awayTeamLogo", (awayTeam != null && !awayTeam.isEmpty()) 
+                            ? awayTeam 
+                            : getTeamLogo(awayTeamName));
+
                     
                     // Add basic prediction probabilities
                     Map<String, Integer> probabilities = calculateBasicPrediction(homeTeam, awayTeam);

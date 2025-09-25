@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import HeroSection from '../../../components/user/Hero';
 
 interface EventDetailData {
   eventdetail: EventItem;
@@ -50,31 +51,15 @@ const EventDetail: React.FC = () => {
 
   return (
     <div>
-      <section 
-        className="hero-wrap hero-wrap-2"
-        style={{
-          backgroundImage: event.image ? `url('/user/images/${event.image}')` : `url('/user/images/eventbanner.png')`
-        }}
-        data-stellar-background-ratio="0.5"
-      >
-        <div className="overlay"></div>
-        <div className="container">
-          <div className="row no-gutters slider-text align-items-end justify-content-center">
-            <div className="col-md-9 mb-5 text-center">
-              <p className="breadcrumbs mb-0">
-                <span className="mr-2">
-                  <Link to="/">Trang Chủ <i className="fa fa-chevron-right"></i></Link>
-                </span>
-                <span className="mr-2">
-                  <Link to="/sportify/event">Sự Kiện <i className="fa fa-chevron-right"></i></Link>
-                </span>
-                <span>Chi Tiết tin Tức <i className="fa fa-chevron-right"></i></span>
-              </p>
-              <h2 className="mb-0 bread">Chi Tiết Tin Tức</h2>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HeroSection
+        backgroundImage={event.image ? `/user/images/${event.image}` : `/user/images/eventbanner.png`}
+        title="Chi Tiết Tin Tức"
+        breadcrumbs={[
+          { label: 'Trang Chủ', href: '/' },
+          { label: 'Sự Kiện', href: '/sportify/event' },
+          { label: 'Chi Tiết tin Tức' }
+        ]}
+      />
 
       <section 
         className="ftco-section ftco-degree-bg" 
@@ -183,5 +168,6 @@ const EventDetail: React.FC = () => {
     </div>
   );
 };
+
 
 export default EventDetail;

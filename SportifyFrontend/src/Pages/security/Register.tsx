@@ -64,6 +64,7 @@ export default function Register() {
 		});
 
 		if (error) {
+
 			setSignupResult(error);
 			setNotification(error);
 			return;
@@ -80,6 +81,7 @@ export default function Register() {
 				address: addressSignUp,
 				email: emailSignUp
 			};
+
 			console.log('Signup payload:', payload);
 			const res = await fetch('http://localhost:8081/api/sportify/signup/process', {
 				method: 'POST',

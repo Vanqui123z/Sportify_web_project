@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import getImageUrl from '../../../utils/getImageUrl';
+import HeroSection from "../../../components/user/Hero"; // Thêm import
 
 interface EventItem {
   eventid: number;
@@ -79,24 +80,14 @@ const Event: React.FC = () => {
 
   return (
     <div>
-      {/* Hero section */}
-      <section className="hero-wrap hero-wrap-2"
-        style={{ backgroundImage: "url('/user/images/eventbanner.png')" }}
-        data-stellar-background-ratio="0.5">
-        <div className="overlay"></div>
-        <div className="container">
-          <div className="row no-gutters slider-text align-items-end justify-content-center">
-            <div className="col-md-9 mb-5 text-center">
-              <p className="breadcrumbs mb-0">
-                <span className="mr-2"><a href="/">Trang Chủ <i className="fa fa-chevron-right"></i></a></span> 
-                <span>Tin Tức <i className="fa fa-chevron-right"></i></span>
-              </p>
-              <h2 className="mb-0 bread">Tin Tức</h2>
-            </div>
-          </div>
-        </div>
-      </section>
-
+      <HeroSection
+        backgroundImage="/user/images/eventbanner.png"
+        title="Tin Tức"
+        breadcrumbs={[
+          { label: "Trang Chủ", href: "/" },
+          { label: "Tin Tức" }
+        ]}
+      />
       <section className="col-12 ftco-section testimony-section img"
         style={{ backgroundImage: "url(/user/images/bgAll.png)" }}>
         <div className="overlay1"></div>

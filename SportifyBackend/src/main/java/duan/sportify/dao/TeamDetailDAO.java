@@ -61,7 +61,13 @@ public interface TeamDetailDAO extends JpaRepository<Teamdetails, Integer>{
 	@Query(value = "SELECT COUNT(*) FROM teamdetails WHERE teamid like :teamId and status=1", nativeQuery = true)
 	Integer countUser(Integer teamId);
 	
+	//ADD
+	@Query("SELECT td FROM Teamdetails td WHERE td.teamid = :teamId AND td.status = :status")
+	List<Teamdetails> findByTeamIdAndStatus(@Param("teamId") Integer teamId,
+	                                        @Param("status") Boolean status);
 
+	
+	
 	@Modifying
 	@Query(value ="DELETE FROM teamdetails WHERE username like :username AND teamid like :teamId", nativeQuery = true)
 	@Transactional

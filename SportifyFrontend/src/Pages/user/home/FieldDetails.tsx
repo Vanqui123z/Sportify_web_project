@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import getImageUrl from "../../../utils/getImageUrl";
+import HeroSection from "../../../components/user/Hero"; // Thêm import
 
 interface SportType {
     sporttypeid: string;
@@ -147,26 +148,15 @@ const DetailFields: React.FC = () => {
 
     return (
         <div>
-            {/* Hero Section */}
-            <section className="hero-wrap hero-wrap-2" style={{ backgroundImage: "url('/user/images/backgroundField.jpg')" }} data-stellar-background-ratio="0.5">
-                <div className="overlay"></div>
-                <div className="container">
-                    <div className="row no-gutters slider-text align-items-end justify-content-center">
-                        <div className="col-md-9  mb-5 text-center">
-                            <p className="breadcrumbs mb-0">
-                                <span className="mr-2">
-                                    <a href="/sportify">Trang Chủ <i className="fa fa-chevron-right"></i></a>
-                                </span>
-                                <span>
-                                    <a href="/sportify/field">Sân<i className="fa fa-chevron-right"></i></a>
-                                </span>
-                                <span>Chi tiết sân</span>
-                            </p>
-                            <h2 className="mb-0 bread">Chi Tiết Sân</h2>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            <HeroSection
+                backgroundImage="/user/images/backgroundField.jpg"
+                title="Chi Tiết Sân"
+                breadcrumbs={[
+                    { label: "Trang Chủ", href: "/sportify" },
+                    { label: "Sân", href: "/sportify/field" },
+                    { label: "Chi tiết sân" }
+                ]}
+            />
 
             {/* Main Content */}
             <section className="">

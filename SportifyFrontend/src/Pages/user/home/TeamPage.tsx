@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import CustomCard from "../../../components/user/CustomCard";
+import React, { useState, useEffect, use } from "react";
 import getImageUrl from "../../../utils/getImageUrl";
+import { useNavigate } from "react-router-dom";
+import HeroSection from "../../../components/user/Hero"; // Thêm import
+
 
 interface SportType {
   sporttypeid: string;
@@ -31,7 +32,6 @@ const sporttypeList: SportType[] = [
 const TeamPage: React.FC = () => {
   // Modal state
   const [showModal, setShowModal] = useState(false);
-    const navigate = useNavigate();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -46,8 +46,12 @@ const TeamPage: React.FC = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [searchText, setSearchText] = useState("");
   const [teams, setTeams] = useState<TeamItem[]>([]);
+  const [allTeams, setAllTeams] = useState<TeamItem[]>([]); // Lưu tất cả teams
+  const [myTeams, setMyTeams] = useState<TeamItem[]>([]); // Lưu my teams
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showMyTeamsOnly, setShowMyTeamsOnly] = useState(false);
+  const navigate = useNavigate();
 
 
 
@@ -63,10 +67,11 @@ const TeamPage: React.FC = () => {
 
       const data = await response.json();
 
-      if (data.success && data.message === "Bạn đang trong team") {
-        // ✅ User đã trong team → chuyển hướng
-        // navigate(`/sportify/team/detailteam/${team.id}`);
-      } else {
+      if (data.success && data.role) {
+        // ✅ User là owner → chuyển hướng đến trang quản lý team
+        navigate(`/sportify/team/detailteam/${team.id}`); 
+      }
+      else {
         // ❌ Các trường hợp khác → hiện thông báo
         alert(data.message); 
         // hoặc dùng toast, modal,... tùy UI
@@ -94,31 +99,88 @@ const TeamPage: React.FC = () => {
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
-    if (!formData.newNameteam) newErrors.newNameteam = "Tên không được để trống";
-    if (!formData.newContact) newErrors.newContact = "Số liên hệ không được để trống";
-    if (!formData.newQuantity) newErrors.newQuantity = "Số lượng không được để trống";
-    if (!formData.newAvatar) newErrors.newAvatar = "Vui lòng chọn ảnh đại diện";
+    
+    // Validate team name (nameteam - max 50 characters, required)
+    if (!formData.newNameteam) {
+      newErrors.newNameteam = "Tên nhóm không được để trống";
+    } else if (formData.newNameteam.length > 50) {
+      newErrors.newNameteam = "Tên nhóm không được vượt quá 50 ký tự";
+    } else if (formData.newNameteam.trim().length === 0) {
+      newErrors.newNameteam = "Tên nhóm không được chỉ chứa khoảng trắng";
+    }
+
+    // Validate contact (max 10 characters, required, should be numeric)
+    if (!formData.newContact) {
+      newErrors.newContact = "Số liên hệ không được để trống";
+    } else if (formData.newContact.length > 10) {
+      newErrors.newContact = "Số liên hệ không được vượt quá 10 ký tự";
+    } else if (!/^\d{10}$/.test(formData.newContact)) {
+      newErrors.newContact = "Số liên hệ phải có đúng 10 chữ số";
+    }
+
+    // Validate quantity (required, positive integer)
+    if (!formData.newQuantity) {
+      newErrors.newQuantity = "Số lượng không được để trống";
+    } else {
+      const quantity = parseInt(formData.newQuantity);
+      if (isNaN(quantity) || quantity <= 0) {
+        newErrors.newQuantity = "Số lượng phải là số nguyên dương";
+      } else if (quantity > 50) {
+        newErrors.newQuantity = "Số lượng không được vượt quá 50 thành viên";
+      }
+    }
+
+    // Validate avatar (required)
+    if (!formData.newAvatar) {
+      newErrors.newAvatar = "Vui lòng chọn ảnh đại diện";
+    } else {
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+      if (!allowedTypes.includes(formData.newAvatar.type)) {
+        newErrors.newAvatar = "Chỉ cho phép file ảnh định dạng JPG, PNG, GIF";
+      } else if (formData.newAvatar.size > 5 * 1024 * 1024) { // 5MB
+        newErrors.newAvatar = "Kích thước ảnh không được vượt quá 5MB";
+      }
+    }
+
+    // Validate sport type (required, must be valid)
+    if (!formData.newSporttypeid) {
+      newErrors.newSporttypeid = "Vui lòng chọn môn thể thao";
+    } else {
+      const validSportTypes = sporttypeList.map(spt => spt.sporttypeid);
+      if (!validSportTypes.includes(formData.newSporttypeid)) {
+        newErrors.newSporttypeid = "Môn thể thao không hợp lệ";
+      }
+    }
+
+    // Validate descriptions (max 1000 characters, optional)
+    if (formData.newDescriptions && formData.newDescriptions.length > 1000) {
+      newErrors.newDescriptions = "Mô tả không được vượt quá 1000 ký tự";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   // filter
   const handleFilter = (sporttypeid: string | null) => {
-  const url = sporttypeid 
-    ? `http://localhost:8081/api/user/team/${sporttypeid}`
-    : 'http://localhost:8081/api/user/team/all'; // nếu muốn "Tất cả"
+    // Nếu đang ở chế độ My Team, không cho phép filter
+    if (showMyTeamsOnly) {
+      alert("Vui lòng chuyển về chế độ 'Tất cả đội' để sử dụng bộ lọc");
+      return;
+    }
 
-  fetch(url, {
-    method: 'GET',
-    credentials: "include",
-  })
-    .then(res => res.json())
-    .then(data => {
-      const rawTeams = Array.isArray(data.teams) ? data.teams : [];
-      setTeams(rawTeams.map(parseTeamArray));
-    })
-    .catch(err => console.error('Fetch error:', err));
-};
+    if (sporttypeid) {
+      // Lọc từ allTeams theo sport type
+      const filteredTeams = allTeams.filter(team => {
+        const sportType = sporttypeList.find(spt => spt.categoryname === team.sport);
+        return sportType && sportType.sporttypeid === sporttypeid;
+      });
+      setTeams(filteredTeams);
+    } else {
+      // Hiển thị tất cả teams
+      setTeams(allTeams);
+    }
+  };
 
   // --- Submit create team ---
 
@@ -143,7 +205,7 @@ const TeamPage: React.FC = () => {
       const result = await res.json();
       if (!result.success) throw new Error(result.message);
       setShowModal(false);
-      fetchTeams(searchText); // Reload
+      fetchTeams(); // Reload
     } catch (err: any) {
       alert(err.message);
     }
@@ -166,7 +228,25 @@ const TeamPage: React.FC = () => {
     };
   };
 
-  const fetchTeams = async (search = "") => {
+  // Parse team array specifically for teamUser data structure
+  const parseMyTeamArray = (arr: any[]): TeamItem => {
+    // teamUser structure: [id, sporttypeid, name, quantity, avatar, contact, description, leader, createdDate, sport, maxQuantity, leaderFirstName, leaderLastName]
+    const id = Number(arr[0]) || 0;
+    return {
+      id,
+      name: String(arr[2] ?? ""),
+      quantity: Number(arr[3] ?? 0),
+      avatar: String(arr[4] ?? ""),
+      contact: String(arr[5] ?? ""),
+      description: String(arr[6] ?? ""),
+      leader: String(arr[7] ?? ""),
+      createdDate: String(arr[8] ?? ""),
+      sport: String(arr[9] ?? ""),
+      maxQuantity: Number(arr[10] ?? 0),
+    };
+  };
+
+  const fetchTeams = async () => {
     setLoading(true);
     setError(null);
     try {
@@ -177,18 +257,53 @@ const TeamPage: React.FC = () => {
       if (!res.ok) throw new Error(`Server error ${res.status}`);
       const data = await res.json();
 
+      // Parse all teams
       let rawTeams: any[] = [];
       if (data?.teams?.content && Array.isArray(data.teams.content)) rawTeams = data.teams.content;
       else if (data?.teams && Array.isArray(data.teams)) rawTeams = data.teams;
       else if (Array.isArray(data)) rawTeams = data;
 
-      setTeams(rawTeams.map(parseTeamArray));
+      const parsedAllTeams = rawTeams.map(parseTeamArray);
+
+      // Parse my teams từ teamUser
+      let rawMyTeams: any[] = [];
+      if (data?.teamUser && Array.isArray(data.teamUser)) {
+        rawMyTeams = data.teamUser;
+      }
+
+      const parsedMyTeams = rawMyTeams.map(parseMyTeamArray);
+
+      // Lưu vào state
+      setAllTeams(parsedAllTeams);
+      setMyTeams(parsedMyTeams);
+      
+      // Hiển thị teams dựa trên mode hiện tại
+      if (showMyTeamsOnly) {
+        setTeams(parsedMyTeams);
+      } else {
+        setTeams(parsedAllTeams);
+      }
     } catch (err: any) {
       console.error(err);
       setError(err.message || "Lỗi khi tải dữ liệu");
       setTeams([]);
+      setAllTeams([]);
+      setMyTeams([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+
+
+  const handleToggleMyTeams = () => {
+    setShowMyTeamsOnly(!showMyTeamsOnly);
+    if (!showMyTeamsOnly) {
+      // Switching to My Teams - hiển thị myTeams đã lưu
+      setTeams(myTeams);
+    } else {
+      // Switching back to All Teams - hiển thị allTeams đã lưu
+      setTeams(allTeams);
     }
   };
 
@@ -198,21 +313,22 @@ const TeamPage: React.FC = () => {
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      fetch('http://localhost:8081/api/user/team/search', {
-        method: 'POST',
-        body: JSON.stringify({ searchText: searchText }),
-        headers: { 'Content-Type': 'application/json' },
-        credentials: "include",
-      })
-        .then(res => res.json())
-        .then(data => {
-          const rawTeams = Array.isArray(data.teams) ? data.teams : [];
-          setTeams(rawTeams.map(parseTeamArray));
-        })
-        .catch(err => console.error('Fetch error:', err));
-    } catch (error) {
-      console.error('Error submitting search:', error);
+    
+    // Nếu đang ở chế độ My Team, không cho phép search
+    if (showMyTeamsOnly) {
+      alert("Vui lòng chuyển về chế độ 'Tất cả đội' để sử dụng tìm kiếm");
+      return;
+    }
+
+    if (searchText.trim()) {
+      // Tìm kiếm trong allTeams theo tên
+      const filteredTeams = allTeams.filter(team => 
+        team.name.toLowerCase().includes(searchText.toLowerCase())
+      );
+      setTeams(filteredTeams);
+    } else {
+      // Nếu không có text search, hiển thị tất cả
+      setTeams(allTeams);
     }
   };
 
@@ -220,28 +336,14 @@ const TeamPage: React.FC = () => {
   // --- Render ---
   return (
     <>
-      {/* Hero Section */}
-      <section className="hero-wrap hero-wrap-2"
-        style={{ backgroundImage: "url('/user/images/bg-team.png')" }}
-        data-stellar-background-ratio="0.5">
-        <div className="overlay"></div>
-        <div className="container">
-          <div className="row no-gutters slider-text align-items-end justify-content-center">
-            <div className="col-md-9 mb-5 text-center">
-              <p className="breadcrumbs mb-0">
-                <span className="mr-2">
-                  <a href="/sportify">Trang Chủ <i className="fa fa-chevron-right"></i></a>
-                </span> 
-                <span>
-                  <a href="/sportify/team">Đội/Nhóm <i className="fa fa-chevron-right"></i></a>
-                </span>
-              </p>
-              <h2 className="mb-0 bread">Đội/Nhóm</h2>
-            </div>
-          </div>
-        </div>
-      </section>
-
+      <HeroSection
+        backgroundImage="/user/images/bg-team.png"
+        title="Đội/Nhóm"
+        breadcrumbs={[
+          { label: "Trang Chủ", href: "/sportify" },
+          { label: "Đội/Nhóm", href: "/sportify/team" }
+        ]}
+      />
       <section className="ftco-section">
         <div className="container">
           <div className="row">
@@ -255,14 +357,26 @@ const TeamPage: React.FC = () => {
                 type="search"
                 placeholder="Tìm kiếm theo tên" 
                 aria-label="Search"
+                disabled={showMyTeamsOnly}
               />
-              <button className="btn btn-success col-2" type="submit">Search</button>
+              <button 
+                className="btn btn-success col-2" 
+                type="submit"
+                disabled={showMyTeamsOnly}
+              >
+                Search
+              </button>
             </form>
 
-            {/* Search Results Message */}
+            {/* Current Mode Message */}
             <div className="d-flex justify-content-center col-md-12 mt-1">
               <div className="mr-4 col-md-8">
-                {/* Search results message would go here */}
+                {showMyTeamsOnly && (
+                  <div className="alert alert-info text-center" role="alert">
+                    <i className="fa fa-info-circle mr-2"></i>
+                    Đang hiển thị các đội bạn tham gia. Tìm kiếm và lọc không khả dụng trong chế độ này.
+                  </div>
+                )}
               </div>
             </div>
 
@@ -272,12 +386,15 @@ const TeamPage: React.FC = () => {
                   <div>
                     <h4 className="product-select">Lọc theo môn thể thao</h4>
                     <div className="dropdown filter">
-                      <button className="btn btn-success dropdown-toggle col-md-8 mb-3"
+                      <button 
+                        className={`btn dropdown-toggle col-md-8 mb-3 ${showMyTeamsOnly ? 'btn-secondary' : 'btn-success'}`}
                         type="button" 
                         id="dropdownMenuButton" 
                         data-toggle="dropdown"
                         aria-haspopup="true" 
-                        aria-expanded="false">
+                        aria-expanded="false"
+                        disabled={showMyTeamsOnly}
+                      >
                         Lọc
                       </button>
                       <div className="dropdown-menu filter-item" aria-labelledby="dropdownMenuButton">
@@ -301,11 +418,20 @@ const TeamPage: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  <button className="btn btn-success col-2 pt-2 pb-2" 
-                    type="button"
-                    onClick={() => setShowModal(true)}>
-                    Tạo đội
-                  </button>
+                  <div className="d-flex">
+                    <button 
+                      className={`btn ${showMyTeamsOnly ? 'btn-secondary' : 'btn-outline-secondary'} col-auto pt-2 pb-2 mr-2`}
+                      type="button"
+                      onClick={handleToggleMyTeams}
+                    >
+                      {showMyTeamsOnly ? 'Tất cả đội' : 'My Team'}
+                    </button>
+                    <button className="btn btn-success col-auto pt-2 pb-2" 
+                      type="button"
+                      onClick={() => setShowModal(true)}>
+                      Tạo đội
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -468,5 +594,7 @@ const TeamPage: React.FC = () => {
     </>
   );
 };
+
+
 
 export default TeamPage;

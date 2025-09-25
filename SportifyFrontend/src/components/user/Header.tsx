@@ -7,7 +7,7 @@ import { getCartQuantity } from "../../utils/checkQuatityCart";
 
 export default function Header() {
 
-   const { user, setUser, loading } = useContext(AuthContext);
+  const { user, setUser, loading } = useContext(AuthContext);
   const [showModal, setShowModal] = useState(false);
   const [cartCount, setCartCount] = useState(0);
 
@@ -27,7 +27,7 @@ export default function Header() {
       });
       if (response.ok) {
         window.location.href = "/sportify";
-      } 
+      }
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -65,7 +65,7 @@ export default function Header() {
                 </span>
               </div>
             </div>
-            
+
             <div className="col-md-4">
               {!loading && (
                 <div className="d-flex align-items-center justify-content-end">
@@ -82,11 +82,10 @@ export default function Header() {
                           )}
                         </a>
                       </div>
-                      
+
                       <div className="dropdown">
-                        <a
+                        <div
                           className="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
-                          href="#"
                           id="userDropdown"
                           role="button"
                           data-bs-toggle="dropdown"
@@ -95,7 +94,7 @@ export default function Header() {
                         >
                           <span className="fa fa-user me-2 text-light"></span>
                           <span className="text-light">{user.username}</span>
-                        </a>
+                        </div>
                         <ul className="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown" style={{ zIndex: 1050, minWidth: '180px' }}>
                           <li><a className="dropdown-item" href="/sportify/profile">
                             <i className="fa fa-user me-2"></i>Thông tin cá nhân
@@ -107,6 +106,8 @@ export default function Header() {
                               </a>
                             </li>
                           )}
+                          <li className="nav-item"><a className="nav-link" href="/sportify/field/profile/historybooking">Lịch sử đặt sân</a></li>
+                          <li className="nav-item"><a className="nav-link" href="/sportify/order/historyList">Lịch sử đơn hàng</a></li>
                           <li><hr className="dropdown-divider" /></li>
                           <li>
                             <button className="dropdown-item text-danger" onClick={() => setShowModal(true)}>
@@ -132,8 +133,8 @@ export default function Header() {
           </div>
         </div>
       </header>
-      
-       <ConfirmModal
+
+      <ConfirmModal
         show={showModal}
         title="Xác nhận đăng xuất"
         message="Bạn có chắc chắn muốn đăng xuất không?"

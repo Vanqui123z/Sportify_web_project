@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Loader from "../../../components/user/Loader";
 import getImageUrl from "../../../utils/getImageUrl";
 import { useFtcoAnimation } from "../../../utils/useFtcoAnimation";
+import HeroSection from "../../../components/user/Hero"; // Thêm import
 type Category = {
   sporttypeid: string;
   categoryname: string;
@@ -80,25 +81,14 @@ export default function FieldPage() {
   };
   return (
     <div>
-      <section className="hero-wrap hero-wrap-2"
-        style={{ backgroundImage: "url('/user/images/backgroundField.gif')" }}
-        data-stellar-background-ratio="0.5">
-        <div className="overlay"></div>
-        <div className="container">
-          <div className="row no-gutters slider-text align-items-end justify-content-center">
-            <div className="col-md-9  mb-5 text-center">
-              <p className="breadcrumbs mb-0">
-                <span className="mr-2">
-                  <a href="/sportify">Trang Chủ <i className="fa fa-chevron-right"></i></a>
-                </span> 
-                <span>Sân</span>
-              </p>
-              <h2 className="mb-0 bread">Sân</h2>
-            </div>
-          </div>
-        </div>
-      </section>
-
+      <HeroSection
+        backgroundImage="/user/images/backgroundField.gif"
+        title="Sân"
+        breadcrumbs={[
+          { label: "Trang Chủ", href: "/sportify" },
+          { label: "Sân" }
+        ]}
+      />
       <section className="ftco-section">
         <div className="container">
           <div className="row">

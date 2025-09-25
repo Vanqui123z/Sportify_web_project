@@ -1,8 +1,4 @@
-import { useContext, useState, useEffect } from "react";
-import ConfirmModal from "./Modal";
-import { AuthContext } from "../../utils/AuthContext";
-import { ShoppingCart } from "react-feather";
-import { getCartQuantity } from "../../utils/checkQuatityCart";
+
 
 export default function Navbar() {
  
@@ -29,8 +25,6 @@ export default function Navbar() {
               <li className="nav-item">
                 <a href="/sportify/team" className="nav-link">Đội</a>
               </li>
-              <li className="nav-item"><a className="nav-link" href="/sportify/field/profile/historybooking">Lịch sử đặt sân</a></li>
-              <li className="nav-item"><a className="nav-link" href="/sportify/order/historyList">Lịch sử đơn hàng</a></li>
               <li className="nav-item"><a className="nav-link" href="/sportify/football-prediction">Dự đoán tỉ số</a></li>
               <li className="nav-item">
                 <a href="/sportify/product" className="nav-link">Cửa hàng</a>

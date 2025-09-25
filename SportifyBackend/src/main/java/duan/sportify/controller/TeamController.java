@@ -109,12 +109,7 @@ public ResponseEntity<?> viewTeam(
         teamPage = teamdao.findAllTeam();
     }
 
-    // Phân trang
-    int startIndex = page * size;
-    int endIndex = Math.min(startIndex + size, teamPage.size());
-    List<Object[]> pageContent = teamPage.subList(startIndex, endIndex);
-
-    Page<Object[]> teamPageObj = new PageImpl<>(pageContent, PageRequest.of(page, size), teamPage.size());
+    
 
     // Nếu có đăng nhập thì trả thêm team của user
     List<Object[]> teamUser = null;
@@ -124,7 +119,7 @@ public ResponseEntity<?> viewTeam(
 
     Map<String, Object> response = new HashMap<>();
     response.put("success", true);
-    response.put("teams", teamPageObj);
+    response.put("teams", teamPage);
     response.put("searchText", searchText);
     response.put("TeamUsername", TeamUsername);
     response.put("sporttypeid", sporttypeid);
@@ -237,6 +232,7 @@ public ResponseEntity<?> exitTeam(HttpServletRequest request,
         ));
     }
 }
+
 @GetMapping("/user/team/teamdetail/{teamId}")
 public ResponseEntity<?> teamdetail(HttpServletRequest request,
                                     @PathVariable("teamId") Integer teamId) {
@@ -249,33 +245,60 @@ public ResponseEntity<?> teamdetail(HttpServletRequest request,
         ));
     }
 
-    Teamdetails checkTeamUser = detailDAO.checkTeamUser(username, teamId);
     Teams team = teamService.findById(teamId);
-    int quantity = team.getQuantity();
-    Integer countMembers = detailDAO.countUser(teamId);
-
-    // ✅ Nếu user đã trong team
-    if (checkTeamUser != null) {
-        List<Object[]> listall = detailDAO.findByIdTeam(teamId);
-        List<Object[]> userTeam = detailDAO.findUserByIdTeam(teamId);
-        List<Object[]> userCheckTeam = detailDAO.findUserCheckByIdTeam(teamId);
-        Teams checkOneUser = teamdao.findOneTeam(teamId, username);
-        Teams checkBoss = teamService.findById(teamId);
-
-        return ResponseEntity.ok(Map.of(
-            "success", true,
-            "message", "Bạn đang trong team",
-            "teamId", teamId,
-            "oneUser", checkOneUser,
-            "team", listall,
-            "userCheckTeam", userCheckTeam,
-            "user", userTeam,
-            "checkBoss", checkBoss,
-            "infouser", checkTeamUser.getInfouser()
+    if (team == null) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+            "success", false,
+            "message", "Không tìm thấy team"
         ));
     }
 
-    // ✅ Nếu user chưa trong team
+    int quantity = team.getQuantity();
+    Integer countMembers = detailDAO.countUser(teamId);
+
+    // ✅ Nếu user là chủ team
+    if (username.equals(team.getUsername())) {
+        // lấy danh sách thành viên
+        List<Object[]> userTeam = detailDAO.findUserByIdTeam(teamId);
+
+        // lấy danh sách user chờ duyệt (status = false)
+        List<Teamdetails> waitingList = detailDAO.findByTeamIdAndStatus(teamId, false);
+
+        return ResponseEntity.ok(Map.of(
+            "success", true,
+            "message", "Bạn là chủ team",
+            "teamId", teamId,
+            "teamInfo", team,
+           
+            "listMember", userTeam,
+            "waitingList", waitingList,
+            "role", "owner",
+            "permissions", List.of("accept", "reject", "kick", "setCaptain")
+        ));
+    }
+
+    // ✅ Nếu user đã trong team
+    Teamdetails checkTeamUser = detailDAO.checkTeamUser(username, teamId);
+    if (checkTeamUser != null) {
+        List<Object[]> userTeam = detailDAO.findUserByIdTeam(teamId);
+        List<Object[]> userCheckTeam = detailDAO.findUserCheckByIdTeam(teamId);
+
+        return ResponseEntity.ok(Map.ofEntries(
+            Map.entry("success", true),
+            Map.entry("message", "Bạn đang trong team"),
+            Map.entry("teamId", teamId),
+            Map.entry("teamInfo", team),
+            Map.entry("totalMember", countMembers),
+            Map.entry("listMember", userTeam),
+            Map.entry("waitingList", userCheckTeam),
+            Map.entry("ownerInfo", team.getUsers()),
+            Map.entry("infouser", checkTeamUser.getInfouser()),
+            Map.entry("role", "member"),
+            Map.entry("permissions", List.of())
+        ));
+    }
+
+    // ✅ Nếu user chưa trong team → còn chỗ
     if (countMembers < quantity) {
         Teamdetails checkAllTeamUser = detailDAO.checkAllTeamUser(username, teamId);
 
@@ -353,7 +376,7 @@ public ResponseEntity<?> teamdetail(HttpServletRequest request,
         "message", "Thêm giới thiệu thành công !"
     ));
 }
-@PostMapping("/sportify/team/teamdetail/xacnhan")
+@PostMapping("/user/team/teamdetail/xacnhan")
 public ResponseEntity<?> joinTeam(@RequestBody Map<String, Object> body) {
     Integer teamId = (Integer) body.get("teamId");
     String username = (String) body.get("username");
@@ -391,9 +414,9 @@ public ResponseEntity<?> joinTeam(@RequestBody Map<String, Object> body) {
             "message", "Team của bạn đã đủ thành viên !"
         ));
     }
-}
+}	
 
-@PostMapping("/sportify/team/teamdetail/tuchoi")
+@PostMapping("/user/team/teamdetail/tuchoi")
 public ResponseEntity<?> tuchoi(@RequestBody Map<String, Object> body) {
     Integer teamId = (Integer) body.get("teamId");
     String username = (String) body.get("username");
@@ -421,7 +444,7 @@ public ResponseEntity<?> tuchoi(@RequestBody Map<String, Object> body) {
     ));
 }
 
-    @PostMapping("/sportify/team/teamdetail/kick")
+    @PostMapping("/user/team/teamdetail/kick")
 public ResponseEntity<?> kickMember(@RequestBody Map<String, Object> body) {
     Integer teamId = (Integer) body.get("teamId");
     String username = (String) body.get("username");
@@ -508,11 +531,12 @@ public ResponseEntity<?> createTeam(
                 .body(Map.of("success", false, "message", "Bạn cần đăng nhập để tạo đội"));
     }
 
-    Teams existingTeam = teamdao.findTeamUser(usernameLogin);
-    if (existingTeam != null) {
+    List<Object[]> existingTeams = teamdao.findTeamUsername(usernameLogin);
+    if (!existingTeams.isEmpty()) {
         return ResponseEntity.badRequest()
                 .body(Map.of("success", false, "message", "Mỗi người chỉ tạo được 1 đội"));
     }
+
 
     Teams newTeam = new Teams();
     newTeam.setNameteam(newNameteam);

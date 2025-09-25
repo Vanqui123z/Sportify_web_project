@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import "../../../styles/FootballPredictionPage.css"
+import HeroSection from "../../../components/user/Hero";
 
 type Match = {
   id: number;
@@ -181,33 +182,14 @@ const FootballPredictionPage: React.FC = () => {
 
   return (
     <div>
-      {/* Hero banner */}
-      <section 
-        className="hero-wrap hero-wrap-2"
-        style={{
-          backgroundImage: "url('/user/images/event3.png')", 
-          height: "400px !important", 
-          minHeight: "400px !important"
-        }}
-        data-stellar-background-ratio="0.5"
-      >
-        <div className="overlay"></div>
-        <div className="container">
-          <div className="row justify-content-center align-items-end" style={{ height: 400 }}>
-            <div className="col-md-9 text-center text-white">
-              <p className="breadcrumbs mb-0">
-                <span className="mr-2">
-                  <a href="/sportify" className="text-white-50">
-                    Trang Chủ <i className="fa fa-chevron-right"></i>
-                  </a>
-                </span>
-                <span>Dự đoán kết quả <i className="fa fa-chevron-right"></i></span>
-              </p>
-              <h2 className="mb-0 bread">Dự đoán kết quả</h2>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HeroSection
+        backgroundImage="/user/images/event3.png"
+        title="Dự đoán kết quả"
+        breadcrumbs={[
+          { label: "Trang Chủ", href: "/sportify" },
+          { label: "Dự đoán kết quả" }
+        ]}
+      />
 
       <section className="ftco-section">
         <div className="container">
@@ -705,5 +687,7 @@ const FootballPredictionPage: React.FC = () => {
     </div>
   );
 };
+
+
 
 export default FootballPredictionPage;
