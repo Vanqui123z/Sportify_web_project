@@ -12,7 +12,7 @@ export default function Layout() {
 
     <>
       <Helmet>
-        <title>User Page</title>
+        <title>Sportify</title>
         <link
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Spectral:wght@200;300;400;500;700;800&display=swap"

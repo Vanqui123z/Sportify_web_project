@@ -18,7 +18,7 @@ const Sidebar: React.FC = () => {
               href="/admin/dashboard"
               className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
             >
-              <i className="fas-solid fas-gauge-high me-3 text-primary"></i>
+              <i className="fas fa-tachometer-alt me-3 text-primary"></i>
               <span>Dashboard</span>
             </a>
           </li>
@@ -28,7 +28,7 @@ const Sidebar: React.FC = () => {
               href="/admin/products"
               className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
             >
-              <i className="fas-solid fas-store me-3 text-success"></i>
+              <i className="fas fa-store me-3 text-success"></i>
               <span>Sản phẩm</span>
             </a>
           </li>
@@ -38,7 +38,7 @@ const Sidebar: React.FC = () => {
               href="/admin/fields"
               className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
             >
-              <i className="fas-solid fas-futbol me-3 text-warning"></i>
+              <i className="fas fa-futbol me-3 text-warning"></i>
               <span>Sân thể thao</span>
             </a>
           </li>
@@ -48,7 +48,7 @@ const Sidebar: React.FC = () => {
               href="/admin/accounts"
               className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
             >
-              <i className="fas-solid fas-users-gear me-3 text-info"></i>
+              <i className="fas fa-users-cog me-3 text-info"></i>
               <span>Quản lý tài khoản</span>
             </a>
           </li>
@@ -58,7 +58,7 @@ const Sidebar: React.FC = () => {
               href="/admin/events"
               className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
             >
-              <i className="fas-solid fas-blog me-3 text-danger"></i>
+              <i className="fas fa-newspaper me-3 text-danger"></i>
               <span>Tin tức & Sự kiện</span>
             </a>
           </li>
@@ -74,7 +74,7 @@ const Sidebar: React.FC = () => {
                     data-bs-toggle="collapse"
                     data-bs-target="#otherMenu"
                   >
-                    <i className="fas-solid fas-pen me-3 text-secondary"></i>
+                    <i className="fas fa-pen me-3 text-secondary"></i>
                     <span>Khác</span>
                   </button>
                 </h6>
@@ -90,7 +90,7 @@ const Sidebar: React.FC = () => {
                           href="/admin/vouchers"
                           className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
                         >
-                          <i className="fas-solid fas-gift me-3 text-primary"></i>
+                          <i className="fas fa-gift me-3 text-primary"></i>
                           <span>Mã giảm giá</span>
                         </a>
                       </li>
@@ -99,7 +99,7 @@ const Sidebar: React.FC = () => {
                           href="/admin/contacts"
                           className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
                         >
-                          <i className="fas-solid fas-comments me-3 text-success"></i>
+                          <i className="fas fa-comments me-3 text-success"></i>
                           <span>Liên hệ</span>
                         </a>
                       </li>
@@ -121,7 +121,7 @@ const Sidebar: React.FC = () => {
                     data-bs-toggle="collapse"
                     data-bs-target="#bookingMenu"
                   >
-                    <i className="fas-solid fas-bullhorn me-3 text-warning"></i>
+                    <i className="fas fa-bullhorn me-3 text-warning"></i>
                     <span>Quản lý phiếu đặt</span>
                   </button>
                 </h6>
@@ -137,7 +137,7 @@ const Sidebar: React.FC = () => {
                           href="/admin/bookings"
                           className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
                         >
-                          <i className="fas-solid fas-ticket me-3 text-primary"></i>
+                          <i className="fas fa-ticket-alt me-3 text-primary"></i>
                           <span>Lịch đặt sân</span>
                         </a>
                       </li>
@@ -146,7 +146,7 @@ const Sidebar: React.FC = () => {
                           href="/admin/order-products"
                           className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
                         >
-                          <i className="fas-solid fas-receipt me-3 text-success"></i>
+                          <i className="fas fa-receipt me-3 text-success"></i>
                           <span>Đơn hàng</span>
                         </a>
                       </li>
@@ -168,7 +168,7 @@ const Sidebar: React.FC = () => {
                     data-bs-toggle="collapse"
                     data-bs-target="#categoryMenu"
                   >
-                    <i className="fas-solid fas-boxes-stacked me-3 text-info"></i>
+                    <i className="fas fa-boxes me-3 text-info"></i>
                     <span>Quản lý thể loại</span>
                   </button>
                 </h6>
@@ -184,7 +184,7 @@ const Sidebar: React.FC = () => {
                           href="/admin/category-product"
                           className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
                         >
-                          <i className="fas-solid fas-vest-patches me-3 text-primary"></i>
+                          <i className="fas fa-tshirt me-3 text-primary"></i>
                           <span>Loại sản phẩm</span>
                         </a>
                       </li>
@@ -193,7 +193,7 @@ const Sidebar: React.FC = () => {
                           href="/admin/category-sport"
                           className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
                         >
-                          <i className="fas-solid fas-spa me-3 text-success"></i>
+                          <i className="fas fa-running me-3 text-success"></i>
                           <span>Loại thể thao</span>
                         </a>
                       </li>
@@ -215,7 +215,7 @@ const Sidebar: React.FC = () => {
                     data-bs-toggle="collapse"
                     data-bs-target="#reportMenu"
                   >
-                    <i className="fas-solid fas-chart-column me-3 text-danger"></i>
+                    <i className="fas fa-chart-bar me-3 text-danger"></i>
                     <span>Báo cáo thống kê</span>
                   </button>
                 </h6>
@@ -231,7 +231,7 @@ const Sidebar: React.FC = () => {
                           href="/admin/reportBooking"
                           className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
                         >
-                          <i className="fas-solid fas-chart-line me-3 text-primary"></i>
+                          <i className="fas fa-chart-line me-3 text-primary"></i>
                           <span>Thống kê đặt sân</span>
                         </a>
                       </li>
@@ -240,7 +240,7 @@ const Sidebar: React.FC = () => {
                           href="/admin/reportOrder"
                           className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
                         >
-                          <i className="fas-solid fas-chart-area me-3 text-success"></i>
+                          <i className="fas fa-chart-area me-3 text-success"></i>
                           <span>Thống kê bán hàng</span>
                         </a>
                       </li>

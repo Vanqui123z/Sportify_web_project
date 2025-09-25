@@ -35,7 +35,7 @@ const LayoutAdmin: React.FC = () => {
     <>
 
       <Helmet>
-        <title>Admin Page</title>
+        <title>Admin Sportify</title>
 
         {/* Base + Fonts + Favicon */}
         <base href="/" />
