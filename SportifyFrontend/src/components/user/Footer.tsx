@@ -15,15 +15,15 @@ export default function Footer() {
                 <p>Nền tảng đa năng cho đặt sân, tạo đội và mua sắm sản phẩm thể thao</p>
                 <ul className="ftco-footer-social list-unstyled mt-2">
                   <li className="ftco-animate">
-                    <a href="#"><span className="fa fa-twitter"></span></a>
+                    <a href="https://x.com/home"><span className="fa fa-twitter"></span></a>
                   </li>
                   <li className="ftco-animate">
-                    <a href="https://www.facebook.com/profile.php?id=100094025267338">
+                    <a href="https://www.facebook.com/?locale=vi_VN">
                       <span className="fa fa-facebook"></span>
                     </a>
                   </li>
                   <li className="ftco-animate">
-                    <a href="#"><span className="fa fa-instagram"></span></a>
+                    <a href="https://www.instagram.com/"><span className="fa fa-instagram"></span></a>
                   </li>
                 </ul>
               </div>
@@ -66,19 +66,19 @@ export default function Footer() {
                     <li>
                       <span className="icon fa fa-map marker"></span>
                       <span className="text">
-                        Công viên phần mềm Quang QTSC Building 1, Trung, P Q.12, Thành phố Hồ Chí Minh, Việt Nam
+                        104 Đ. Trần Bá Giao, Phường 5, Gò Vấp, Hồ Chí Minh, Việt Nam
                       </span>
                     </li>
                     <li>
                       <a href="#">
                         <span className="icon fa fa-phone"></span>
-                        <span className="text">0123456789</span>
+                        <span className="text">0366635625</span>
                       </a>
                     </li>
                     <li>
                       <a href="#">
                         <span className="icon fa fa-paper-plane pr-4"></span>
-                        <span className="text">sportify@gmail.com</span>
+                        <span className="text">phamleducngoc123@gmail.com</span>
                       </a>
                     </li>
                   </ul>
@@ -91,13 +91,13 @@ export default function Footer() {
           <div className="container">
             <div className="row">
               <div className="col-md-12">
-                <p className="mb-0" style={{ color: "rgba(255, 255, 255, .5)" }}>
-                  Bản quyền &copy; {new Date().getFullYear()} Bảo lưu mọi quyền | Mẫu này được thực hiện{" "}
-                  <i className="fa fa-heart color-danger" aria-hidden="true"></i> bởi{" "}
-                  <a href="/sportify/about" target="_blank">
-                    Team Developer Sportify
-                  </a>
-                </p>
+                 <p className="mb-0 text-center" style={{ color: "rgba(255, 255, 255, .5)" }}>
+                   Bản quyền &copy; {new Date().getFullYear()} Bảo lưu mọi quyền | Mẫu này được thực hiện{" "}
+                   <i className="fa fa-heart color-danger" aria-hidden="true"></i> bởi{" "}
+                   <a href="/sportify/about" target="_blank">
+                     Team Ngọc Và Quí
+                   </a>
+                 </p>
               </div>
             </div>
           </div>

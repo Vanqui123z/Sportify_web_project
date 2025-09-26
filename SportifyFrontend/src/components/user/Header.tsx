@@ -40,28 +40,28 @@ export default function Header() {
             <div className="col-md-8 d-flex align-items-center">
               <div className="social-media me-4">
                 <div className="d-flex">
-                  <a href="#" className="me-2 text-light">
+                  <a href="https://www.facebook.com/?locale=vi_VN" className="me-2 text-light">
                     <span className="fa fa-facebook"></span>
                   </a>
-                  <a href="#" className="me-2 text-light">
+                  <a href="https://x.com/home" className="me-2 text-light">
                     <span className="fa fa-twitter"></span>
                   </a>
-                  <a href="#" className="me-2 text-light">
+                  <a href="https://www.instagram.com/" className="me-2 text-light">
                     <span className="fa fa-instagram"></span>
                   </a>
-                  <a href="#" className="me-2 text-light">
-                    <span className="fa fa-dribbble"></span>
+                  <a href="https://zalo.me/0366635625" className="me-2 text-light">
+                    <span className="fa fa-comments"></span>
                   </a>
                 </div>
               </div>
               <div className="contact-info d-flex">
                 <span className="me-3 text-light">
                   <span className="fa fa-phone me-1"></span>
-                  +00 1234 567
+                  0366635625
                 </span>
                 <span className="text-light">
                   <span className="fa fa-paper-plane me-1"></span>
-                  youremail@email.com
+                  phamleducngoc123@gmail.com
                 </span>
               </div>
             </div>
