@@ -35,7 +35,7 @@ const DetailFields: React.FC = () => {
     const { idField } = useParams<{ idField?: string }>();
     const [mainField, setMainField] = useState<Field | null>(null);
     const [relatedFields, setRelatedFields] = useState<Field[]>([]);
-    const [shiftsNull, setShiftsNull] = useState<Shift[]>([]);
+    const [shiftsNull, setShiftsNull] = useState<Shift[] | null>(null);
     const [date, setDate] = useState<string>("");
     const [formattedDate, setFormattedDate] = useState<string>("");
     const [minDate, setMinDate] = useState<string>("");
@@ -43,6 +43,44 @@ const DetailFields: React.FC = () => {
     const [selectedShift, setSelectedShift] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(true);
     const selectRef = useRef<HTMLSelectElement | null>(null);
+    // State cho modal đặt sân cố định
+    const [showFixedBooking, setShowFixedBooking] = useState(false);
+    const [fixedStartDate, setFixedStartDate] = useState("");
+    const [fixedEndDate, setFixedEndDate] = useState("");
+    const [fixedWeekdays, setFixedWeekdays] = useState<string[]>([]); // ['2', '4', ...]
+    const [fixedShifts, setFixedShifts] = useState<{ [key: string]: string }>({}); // { '2': '1', '4': '2' }
+
+    const weekdays = [
+        { value: "2", label: "Thứ 2" },
+        { value: "3", label: "Thứ 3" },
+        { value: "4", label: "Thứ 4" },
+        { value: "5", label: "Thứ 5" },
+        { value: "6", label: "Thứ 6" },
+        { value: "7", label: "Thứ 7" },
+        { value: "CN", label: "Chủ nhật" },
+    ];
+
+    // Xử lý chọn ngày trong tuần
+    const handleWeekdayChange = (weekday: string) => {
+        setFixedWeekdays(prev =>
+            prev.includes(weekday)
+                ? prev.filter(d => d !== weekday)
+                : [...prev, weekday]
+        );
+    };
+
+    // Xử lý chọn ca cho từng ngày
+    const handleShiftChange = (weekday: string, shiftid: string) => {
+        setFixedShifts(prev => ({ ...prev, [weekday]: shiftid }));
+    };
+
+    // Đặt sân cố định (submit)
+    const handleFixedBookingSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        // TODO: Gửi dữ liệu đặt sân cố định lên server
+        alert(`Đặt sân cố định từ ${fixedStartDate} đến ${fixedEndDate} vào các ngày: ${fixedWeekdays.map(w => weekdays.find(x => x.value === w)?.label).join(", ")} với ca: ${JSON.stringify(fixedShifts)}`);
+        setShowFixedBooking(false);
+    };
 
     useEffect(() => {
         const today = new Date();
@@ -100,35 +138,41 @@ const DetailFields: React.FC = () => {
     };
 
     const handleDateBooking = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (!mainField) return;
+        e.preventDefault();
+        if (!mainField) return;
 
-    try {
-        const response = await fetch(
-            `http://localhost:8081/api/sportify/field/detail/check?fieldid=${mainField.fieldid}&dateInput=${date}`, 
-            { method: 'POST' }
-        );
+        try {
+            const response = await fetch(
+                `http://localhost:8081/api/sportify/field/detail/check?fieldid=${mainField.fieldid}&dateInput=${date}`,
+                { method: 'POST' }
+            );
 
-        if (!response.ok) throw new Error("Server error");
+            if (!response.ok) throw new Error("Server error");
 
-        const data = await response.json();
-        console.log("Server response:", data);
+            const data = await response.json();
+            console.log("Server response:", data);
 
-        const shiftsNull = data.shiftsNull;
-        setShiftsNull(shiftsNull); // Cập nhật shiftsNull với dữ liệu từ server
+            const shiftsNull = data.shiftsNull;
+            setShiftsNull(shiftsNull); // Cập nhật shiftsNull với dữ liệu từ server
 
-        if (shiftsNull.length === 0) {
-            alert("Rất tiếc! Không còn ca trống nào trong ngày này.");
-            return;
+            if (shiftsNull.length === 0) {
+                alert("Rất tiếc! Không còn ca trống nào trong ngày này.");
+                return;
+            }
+            console.log("Available shifts:", shiftsNull);
+
+        } catch (err) {
+            console.error("Error fetching shifts:", err);
         }
-        console.log("Available shifts:", shiftsNull);
+    };
+    useEffect(() => {
+        if (shiftsNull && shiftsNull.length > 0) {
+            setSelectedShift(String(shiftsNull[0].shiftid));
+        }
+    }, [shiftsNull]);
 
-    } catch (err) {
-        console.error("Error fetching shifts:", err);
-    }
-};
 
-   
+
     if (loading) {
         return (
             <div className="container py-5">
@@ -162,10 +206,10 @@ const DetailFields: React.FC = () => {
                 <div className="container">
                     <div className="row">
                         <div className="col-lg-6 mb-5 ">
-                            <img 
-                                className="block-20 block-19 img" 
-                                src={mainField?.image ? getImageUrl(mainField.image) : "/user/images/noimage.png"} 
-                                alt="Image" 
+                            <img
+                                className="block-20 block-19 img"
+                                src={mainField?.image ? getImageUrl(mainField.image) : "/user/images/noimage.png"}
+                                alt="Image"
                             />
                         </div>
 
@@ -189,29 +233,29 @@ const DetailFields: React.FC = () => {
                                     </span>
                                 </span>
 
-                                <form 
-                                    onSubmit={handleSubmit} 
+                                <form
+                                    onSubmit={handleSubmit}
                                     className="mb-2 d-flex justify-content-center col-12"
                                 >
                                     <input type="hidden" value={mainField?.fieldid} name="fieldid" />
-                                    <input 
+                                    <input
                                         style={{ border: '2px solid gray', fontWeight: 'lighter' }}
-                                        id="dateInput" 
-                                        name="dateInput" 
+                                        id="dateInput"
+                                        name="dateInput"
                                         required
-                                        className="form-control mr-1 col-9" 
+                                        className="form-control mr-1 col-9"
                                         type="date"
-                                        placeholder="Search" 
-                                        aria-label="Search" 
+                                        placeholder="Search"
+                                        aria-label="Search"
                                         value={date}
                                         onChange={(e) => setDate(e.target.value)}
                                         min={minDate}
                                         max={maxDate}
                                     />
 
-                                    <button 
+                                    <button
                                         style={{ border: '2px solid #28a745' }}
-                                        className="btn btn-success col-3" 
+                                        className="btn btn-success col-3"
                                         type="submit"
                                         onClick={handleDateBooking}
                                     >
@@ -219,18 +263,18 @@ const DetailFields: React.FC = () => {
                                     </button>
                                 </form>
 
-                                {date && (
+                                {shiftsNull && (
                                     <div className="col-12">
                                         <span className="ml-1 mt-3 mb-1">
                                             Các giờ trống bạn có thể đặt của ngày <b className="font-weight-bold text-primary">{formattedDate}</b>
                                         </span>
-                                        <select 
+                                        <select
                                             style={{ border: '2px solid gray', fontWeight: 'lighter' }}
                                             name="nameshift"
                                             className="form-control custom-select mb-3 col-12"
                                             id="inputGroupSelect01"
                                             ref={selectRef}
-                                            defaultValue={shiftsNull.length ? shiftsNull[0]?.shiftid : ""}
+                                            value={selectedShift}
                                             onChange={e => {
                                                 setSelectedShift(e.target.value);
                                                 console.log("Selected shift:", e.target.value);
@@ -245,16 +289,21 @@ const DetailFields: React.FC = () => {
                                 )}
                             </div>
 
-                            {date && (
+                            {shiftsNull && (
                                 <div className="align-self-end mb-5">
-                                    <a 
-                                        className="booking-link" 
+                                    <a
+                                        className="booking-link"
                                         href={`/sportify/field/booking/${mainField?.fieldid}?shiftid=${selectedShift}&dateselect=${date}`}
                                     >
                                         <button className="col-4 pt-3 pb-3 btn btn-success" style={{ fontSize: '17px', fontWeight: 'bold' }}>
                                             Đặt sân ngay
                                         </button>
                                     </a>
+
+                                    <button className="ml-5 col-4 pt-3 pb-3 btn btn-secondary" style={{ fontSize: '17px', fontWeight: 'bold' }} onClick={() => setShowFixedBooking(true)}>
+                                        Đặt sân cố định
+                                    </button>
+
                                 </div>
                             )}
                         </div>
@@ -265,7 +314,7 @@ const DetailFields: React.FC = () => {
                                 <h5 className="font-weight-bold" style={{ fontFamily: 'Arial, sans-serif' }}>
                                     Mô tả chi tiết:
                                 </h5>
-                                <div 
+                                <div
                                     style={{
                                         whiteSpace: 'pre-line',
                                         wordWrap: 'break-word',
@@ -292,22 +341,22 @@ const DetailFields: React.FC = () => {
                                 {relatedFields.map((f) => (
                                     <div key={f.fieldid} className="col-12 d-flex align-items-stretch ">
                                         <div className="blog-entry d-flex">
-                                            <img 
-                                                className="block-20 img" 
-                                                src={f.image ? getImageUrl(f.image) : "/user/images/noimage.png"} 
-                                                alt="Image" 
+                                            <img
+                                                className="block-20 img"
+                                                src={f.image ? getImageUrl(f.image) : "/user/images/noimage.png"}
+                                                alt="Image"
                                             />
 
                                             <div className="text p-4 bg-light">
                                                 <h3 className="heading mb-3">
                                                     <a href={`/sportify/field/detail/${f.fieldid}`}>{f.namefield}</a>
                                                 </h3>
-                                                <p 
-                                                    className="truncate-text" 
+                                                <p
+                                                    className="truncate-text"
                                                     style={{ maxWidth: '200px' }}
-                                                    dangerouslySetInnerHTML={{ 
-                                                        __html: f.descriptionfield && f.descriptionfield.length > 200 
-                                                            ? f.descriptionfield.substring(0, 105) + '...' 
+                                                    dangerouslySetInnerHTML={{
+                                                        __html: f.descriptionfield && f.descriptionfield.length > 200
+                                                            ? f.descriptionfield.substring(0, 105) + '...'
                                                             : f.descriptionfield || ''
                                                     }}
                                                 />
@@ -324,15 +373,58 @@ const DetailFields: React.FC = () => {
                 </div>
             </section>
 
-          
-            {/* Loader */}
-            {loading && (
-                <div id="" className="show fullscreen">
-                    <svg className="circular" width="48px" height="48px">
-                        <circle className="path-bg" cx="24" cy="24" r="22" fill="none" strokeWidth="4" stroke="#eeeeee" />
-                        <circle className="path" cx="24" cy="24" r="22" fill="none" strokeWidth="4" strokeMiterlimit="10" stroke="#F96D00" />
-                    </svg>
+            {/* Modal đặt sân cố định */}
+            {showFixedBooking && shiftsNull ? (
+                <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.3)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ background: '#fff', padding: 30, borderRadius: 10, minWidth: 350, maxWidth: 400, boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
+                        <h4 className="mb-3">Đặt sân cố định theo tuần</h4>
+                        <form onSubmit={handleFixedBookingSubmit}>
+                            <div className="form-group mb-2">
+                                <label>Ngày bắt đầu:</label>
+                                <input type="date" className="form-control" required value={fixedStartDate} min={minDate} max={maxDate} onChange={e => setFixedStartDate(e.target.value)} />
+                            </div>
+                            <div className="form-group mb-2">
+                                <label>Ngày kết thúc:</label>
+                                <input type="date" className="form-control" required value={fixedEndDate} min={fixedStartDate || minDate} max={maxDate} onChange={e => setFixedEndDate(e.target.value)} />
+                            </div>
+                            <div className="form-group mb-2">
+                                <label>Chọn các ngày trong tuần:</label>
+                                <div className="d-flex flex-wrap">
+                                    {weekdays.map(w => (
+                                        <div key={w.value} className="mr-2 mb-1">
+                                            <input type="checkbox" id={`weekday-${w.value}`} checked={fixedWeekdays.includes(w.value)} onChange={() => handleWeekdayChange(w.value)} />
+                                            <label htmlFor={`weekday-${w.value}`} className="ml-1">{w.label}</label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            {fixedWeekdays.length > 0 ? (
+                                <div className="form-group mb-2">
+                                    <label>Chọn ca cho từng ngày:</label>
+                                    {fixedWeekdays.map(w => (
+                                        <div key={w} className="mb-1">
+                                            <span className="mr-2">{weekdays.find(x => x.value === w)?.label}:</span>
+                                            <select className="form-control d-inline-block w-auto" value={fixedShifts[w] || ""} onChange={e => handleShiftChange(w, e.target.value)} required>
+                                                <option value="">Chọn ca</option>
+                                                {shiftsNull.map(s => (
+                                                    <option key={s.shiftid} value={s.shiftid}>{s.nameshift}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="form-group mb-2">Chọn ca cho từng ngày lỗi  </div>
+                            )}
+                            <div className="d-flex justify-content-end mt-3">
+                                <button type="button" className="btn btn-secondary mr-2" onClick={() => setShowFixedBooking(false)}>Hủy</button>
+                                <a href={`/sportify/field/booking/${mainField?.fieldid}?shiftid=${selectedShift}&dateselect=${date}`} className="btn btn-success">Đặt sân</a>
+                            </div>
+                        </form>
+                    </div>
                 </div>
+            ) : (
+                <div>Lỗi booking</div>
             )}
 
             <style>{`

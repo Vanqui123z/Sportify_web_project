@@ -38,7 +38,6 @@ const CheckoutDatSan: React.FC = () => {
 
   // Lấy nameshift từ cả nameShift và nameshift để đảm bảo nhận đúng giá trị
   const searchParams = new URLSearchParams(location.search);
-  const nameshift = searchParams.get('nameshift') || searchParams.get('nameShift') || '';
   const dateselect = searchParams.get('dateselect') || '';
 
   // Lấy shiftid từ query string (nếu có)
@@ -47,6 +46,7 @@ const CheckoutDatSan: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [field, setField] = useState<Field | null>(null);
   const [note, setNote] = useState('');
+  const [nameshift, setNameshift] = useState("");
   const [amount, setAmount] = useState(0);
   const [thanhtien, setThanhtien] = useState(0);
   const [pricefield, setPricefield] = useState(0);
@@ -75,9 +75,7 @@ const CheckoutDatSan: React.FC = () => {
         setPricefield(f.price);
         setThanhtien(data.totalprice); // lấy từ API
         setAmount(Math.round(data.totalprice * 0.3)); // cọc 30% của tổng tiền
-        // Nếu cần dùng shiftid hoặc dateselect, có thể lưu vào state ở đây
-        // setShiftId(data.shiftid);
-        // setDateSelect(data.dateselect);
+       setNameshift(data.nameShift); // lấy từ API
       })
       .catch(err => {
         console.error("Lỗi khi gọi API booking:", err);

@@ -309,7 +309,6 @@ public ResponseEntity<?> booking(
         @RequestParam("shiftid") Integer shiftId,
         @RequestParam("dateselect") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateselect,
         HttpServletRequest request) {
-
     String username = (String) request.getSession().getAttribute("username"); 
     if (username == null) {
         return ResponseEntity.status(401)
@@ -326,7 +325,7 @@ public ResponseEntity<?> booking(
     }
 
     LocalTime time = shiftList.get(0).getStarttime();
-    int shiftid = shiftList.get(0).getShiftid();
+    String nameShift = shiftList.get(0).getNameshift();
 
     // Lấy thông tin sân
     List<Field> fieldListById = fieldservice.findFieldById(idField);
@@ -350,7 +349,7 @@ public ResponseEntity<?> booking(
     // Trả về JSON
     return ResponseEntity.ok(Map.of(
             "user", profile,
-            "shiftid", shiftid,
+            "nameShift", nameShift,
             "dateselect", dateselect,
             "fieldListById", fieldListById,
             "totalprice", totalprice
