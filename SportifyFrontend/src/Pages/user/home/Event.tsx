@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { fetchEvents } from '../../../service/user/home/eventApi';
 import getImageUrl from '../../../utils/getImageUrl';
 import HeroSection from "../../../components/user/Hero"; // Thêm import
 
@@ -31,18 +32,10 @@ const Event: React.FC = () => {
   const [keyword, setKeyword] = useState<string>('');
   const [filterType, setFilterType] = useState<string>('');
 
-  const fetchEvents = async (pageNumber = 0, type = '', key = '') => {
+  const fetchEventsData = async (pageNumber = 0, type = '', key = '') => {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
-      params.append('page', String(pageNumber));
-      params.append('size', String(size));
-      if (type) params.append('eventType', type);
-      if (key) params.append('keyword', key);
-
-      const res = await fetch(`http://localhost:8081/api/sportify/event?${params.toString()}`);
-      if (!res.ok) throw new Error('Failed to fetch');
-      const data: ApiResponse = await res.json();
+      const data: ApiResponse = await fetchEvents({ page: pageNumber, size, eventType: type, keyword: key });
       setEvents(data.content || []);
       setTotalPages(data.totalPages || 0);
       setPage(data.number || 0);
@@ -55,24 +48,24 @@ const Event: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchEvents();
+    fetchEventsData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchEvents(0, filterType, keyword);
+    fetchEventsData(0, filterType, keyword);
   };
 
   const handleFilter = (type: string) => {
     const newType = filterType === type ? '' : type; // toggle
     setFilterType(newType);
-    fetchEvents(0, newType, keyword);
+    fetchEventsData(0, newType, keyword);
   };
 
   const goToPage = (p: number) => {
     if (p < 0 || p >= totalPages) return;
-    fetchEvents(p, filterType, keyword);
+    fetchEventsData(p, filterType, keyword);
   };
 
   // deduplicate event types from fetched events for the filter buttons

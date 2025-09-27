@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
+import { fetchFootballPrediction } from '../../../service/user/home/footballPredictionApi';
 import "../../../styles/FootballPredictionPage.css"
 import HeroSection from "../../../components/user/Hero";
 
@@ -51,8 +52,7 @@ const FootballPredictionPage: React.FC = () => {
   const [modalMatch, setModalMatch] = useState<Match | null>(null);
 
   useEffect(() => {
-    fetch("http://localhost:8081/api/sportify/football-prediction")
-      .then((res) => res.json())
+    fetchFootballPrediction()
       .then((d) => setData(d))
       .catch(() => setData({}))
       .finally(() => setLoading(false));

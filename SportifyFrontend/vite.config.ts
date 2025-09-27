@@ -9,5 +9,14 @@ export default defineConfig({
     proxy: {
       '/rest': 'http://localhost:8081' 
     }
-  }
+  },
+  define: {
+    global: 'window'   
+  },
+  resolve: {
+    alias: {
+      process: 'process/browser',
+      buffer: 'buffer',
+    },
+  },
 });

@@ -3,6 +3,8 @@ import Loader from "../../../components/user/Loader";
 import type { Field, Product } from "../../../Types/interface";
 import getImageUrl from "../../../utils/getImageUrl";
 import { useFtcoAnimation } from "../../../utils/useFtcoAnimation";
+import { fetchHomeData } from '../../../service/user/home/homeApi';
+
 
 
 // Add body background style
@@ -36,73 +38,52 @@ export default function HomePage() {
   useEffect(() => {
   
 
-    // Fetch data with better error handling
-    const fetchData = async () => {
-      try {
-        console.log("Fetching data from APIs...");
-        
-        const [mainResponse, eventResponse] = await Promise.all([
-          fetch("http://localhost:8081/api/sportify"),
-          fetch("http://localhost:8081/api/sportify/event")
-        ]);
-
-        if (!mainResponse.ok) {
-          throw new Error(`Main API error: ${mainResponse.status}`);
-        }
-        if (!eventResponse.ok) {
-          throw new Error(`Event API error: ${eventResponse.status}`);
-        }
-
-        const mainData = await mainResponse.json();
-        const eventData = await eventResponse.json();
-
-     
-
-        // Check if data exists and is in expected format
-        if (mainData && mainData.fieldList && Array.isArray(mainData.fieldList)) {
-          const transformedFields = mainData.fieldList.map((field: any[]) => ({
-            id: field[0],
-            code: field[1],
-            name: field[2],
-            description: field[3],
-            price: field[4],
-            image: field[5],
-            address: field[6],
-            isActive: field[7]
-          }));
-          setFieldList(transformedFields);
-        } else {
+      // Fetch data using service
+      const fetchData = async () => {
+        try {
+          const { mainData, eventData } = await fetchHomeData();
+          if (mainData && mainData.fieldList && Array.isArray(mainData.fieldList)) {
+            const transformedFields = mainData.fieldList.map((field: any[]) => ({
+              id: field[0],
+              code: field[1],
+              name: field[2],
+              description: field[3],
+              price: field[4],
+              image: field[5],
+              address: field[6],
+              isActive: field[7]
+            }));
+            setFieldList(transformedFields);
+          } else {
+            setFieldList([]);
+          }
+          if (mainData && mainData.topproduct && Array.isArray(mainData.topproduct)) {
+            const transformedProducts = mainData.topproduct.map((product: any[]) => ({
+              id: product[0],
+              name: product[1],
+              count: product[2],
+              image: product[3],
+              price: product[4],
+              description: product[5]
+            }));
+            setTopProduct(transformedProducts);
+          } else {
+            setTopProduct([]);
+          }
+          if (eventData && eventData.content && Array.isArray(eventData.content)) {
+            setEventList(eventData.content);
+          } else {
+            setEventList([]);
+          }
+        } catch (error) {
           setFieldList([]);
-        }
-
-        if (mainData && mainData.topproduct && Array.isArray(mainData.topproduct)) {
-          const transformedProducts = mainData.topproduct.map((product: any[]) => ({
-            id: product[0],
-            name: product[1],
-            count: product[2],
-            image: product[3],
-            price: product[4],
-            description: product[5]
-          }));
-          setTopProduct(transformedProducts);
-        } else {
           setTopProduct([]);
-        }
-
-        if (eventData && eventData.content && Array.isArray(eventData.content)) {
-          setEventList(eventData.content);
-        } else {
           setEventList([]);
+        } finally {
+          setLoading(false);
         }
-
-      } catch (error) {
-        setFieldList([]);
-        setTopProduct([]);
-        setEventList([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+      };
+      fetchData();
 
     fetchData();
 

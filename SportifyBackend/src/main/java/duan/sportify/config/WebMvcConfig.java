@@ -1,4 +1,4 @@
-package duan.sportify;
+package duan.sportify.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -8,6 +8,8 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import duan.sportify.UserInfoInterceptor;
 
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {

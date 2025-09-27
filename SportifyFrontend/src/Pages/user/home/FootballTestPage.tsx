@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { fetchFootballTest } from '../../../service/user/home/footballTestApi';
 
 type Match = {
   date: string;
@@ -40,8 +41,7 @@ const FootballTestPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:8081/api/sportify/football-test")
-      .then((res) => res.json())
+    fetchFootballTest()
       .then((d) => setData(d))
       .catch((e) => setData({ error: String(e) }))
       .finally(() => setLoading(false));

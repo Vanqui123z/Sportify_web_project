@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Nav_contact from '../../../components/user/Nav_contact';
+import { sendContact } from '../../../service/user/home/contactApi';
 type ContactPayload = {
   contactid: null | string;
   username: null | string;
@@ -73,14 +74,7 @@ const Contact: React.FC = () => {
     };
 
     try {
-      const res = await fetch('http://localhost:8081/api/sportify/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
+      const data = await sendContact(payload);
       // Expecting structure similar to sample: { contacts: {...}, status: 'success', username: null }
       if (data && data.status && data.status === 'success') {
         setMessage('Gửi phản hồi thành công. Cảm ơn bạn!');

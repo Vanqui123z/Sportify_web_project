@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { fetchEventDetail } from '../../../service/user/home/eventApi';
 import { useParams, Link } from 'react-router-dom';
 import HeroSection from '../../../components/user/Hero';
 
@@ -30,9 +31,7 @@ const EventDetail: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`http://localhost:8081/api/sportify/eventdetail/${eventid}`);
-        if (!res.ok) throw new Error('Failed to fetch event detail');
-        const data: EventDetailData = await res.json();
+        const data: EventDetailData = await fetchEventDetail(eventid);
         setEvent(data.eventdetail || null);
         setRelated(data.eventLQ || []);
       } catch (err) {

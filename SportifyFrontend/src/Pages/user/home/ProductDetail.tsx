@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import getImageUrl from '../../../utils/getImageUrl';
+import { fetchProductDetail, addProductToCart } from '../../../service/user/home/productApi';
+import { useParams } from 'react-router-dom';
 import HeroSection from "../../../components/user/Hero"; // Thêm import
 
 interface Product {
@@ -29,31 +29,23 @@ const ProductDetail: React.FC = () => {
   const [addQuantity, setAddQuantity] = useState<number>(1);
 
   useEffect(() => {
-    fetch(`http://localhost:8081/api/sportify/product-single/${productid}`)
-      .then(res => res.json())
+    fetchProductDetail(productid)
       .then(data => setProduct(data));
   }, []);
 
-  const addProductToCart = () => {
-    fetch(`http://localhost:8081/api/user/cart/add/${productid}?quantity=${addQuantity}`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-       .then((data) => {
-      if (data?.ok) {
-        alert("Thêm sản phẩm vào giỏ hàng thành công!");
-      } else {
-        alert("Thêm sản phẩm thất bại!");
-      }
-    })
-    .catch((err) => {
-      console.error("Add to cart failed:", err);
-      alert("Có lỗi xảy ra khi thêm vào giỏ hàng!");
-    });
-    
+  const handleAddProductToCart = () => {
+    addProductToCart(productid, addQuantity)
+      .then((data) => {
+        if (data?.ok) {
+          alert("Thêm sản phẩm vào giỏ hàng thành công!");
+        } else {
+          alert("Thêm sản phẩm thất bại!");
+        }
+      })
+      .catch((err) => {
+        console.error("Add to cart failed:", err);
+        alert("Có lỗi xảy ra khi thêm vào giỏ hàng!");
+      });
     setCartCount(cartCount + addQuantity);
     if (product) {
       setCartItems([...cartItems, { ...product, quantity: addQuantity }]);
@@ -131,7 +123,7 @@ const ProductDetail: React.FC = () => {
 
               <p className="mt-4">
                 <button
-                  onClick={addProductToCart}
+                  onClick={handleAddProductToCart}
                   disabled={!product.productstatus}
                   className="btn btn-product py-3 px-5 mr-2"
                   style={{ color: 'black', border: '1px solid black', opacity: product.productstatus ? 1 : 0.5 }}

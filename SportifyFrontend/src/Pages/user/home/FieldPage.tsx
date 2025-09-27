@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { fetchFieldList } from '../../../service/user/home/fieldApi';
 import Loader from "../../../components/user/Loader";
 import getImageUrl from "../../../utils/getImageUrl";
 import { useFtcoAnimation } from "../../../utils/useFtcoAnimation";
@@ -48,8 +49,7 @@ export default function FieldPage() {
   }, []);
 
   useEffect(() => {
-    fetch("http://localhost:8081/api/sportify/field")
-      .then((res) => res.json())
+    fetchFieldList()
       .then((data) => {
         setCates(data.cates || []);
         setShift(data.shift || []);

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { fetchProductList } from '../../../service/user/home/productApi';
 import CustomCard from '../../../components/user/CustomCard';
 import getImageUrl from '../../../utils/getImageUrl';
 import HeroSection from "../../../components/user/Hero"; // Thêm import
@@ -32,8 +33,7 @@ const Product: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch('http://localhost:8081/api/sportify/product');
-        const data = await res.json();
+        const data = await fetchProductList();
         setCategoryList(data.categoryList || []);
         setProductList(data.productList || []);
       } catch (error) {

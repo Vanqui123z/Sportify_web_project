@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import getImageUrl from "../../../utils/getImageUrl";
 import HeroSection from "../../../components/user/Hero"; // Thêm import
+import { fetchFieldDetail } from '../../../service/user/home/fieldApi';
 
 interface SportType {
     sporttypeid: string;
@@ -60,11 +61,9 @@ const DetailFields: React.FC = () => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const res = await fetch(`http://localhost:8081/api/sportify/field/detail/${idField}`);
-                if (!res.ok) throw new Error(`Status ${res.status}`);
-                const data = await res.json();
-                // Expecting data.fieldListByIdSporttype: Field[]
-                const arr: Field[] = Array.isArray(data) ? data : (data.fieldListByIdSporttype || data.fields || []);
+                const data = await fetchFieldDetail(idField);
+                if (!data) throw new Error('Failed to fetch field detail');
+                const arr: Field[] = Array.isArray(data.fieldListByIdSporttype) ? data.fieldListByIdSporttype : (data.fields || []);
                 if (!arr || arr.length === 0) {
                     setLoading(false);
                     return;

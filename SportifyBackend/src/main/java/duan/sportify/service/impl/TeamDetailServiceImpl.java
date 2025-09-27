@@ -1,6 +1,9 @@
 package duan.sportify.service.impl;
 
+import java.time.LocalDate;
 import java.util.List;
+
+import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,10 +17,21 @@ import duan.sportify.service.TeamDetailService;
 
 @SuppressWarnings("unused")
 @Service
+@Transactional
 public class TeamDetailServiceImpl implements TeamDetailService{
 	@Autowired
 	TeamDetailDAO teamDetailDAO;
 
+	public boolean confirmMember(Integer teamId, String username) {
+        Teamdetails user = teamDetailDAO.findOneUserCheckByIdTeam0(teamId, username);
+        if (user == null) return false;
+
+        user.setStatus(true);
+        user.setJoindate(LocalDate.now());
+		user.setInfouser(username + " đã là thành viên của đội");
+        teamDetailDAO.save(user);
+        return true;
+    }
 	@Override
 	public List<Teamdetails> findAll() {
 		// TODO Auto-generated method stub

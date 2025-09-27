@@ -29,7 +29,11 @@
   			<artifactId>cloudinary-http44</artifactId>
   			<version>1.39.0</version>
 		</dependency>
-
+		<!-- SPRING-WEBSOCKET -->
+		<dependency>
+  	 		 <groupId>org.springframework.boot</groupId>
+   			 <artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
 		<!-- SPRING-TEST -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -68,11 +72,7 @@
 			<artifactId>mysql-connector-java</artifactId>
 			<version>8.0.33</version>
 		</dependency>
-		<!-- SPRING-JDBC -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jdbc</artifactId>
-		</dependency>
+		
 		<!-- SPRING-JPA -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

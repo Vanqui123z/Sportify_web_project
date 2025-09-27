@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import getImageUrl from "../../../utils/getImageUrl";
 import HeroSection from "../../../components/user/Hero"; // Thêm import
+import GroupChat from "./GroupChat";
 
 // Types based on the API response structure
 type WaitingListItem = {
@@ -308,6 +309,15 @@ const TeamDetail: FC<{ teamIdProp?: string }> = ({ teamIdProp }) => {
 										</div>
 									</div>
 								</div>
+
+								{/* GroupChat */}
+								<div className="mt-4">
+									<h5 className="mb-3 fw-bold">
+										<i className="fa fa-comments me-2"></i>
+										Chat nhóm
+									</h5>
+									<GroupChat />
+								</div>
 							</div>
 						</div>
 						{/* RIGHT SIDE */}
@@ -367,47 +377,61 @@ const TeamDetail: FC<{ teamIdProp?: string }> = ({ teamIdProp }) => {
 								<i className="fa fa-hourglass-half me-2"></i>
 								Danh sách chờ
 							</h5>
-							{role === "owner" && waitingList.length === 0 ? (
-								<h6 className="text-center text-muted">Không có thành viên nào trong danh sách chờ</h6>
-							) : (
-								<div className="p-3 bg-white">
-									<div className="d-flex flex-column gap-2">
-										{waitingList.map((member, idx) => (
-											<div key={idx} className="d-flex align-items-center border rounded-2 px-2 py-2 bg-light mb-2">
-												<img
-													src="/user/images/noavatar.jpg"
-													alt="avatar"
-													className="rounded-circle border"
-													style={{ width: 40, height: 40, objectFit: "cover" }}
-												/>
-												<div className="ms-3 flex-grow-1">
-													<div className="fw-semibold">{member.username}</div>
-												</div>
-												<div className="d-flex gap-2 align-items-center">
-													<button
-														className="btn btn-outline-danger btn-sm d-flex align-items-center px-2 py-1"
-														style={{ minWidth: 32 }}
-														title="Từ chối"
-														onClick={() => handleReject(member.username)}
+							{role === "owner" && (
+								Array.isArray(waitingList) ? (
+									waitingList.length === 0 ? (
+										<h6 className="text-center text-muted">
+											Không có thành viên nào trong danh sách chờ
+										</h6>
+									) : (
+										<div className="p-3 bg-white">
+											<div className="d-flex flex-column gap-2">
+												{waitingList.map((member, idx) => (
+													<div
+														key={idx}
+														className="d-flex align-items-center border rounded-2 px-2 py-2 bg-light mb-2"
 													>
-														<i className="fa fa-times"></i>
-													</button>
-													<button
-														className="btn btn-outline-success btn-sm d-flex align-items-center px-2 py-1"
-														style={{ minWidth: 32 }}
-														title="Chấp nhận"
-														onClick={() => handleAccept(member.username)}
-													>
-														<i className="fa fa-check"></i>
-													</button>
-												</div>
+														<img
+															src="/user/images/noavatar.jpg"
+															alt="avatar"
+															className="rounded-circle border"
+															style={{ width: 40, height: 40, objectFit: "cover" }}
+														/>
+														<div className="ms-3 flex-grow-1">
+															<div className="fw-semibold">{member.username}</div>
+														</div>
+														<div className="d-flex gap-2 align-items-center">
+															<button
+																className="btn btn-outline-danger btn-sm d-flex align-items-center px-2 py-1"
+																style={{ minWidth: 32 }}
+																title="Từ chối"
+																onClick={() => handleReject(member.username)}
+															>
+																<i className="fa fa-times"></i>
+															</button>
+															<button
+																className="btn btn-outline-success btn-sm d-flex align-items-center px-2 py-1"
+																style={{ minWidth: 32 }}
+																title="Chấp nhận"
+																onClick={() => handleAccept(member.username)}
+															>
+																<i className="fa fa-check"></i>
+															</button>
+														</div>
+													</div>
+												))}
 											</div>
-										))}
-									</div>
-								</div>
+										</div>
+									)
+								) : (
+									<h6 className="text-center text-danger">
+										Dữ liệu danh sách chờ không hợp lệ
+									</h6>
+								)
 							)}
-							
-							
+
+
+
 						</div>
 					</div>
 					{/* Bottom Action */}
@@ -423,15 +447,7 @@ const TeamDetail: FC<{ teamIdProp?: string }> = ({ teamIdProp }) => {
 						</div>
 					</div>
 				</div>
-				<style>{`
-					.btn-outline-danger, .btn-outline-primary, .btn-outline-success {
-						transition: background 0.2s, color 0.2s;
-					}
-					.btn-outline-danger:hover, .btn-outline-primary:hover, .btn-outline-success:hover {
-						background: #eee;
-						color: #222;
-					}
-				`}</style>
+
 			</div>
 		</>
 	);

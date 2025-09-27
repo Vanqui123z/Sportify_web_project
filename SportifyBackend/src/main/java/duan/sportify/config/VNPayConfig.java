@@ -1,4 +1,4 @@
-package duan.sportify;
+package duan.sportify.config;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;

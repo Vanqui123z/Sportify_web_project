@@ -39,10 +39,11 @@ public interface TeamDetailDAO extends JpaRepository<Teamdetails, Integer>{
 	List<Object[]> findUserCheckByIdTeam(Integer teamId);
 	
 	
-	@Query(value = "SELECT teamdetails.*\r\n"
-			+ "			FROM teamdetails\r\n"
-			+ "			WHERE teamdetails.teamid like :teamId and teamdetails.username like :username and teamdetails.status=0",nativeQuery = true)
-	Teamdetails findOneUserCheckByIdTeam0(Integer teamId,String username);
+	@Query("SELECT t FROM Teamdetails t " +
+       "WHERE t.teamid = :teamId AND t.username = :username AND t.status = false")
+Teamdetails findOneUserCheckByIdTeam0(@Param("teamId") Integer teamId,
+                                      @Param("username") String username);
+
 	
 	@Query(value = "SELECT teamdetails.*\r\n"
 			+ "			FROM teamdetails\r\n"
@@ -52,7 +53,7 @@ public interface TeamDetailDAO extends JpaRepository<Teamdetails, Integer>{
 	
 	@Query(value = "SELECT * FROM sportify.teamdetails\r\n"
 			+ "where teamid like :teamId And username like :username and status=1",nativeQuery = true)
-	Teamdetails checkTeamUser(String username, Integer teamId);
+	Teamdetails checkTeamUser(Integer teamId, String username);
 	
 	@Query(value = "SELECT * FROM sportify.teamdetails\r\n"
 			+ "where teamid like :teamId And username like :username",nativeQuery = true)

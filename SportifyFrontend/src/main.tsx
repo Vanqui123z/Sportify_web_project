@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { HelmetProvider } from "@dr.pogodin/react-helmet";
 import App from './App.tsx'
 
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <HelmetProvider>

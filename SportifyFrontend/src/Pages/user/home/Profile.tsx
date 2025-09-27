@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import type { ChangeEvent } from 'react';
 
+import { fetchProfile as fetchProfileApi, saveProfile, changePassword } from '../../../service/user/home/profileApi';
+
 interface ProfileData {
   username: string;
   passwords: string;
@@ -14,7 +16,6 @@ interface ProfileData {
   status?: boolean;
 }
 
-const API_BASE = 'http://localhost:8081';
 const VITE_CLOUDINARY_BASE_URL = import.meta.env.VITE_CLOUDINARY_BASE_URL || '';
 
 export default function Profile(): React.ReactElement {
@@ -54,19 +55,10 @@ export default function Profile(): React.ReactElement {
   useEffect(() => {
     async function fetchProfile() {
       try {
-        const res = await fetch(`${API_BASE}/api/user/profile`, {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json"
-          }
-        });
-        if (!res.ok) throw new Error('Network response was not ok');
-        const data = await res.json();
+        const data = await fetchProfileApi();
         const p: ProfileData = data.profile;
         setProfile(p);
         setRole(data.role || '');
-
         // initialize form fields
         setFirstname(p.firstname || '');
         setLastname(p.lastname || '');
@@ -76,7 +68,6 @@ export default function Profile(): React.ReactElement {
         setGender(typeof p.gender === 'boolean' ? p.gender : true);
         setAvatarProfile(p.image || null);
         if (p.image) {
-          // if backend serves images from /user/images/
           setAvatarPreview(`${VITE_CLOUDINARY_BASE_URL}/${p.image}`);
         }
       } catch (err) {
@@ -86,7 +77,6 @@ export default function Profile(): React.ReactElement {
         setLoading(false);
       }
     }
-
     fetchProfile();
   }, []);
 
@@ -200,15 +190,7 @@ export default function Profile(): React.ReactElement {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/api/user/profile/save-profile`, {
-        method: 'POST',
-        credentials: "include",
-        body: formData
-      });
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || 'Lỗi khi lưu hồ sơ');
-      }
+      await saveProfile(formData);
       setMessage('Cập nhật hồ sơ thành công');
       setMessageError('');
     } catch (err: any) {
@@ -455,21 +437,7 @@ export default function Profile(): React.ReactElement {
               
               setModalSubmitting(true);
               try {
-                const res = await fetch(`${API_BASE}/api/user/profile/change-password`, {
-                  method: 'POST',
-                  credentials: "include",
-                  headers: {
-                    "Content-Type": "application/json"
-                  },
-                  body: JSON.stringify({
-                    newPassword: modalNewPassword
-                  })
-                });
-                
-                if (!res.ok) {
-                  const text = await res.text();
-                  throw new Error(text || 'Lỗi khi đổi mật khẩu');
-                }
+                await changePassword(modalNewPassword);
                 
                 setModalMessage('Đổi mật khẩu thành công');
                 setTimeout(() => {

@@ -28,8 +28,9 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import duan.sportify.VNPayConfig;
 import duan.sportify.DTO.PaymentResDTO;
+import duan.sportify.config.VNPayConfig;
+import duan.sportify.config.appConfig;
 import duan.sportify.entities.Bookingdetails;
 import duan.sportify.entities.Bookings;
 import duan.sportify.entities.Orders;
@@ -37,7 +38,6 @@ import duan.sportify.entities.Users;
 import duan.sportify.service.BookingDetailService;
 import duan.sportify.service.BookingService;
 import duan.sportify.service.UserService;
-import duan.sportify.utils.appConfig;
 import duan.sportify.service.OrderService;
 
 @Controller

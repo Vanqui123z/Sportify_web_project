@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import duan.sportify.entities.Users;
 @RestController
 @RequestMapping("/sportify/user")
-public class UserController {
+public class UserAdminController {
 	 	@Autowired
 	    private HttpSession session;
 

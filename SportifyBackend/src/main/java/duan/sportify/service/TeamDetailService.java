@@ -17,4 +17,5 @@ public interface TeamDetailService {
 	void delete(Integer id);
 	
 	Teamdetails findById(Integer id);
+	boolean confirmMember(Integer teamId, String username);
 }

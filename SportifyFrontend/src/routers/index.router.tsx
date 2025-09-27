@@ -10,12 +10,14 @@ import Register from "../Pages/security/Register";
 import { AuthProvider } from "../utils/AuthContext";
 import LayoutAdmin from "../layouts/LayoutAdmin";
 import PaymentResult from "../Pages/user/checkout/PaymentResult";
+import GroupChat from "../Pages/user/home/GroupChat";
 const AppRouter = () => (
   <Router>
     <AuthProvider>
       <Routes>
         {/* Auth routes - nằm ngoài layout chính */}
         <Route path="/login" element={<Login />} />
+        <Route path="/chat" element={<GroupChat />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login/forgotpassword" element={<ForgetPass />} />
 
