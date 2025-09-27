@@ -131,6 +131,14 @@ const ProductDetail: React.FC = () => {
                   {product.productstatus ? 'Thêm vào giỏ' : 'Hết hàng'}
                 </button>
               </p>
+               <p className="mt-4">
+                <a
+                  href='/sportify/cart/view'
+                  className="btn btn-success "
+                >
+                  Mua ngay
+                </a>
+              </p>
             </div>
           </div>
 
