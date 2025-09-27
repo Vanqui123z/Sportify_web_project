@@ -25,7 +25,15 @@ export default function Navbar() {
               <li className="nav-item">
                 <a href="/sportify/team" className="nav-link">Đội</a>
               </li>
-              <li className="nav-item"><a className="nav-link" href="/sportify/football-prediction">Dự đoán tỉ số</a></li>
+              <li className="nav-item dropdown">
+                <a className="nav-link dropdown-toggle" href="#" id="footballDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  Trực tiếp bóng đá
+                </a>
+                <div className="dropdown-menu" aria-labelledby="footballDropdown">
+                  <a className="dropdown-item" href="https://xoilaczzcz.tv/" target="_blank" rel="noopener noreferrer">Xem trực tiếp</a>
+                  <a className="dropdown-item" href="/sportify/football-prediction">Dự đoán tỉ số</a>
+                </div>
+              </li>
               <li className="nav-item">
                 <a href="/sportify/product" className="nav-link">Cửa hàng</a>
               </li>

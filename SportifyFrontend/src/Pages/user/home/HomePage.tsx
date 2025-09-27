@@ -366,16 +366,16 @@ export default function HomePage() {
                     <div className="icon d-flex align-items-center justify-content-center">
                       <span className="fa fa-quote-left"></span>
                     </div>
-                    <div className="text">
-                      <p className="mb-4">"Thành công không phải là bất ngờ. Đó là công việc khó khăn, kiên trì, học hỏi, học tập, hy sinh và hơn hết, tình yêu của những gì bạn đang làm hoặc học tập để làm".</p>
-                      <br /> <br />
-                      <div className="d-flex align-items-center">
-                        <div className="user-img" style={{ backgroundImage: "url(/user/images/pele.png)" }}></div>
-                        <div className="pl-3">
-                          <p className="name">Pelé</p>
-                          <span className="position">Ngôi sao vĩ đại trên sân cỏ</span>
-                        </div>
-                      </div>
+                    <div className="text text-center">
+                       <p className="mb-4 fst-italic" style={{ fontSize: '1.3rem', lineHeight: '1.7', color: '#ffffff' }}>"Thành công không phải là bất ngờ. Đó là công việc khó khăn, kiên trì, học hỏi, học tập, hy sinh và hơn hết, tình yêu của những gì bạn đang làm hoặc học tập để làm".</p>
+                       <br /> <br />
+                       <div className="d-flex align-items-center justify-content-center">
+                         <div className="user-img" style={{ backgroundImage: "url(/user/images/pele.png)" }}></div>
+                         <div className="pl-3 text-center">
+                           <p className="name fw-bold" style={{ fontSize: '1.2rem', color: '#ffffff' }}>Pelé</p>
+                           <span className="position" style={{ fontSize: '1rem', color: '#e0e0e0' }}>Ngôi sao vĩ đại trên sân cỏ</span>
+                         </div>
+                       </div>
                     </div>
                   </div>
                 </div>
@@ -384,16 +384,16 @@ export default function HomePage() {
                     <div className="icon d-flex align-items-center justify-content-center">
                       <span className="fa fa-quote-left"></span>
                     </div>
-                    <div className="text">
-                      <p className="mb-4">"Mỗi năm tôi đều cố gắng phấn đấu với tư cách là một cầu thủ. Và tôi không muốn sự nghiệp của mình đi theo một lối mòn. Tôi luôn cố gắng trong mỗi trận đấu theo mọi cách có thể."</p>
-                      <br /> <br />
-                      <div className="d-flex align-items-center">
-                        <div className="user-img" style={{ backgroundImage: "url(/user/images/messi.png)" }}></div>
-                        <div className="pl-3">
-                          <p className="name">Lionel Messi</p>
-                          <span className="position">Cầu thủ xuất sắc nhất thế giới.</span>
-                        </div>
-                      </div>
+                    <div className="text text-center">
+                       <p className="mb-4 fst-italic" style={{ fontSize: '1.3rem', lineHeight: '1.7', color: '#ffffff' }}>"Mỗi năm tôi đều cố gắng phấn đấu với tư cách là một cầu thủ. Và tôi không muốn sự nghiệp của mình đi theo một lối mòn. Tôi luôn cố gắng trong mỗi trận đấu theo mọi cách có thể."</p>
+                       <br /> <br />
+                       <div className="d-flex align-items-center justify-content-center">
+                         <div className="user-img" style={{ backgroundImage: "url(/user/images/messi.png)" }}></div>
+                         <div className="pl-3 text-center">
+                           <p className="name fw-bold" style={{ fontSize: '1.2rem', color: '#ffffff' }}>Lionel Messi</p>
+                           <span className="position" style={{ fontSize: '1rem', color: '#e0e0e0' }}>Cầu thủ xuất sắc nhất thế giới.</span>
+                         </div>
+                       </div>
                     </div>
                   </div>
                 </div>
@@ -402,16 +402,16 @@ export default function HomePage() {
                     <div className="icon d-flex align-items-center justify-content-center">
                       <span className="fa fa-quote-left"></span>
                     </div>
-                    <div className="text">
-                      <p className="mb-4">"Đã chọn thể thao thì bắt buộc phải nỗ lực và hy sinh, bởi tôi muốn vươn lên đỉnh cao trong sự nghiệp, bởi kỷ lục không bao giờ có giới hạn, nên với tôi ngày hôm nay phải tốt hơn ngày hôm qua."</p>
-                      <br />
-                      <div className="d-flex align-items-center">
-                        <div className="user-img" style={{ backgroundImage: "url(/user/images/anhvien.jpg)" }}></div>
-                        <div className="pl-3">
-                          <p className="name">Nguyễn Thị Ánh Viên</p>
-                          <span className="position">Vận động viên bơi lội</span>
-                        </div>
-                      </div>
+                    <div className="text text-center">
+                       <p className="mb-4 fst-italic" style={{ fontSize: '1.3rem', lineHeight: '1.7', color: '#ffffff' }}>"Đã chọn thể thao thì bắt buộc phải nỗ lực và hy sinh, bởi tôi muốn vươn lên đỉnh cao trong sự nghiệp, bởi kỷ lục không bao giờ có giới hạn, nên với tôi ngày hôm nay phải tốt hơn ngày hôm qua."</p>
+                       <br />
+                       <div className="d-flex align-items-center justify-content-center">
+                         <div className="user-img" style={{ backgroundImage: "url(/user/images/anhvien.jpg)" }}></div>
+                         <div className="pl-3 text-center">
+                           <p className="name fw-bold" style={{ fontSize: '1.2rem', color: '#ffffff' }}>Nguyễn Thị Ánh Viên</p>
+                           <span className="position" style={{ fontSize: '1rem', color: '#e0e0e0' }}>Vận động viên bơi lội</span>
+                         </div>
+                       </div>
                     </div>
                   </div>
                 </div>
@@ -420,15 +420,15 @@ export default function HomePage() {
                     <div className="icon d-flex align-items-center justify-content-center">
                       <span className="fa fa-quote-left"></span>
                     </div>
-                    <div className="text">
-                      <p className="mb-4">"Tôi đã trượt hơn 9000 cú ném trong sự nghiệp của mình. Tôi đã thua gần 300 trận đấu. 26 lần tôi được tin tưởng giao cho cú ném quyết định trận đấu và bỏ lỡ chúng. Tôi đã thất bại hết lần này đến lần khác trong đời mình. Và đó là lý do tôi thành công."</p>
-                      <div className="d-flex align-items-center">
-                        <div className="user-img" style={{ backgroundImage: "url(/user/images/ro.jpg)" }}></div>
-                        <div className="pl-3">
-                          <p className="name">Michael Jordan</p>
-                          <span className="position">Cựu cầu thủ bóng rổ thế giới</span>
-                        </div>
-                      </div>
+                    <div className="text text-center">
+                       <p className="mb-4 fst-italic" style={{ fontSize: '1.3rem', lineHeight: '1.7', color: '#ffffff' }}>"Tôi đã trượt hơn 9000 cú ném trong sự nghiệp của mình. Tôi đã thua gần 300 trận đấu. 26 lần tôi được tin tưởng giao cho cú ném quyết định trận đấu và bỏ lỡ chúng. Tôi đã thất bại hết lần này đến lần khác trong đời mình. Và đó là lý do tôi thành công."</p>
+                       <div className="d-flex align-items-center justify-content-center">
+                         <div className="user-img" style={{ backgroundImage: "url(/user/images/ro.jpg)" }}></div>
+                         <div className="pl-3 text-center">
+                           <p className="name fw-bold" style={{ fontSize: '1.2rem', color: '#ffffff' }}>Michael Jordan</p>
+                           <span className="position" style={{ fontSize: '1rem', color: '#e0e0e0' }}>Cựu cầu thủ bóng rổ thế giới</span>
+                         </div>
+                       </div>
                     </div>
                   </div>
                 </div>
@@ -437,17 +437,17 @@ export default function HomePage() {
                     <div className="icon d-flex align-items-center justify-content-center">
                       <span className="fa fa-quote-left"></span>
                     </div>
-                    <div className="text">
-                      <p className="mb-4">"Đừng ngại thất bại, đó là con đường dẫn đến thành công."</p>
-                      <br /> <br /> <br /> <br />
-                      <div className="d-flex align-items-center">
-                        <div className="user-img" style={{ backgroundImage: "url(/user/images/LeBron_James.jpg)" }}></div>
-                        <div className="pl-3">
-                          <p className="name">LeBron James</p>
-                          <span className="position">Vận động viên bóng rổ Hoa Kỳ</span>
-                        </div>
-                      </div>
-                    </div>
+                     <div className="text text-center">
+                       <p className="mb-4 fst-italic" style={{ fontSize: '1.3rem', lineHeight: '1.7', color: '#ffffff' }}>"Đừng ngại thất bại, đó là con đường dẫn đến thành công."</p>
+                       <br /> <br />
+                       <div className="d-flex align-items-center justify-content-center">
+                         <div className="user-img" style={{ backgroundImage: "url(/user/images/LeBron_James.jpg)" }}></div>
+                         <div className="pl-3 text-center">
+                           <p className="name fw-bold" style={{ fontSize: '1.2rem', color: '#ffffff' }}>LeBron James</p>
+                           <span className="position" style={{ fontSize: '1rem', color: '#e0e0e0' }}>Vận động viên bóng rổ Hoa Kỳ</span>
+                         </div>
+                       </div>
+                     </div>
                   </div>
                 </div>
               </div>
