@@ -16,7 +16,6 @@ import duan.sportify.dao.FieldDAO;
 import duan.sportify.dao.OrderDAO;
 import duan.sportify.dao.ProductDAO;
 import duan.sportify.dao.UserDAO;
-import duan.sportify.entities.Bookingdetails;
 import duan.sportify.entities.Contacts;
 
 @CrossOrigin(origins = "*")
@@ -39,6 +38,46 @@ public class DashboardRestController {
 	ContactDAO contactDAO;
 	@Autowired
 	BookingDetailDAO bookingDetailDAO;
+	// API tổng hợp tất cả các thống kê
+	@GetMapping("summary")
+	public java.util.Map<String, Object> getDashboardSummary() {
+		java.util.Map<String, Object> summary = new java.util.HashMap<>();
+		summary.put("totalProduct", productDAO.count());
+		summary.put("totalField", fieldDAO.count());
+		summary.put("totalUser", userDAO.count());
+		summary.put("totalOrderBooking", bookingDAO.sumOrderBooking());
+		summary.put("barcharts_a", bookingDAO.getBookingPriceSummary());
+		summary.put("barcharts_b", orderDAO.getOrderSumary());
+		summary.put("linecharts_a", bookingDAO.countBookingOn6YearReturn());
+		summary.put("linecharts_b", orderDAO.countOrderDuring6Years());
+		summary.put("thisthatMonth", orderDAO.countThisMonthAndThatMonth());
+		summary.put("sumRevenueOrder2Month", orderDAO.sumRevenueOrder2Month());
+		summary.put("countBookingInDate", bookingDAO.countBookingInDate());
+		summary.put("countFieldActiving", fieldDAO.countFieldActiving());
+		summary.put("countOrderInDate", orderDAO.countOrderInDate());
+		summary.put("countProductActive", productDAO.countProductActive());
+		// Nếu có các API khác, bạn có thể bổ sung thêm ở đây
+		return summary;
+	}
+
+    // API tổng hợp tất cả các dữ liệu còn lại
+    @GetMapping("all-details")
+    public java.util.Map<String, Object> getAllDetails() {
+        java.util.Map<String, Object> details = new java.util.HashMap<>();
+        details.put("thongkebookingtrongngay", bookingDAO.thongkebookingtrongngay());
+        details.put("danhsach3contact", contactDAO.fill3ContactOnDate());
+        details.put("demLienHeTrongNgay", contactDAO.demLienHeTrongNgay());
+        details.put("tongSoPhieuDatSan2Thang", bookingDAO.tongSoPhieuDatSan2Thang());
+        details.put("tongSoPhieuOrder2Thang", orderDAO.tongSoPhieuOrder2Thang());
+        details.put("tongDoanhThuBooking2Month", bookingDAO.tongDoanhThuBooking2Month());
+        details.put("doanhThuOrder2Month", orderDAO.doanhThuOrder2Month());
+        details.put("top3SanDatNhieu", bookingDetailDAO.top3SanDatNhieu());
+        details.put("top3SanPhamBanNhieu", orderDAO.top3SanPhamBanNhieu());
+        details.put("top5UserDatSan", bookingDetailDAO.top5UserDatSan());
+        details.put("top5UserOrder", orderDAO.top5UserOrder());
+        details.put("thongKeOrderInDay", orderDAO.thongKeOrderInDay());
+        return details;
+    }
 	// tổng sản phẩm
 	@GetMapping("totalProduct")
 	public long countProduct() {
