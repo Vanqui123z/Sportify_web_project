@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import BootstrapModal from "../../components/admin/BootstrapModal";
 import "../../styles/AdminModal.css";
-import getImageUrl from "../../utils/getImageUrl";
+import getImageUrl from "../../helper/getImageUrl";
 
 interface Category {
   categoryid: number;

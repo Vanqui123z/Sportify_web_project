@@ -12,11 +12,18 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import duan.sportify.DTO.ShiftDTO;
 import duan.sportify.dao.BookingDetailDAO;
 import duan.sportify.dao.EventDAO;
 import duan.sportify.dao.ProductDAO;
+import duan.sportify.dao.ShiftDAO;
+import duan.sportify.entities.Shifts;
 import duan.sportify.service.FootballDataService;
 import duan.sportify.service.FootballPredictionService;
+import duan.sportify.service.ShiftService;
+
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 
@@ -28,6 +35,7 @@ public class HomeRestController {
     @Autowired ProductDAO productDAO;
     @Autowired FootballDataService footballDataService;
     @Autowired FootballPredictionService footballPredictionService;
+	@Autowired ShiftService shiftService;
 
     @GetMapping
     public Map<String, Object> getHomeData() {
@@ -103,6 +111,11 @@ public class HomeRestController {
 		return result;
 	}
 
+	@GetMapping("shift")
+	public List<Shifts> getShift() {
+		return shiftService.findAll();
+	}
+	
 }
 
 

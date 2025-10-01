@@ -14,15 +14,14 @@ import Profile from "../../Pages/user/home/Profile";
 import TeamPage from "../../Pages/user/home/TeamPage";
 import TeamDetail from "../../Pages/user/home/TeamDetail";
 import CheckoutDatSan from "../../Pages/user/checkout/CheckoutDatSan";
-import OrderDetailPage from "../../Pages/user/order/OrderHistoryListDetail";
-import Cart from "../../Pages/user/order/Cart";
+import OrderDetailPage from "../../Pages/user/history/OrderHistoryListDetail";
+import Cart from "../../Pages/user/history/Cart";
 import CheckoutCart from "../../Pages/user/checkout/CheckoutCart";
 import FootballPredictionPage from "../../Pages/user/home/FootballPredictionPage";
-import FootballTestPage from "../../Pages/user/home/FootballTestPage";
-import FieldHistoryList from "../../Pages/user/order/FieldHistoryList";
-import FieldHistoryListDetail from "../../Pages/user/order/FieldHistoryListDetail";
-import OrderHistoryList from "../../Pages/user/order/OrderHistoryList";
-import OrderHistoryListDetail from "../../Pages/user/order/OrderHistoryListDetail";
+import FieldHistoryList from "../../Pages/user/history/FieldHistoryList";
+import FieldHistoryListDetail from "../../Pages/user/history/FieldHistoryListDetail";
+import OrderHistoryList from "../../Pages/user/history/OrderHistoryList";
+import OrderHistoryListDetail from "../../Pages/user/history/OrderHistoryListDetail";
 
 
 const UserRoutes: React.FC = () => (
@@ -51,6 +50,7 @@ const UserRoutes: React.FC = () => (
     <Route path="field/:cid" element={<FieldPage />} />
     <Route path="field/detail/:idField" element={<DetailFields />} />
     <Route path="field/booking/:idField" element={<CheckoutDatSan />} />
+    <Route path="field/permanent-booking/create/:idField" element={<CheckoutDatSan />} />
     <Route path="field/profile/historybooking" element={<FieldHistoryList />} />
     <Route path="field/profile/historybooking/detail" element={<FieldHistoryListDetail />} />
 

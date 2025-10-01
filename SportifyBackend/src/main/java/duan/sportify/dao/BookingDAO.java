@@ -13,12 +13,34 @@ import duan.sportify.entities.Contacts;
 
 public interface BookingDAO extends JpaRepository<Bookings, Integer> {
 
-	@Query(value = "SELECT \r\n" + "    b.bookingid,\r\n" + "    b.bookingdate,\r\n" + "    b.bookingprice,\r\n"
-			+ "    b.note,\r\n" + "    b.bookingstatus,\r\n" + "    f.namefield,\r\n" + "    f.image\r\n" + "FROM \r\n"
-			+ "    bookings AS b\r\n" + "JOIN \r\n" + "    bookingdetails AS bd ON b.bookingid = bd.bookingid\r\n"
-			+ "JOIN \r\n" + "    field AS f ON bd.fieldid = f.fieldid\r\n" + "WHERE \r\n"
-			+ "    b.username = :username ORDER BY bookingdate DESC LIMIT 20", nativeQuery = true)
-	List<Object[]> getBookingInfoByUsername(String username);
+@Query(value = "SELECT " +
+        "b.bookingid, " +
+        "b.bookingdate, " +
+        "b.bookingprice, " +
+        "b.note, " +
+        "b.bookingstatus, " +
+        "COALESCE(f.namefield, f2.namefield) AS field_name, " +
+        "COALESCE(f.image, f2.image) AS field_image, " +
+        "MIN(p.start_date) AS start_date, " +
+        "MAX(p.end_date) AS end_date, " +
+        "GROUP_CONCAT(p.day_of_week ORDER BY p.day_of_week ASC) AS day_of_weeks, " +
+        "GROUP_CONCAT(p.shift_id ORDER BY p.shift_id ASC) AS shift_ids, " +
+        "GROUP_CONCAT(p.field_id ORDER BY p.field_id ASC) AS field_ids, " +
+        "CASE WHEN COUNT(p.permanent_id) > 0 THEN 'PERMANENT' ELSE 'ONCE' END AS booking_type " +
+    "FROM bookings AS b " +
+    "LEFT JOIN bookingdetails AS bd ON b.bookingid = bd.bookingid " +
+    "LEFT JOIN field AS f ON bd.fieldid = f.fieldid " +
+    "LEFT JOIN permanent_booking AS p ON b.bookingid = p.booking_id " +
+    "LEFT JOIN field AS f2 ON p.field_id = f2.fieldid " +
+    "WHERE b.username = :username " +
+    "GROUP BY b.bookingid " +
+    "ORDER BY b.bookingdate DESC " +
+    "LIMIT 20",
+    nativeQuery = true)
+List<Object[]> getBookingInfoByUsername(@Param("username") String username);
+
+
+
 
 	@Query(value = "SELECT \r\n" + "    b.bookingid,\r\n" + "    b.bookingdate,\r\n" + "    b.bookingstatus,\r\n"
 			+ "    bd.shiftid,\r\n" + "    bd.playdate,\r\n" + "    bd.price,\r\n" + "    f.namefield,\r\n"
@@ -27,14 +49,26 @@ public interface BookingDAO extends JpaRepository<Bookings, Integer> {
 			+ "    field AS f ON bd.fieldid = f.fieldid\r\n" + "JOIN \r\n"
 			+ "    shifts AS s ON bd.shiftid = s.shiftid\r\n" + "WHERE \r\n"
 			+ "    b.bookingid = :bookingid", nativeQuery = true)
-	Object[] getBookingInfoByBookingDetail(String bookingid);
+	List<Object[]>  getBookingInfoByBookingDetail(Integer bookingid);
+
+
+	@Query(value = "SELECT " +
+        "p.booking_id, p.start_date, p.end_date, p.shift_id, p.day_of_week, p.field_id, f.namefield, f.image " +
+        "FROM permanent_booking p " +
+        "LEFT JOIN field f ON p.field_id = f.fieldid " +
+        "WHERE p.booking_id = :bookingId " +
+        "ORDER BY p.start_date, p.field_id, p.shift_id",
+    nativeQuery = true)
+List<Object[]> getPermanentBookingByBookingId(@Param("bookingId") Integer bookingId);
+
+
 
 	@Query(value = "select count(*) from bookings", nativeQuery = true)
 	int countBooking();
+
 	// admin
 	@Query(value = "SELECT b.* FROM bookings b \r\n"
-			+ "	        JOIN users u ON b.username = u.username where b.bookingstatus like '%Đã Cọc%' and date(b.bookingdate) = curdate()\r\n"
-		, nativeQuery = true)
+			+ "	        JOIN users u ON b.username = u.username where b.bookingstatus like '%Đã Cọc%' and date(b.bookingdate) = curdate()\r\n", nativeQuery = true)
 	List<Bookings> findAllBookingAndUser();
 
 	// find all booking
@@ -43,13 +77,14 @@ public interface BookingDAO extends JpaRepository<Bookings, Integer> {
 
 	// search admin
 	@Query(value = "SELECT b.* FROM bookings b "
-	        + "JOIN users u ON b.username = u.username "
-	        + "WHERE (CONCAT(u.firstname, ' ', u.lastname) LIKE %:keyword%) "
-	        + "AND b.bookingdate LIKE %:datebook% "
-	        + "AND b.bookingstatus LIKE %:status%", nativeQuery = true)
-	List<Bookings> findByConditions(@Param("keyword") String keyword, 
-	                                @Param("datebook") Date datebook,
-	                                @Param("status") String status);
+			+ "JOIN users u ON b.username = u.username "
+			+ "WHERE (CONCAT(u.firstname, ' ', u.lastname) LIKE %:keyword%) "
+			+ "AND b.bookingdate LIKE %:datebook% "
+			+ "AND b.bookingstatus LIKE %:status%", nativeQuery = true)
+	List<Bookings> findByConditions(@Param("keyword") String keyword,
+			@Param("datebook") Date datebook,
+			@Param("status") String status);
+
 	// dashboard
 	// tổng phiểu booking and order
 	@Query(value = "SELECT COUNT(*) AS total_count\r\n" + "FROM (\r\n"
@@ -109,6 +144,7 @@ public interface BookingDAO extends JpaRepository<Bookings, Integer> {
 			+ "UNION ALL\r\n" + "SELECT 'Last Month', COUNT(*)\r\n" + "FROM bookings\r\n"
 			+ "WHERE YEAR(bookingdate) = YEAR(CURDATE() - INTERVAL 1 MONTH) AND MONTH(bookingdate) = MONTH(CURDATE() - INTERVAL 1 MONTH);", nativeQuery = true)
 	List<Object[]> tongSoPhieuDatSan2Thang();
+
 	// tổng doanh thu booking thang nay va thang trước
 	@Query(value = "SELECT\r\n"
 			+ "    COALESCE(SUM(CASE \r\n"
@@ -135,6 +171,7 @@ public interface BookingDAO extends JpaRepository<Bookings, Integer> {
 			+ "    END), 0) AS doanh_thu_thang_truoc\r\n"
 			+ "FROM bookings;", nativeQuery = true)
 	List<Object[]> tongDoanhThuBooking2Month();
+
 	// rp
 	// rp doanh thu dặt sân trong tháng
 	@Query(value = "SELECT\r\n"
@@ -156,11 +193,13 @@ public interface BookingDAO extends JpaRepository<Bookings, Integer> {
 			+ "  YEAR(bookingdate) = :year AND MONTH(bookingdate) = :month \r\n"
 			+ "GROUP BY booking_date_month\r\n"
 			+ "ORDER BY booking_date_month;", nativeQuery = true)
-    List<Object[]> rpDoanhThuBookingTrongThang(@Param("year") String year, @Param("month") String month);
+	List<Object[]> rpDoanhThuBookingTrongThang(@Param("year") String year, @Param("month") String month);
+
 	// lấy năm của các phiếu dặt
 	@Query(value = "SELECT DISTINCT YEAR(bookingdate) AS booking_year\r\n"
 			+ "FROM bookings;", nativeQuery = true)
 	List<Object[]> getYearBooking();
+
 	// rp daonh thu dặt sân trong năm
 	@Query(value = "SELECT\r\n"
 			+ " concat('Tháng ',month(bookingdate)) AS booking_date_month,\r\n"
@@ -182,6 +221,7 @@ public interface BookingDAO extends JpaRepository<Bookings, Integer> {
 			+ "GROUP BY booking_date_month\r\n"
 			+ "ORDER BY booking_date_month;", nativeQuery = true)
 	List<Object[]> rpDoanhThuBookingTrongNam(@Param("year") String year);
+
 	// rp so luong phieu dat san trong thang
 	@Query(value = "SELECT\r\n"
 			+ "  CONCAT('Ngày ', DAY(bookingdate), '-', MONTH(bookingdate)) AS booking_date_month,\r\n"
@@ -194,18 +234,55 @@ public interface BookingDAO extends JpaRepository<Bookings, Integer> {
 			+ "  YEAR(bookingdate) = :year AND MONTH(bookingdate) = :month \r\n"
 			+ "GROUP BY booking_date_month\r\n"
 			+ "ORDER BY booking_date_month;", nativeQuery = true)
-	 List<Object[]> rpSoLuongBookingTrongThang(@Param("year") String year, @Param("month") String month);
-	 // rp so luong phieu dat san trong nam
-	 @Query(value = "SELECT\r\n"
-	 		+ "  CONCAT('Tháng ', MONTH(bookingdate)) AS booking_date_month,\r\n"
-	 		+ "  COUNT(bookingid) AS tongphieu,\r\n"
-	 		+ "  SUM(CASE WHEN bookingstatus LIKE 'Hủy Đặt' THEN 1 ELSE 0 END) AS huy,\r\n"
-	 		+ "  SUM(CASE WHEN bookingstatus LIKE 'Đã Cọc' THEN 1 ELSE 0 END) AS coc,\r\n"
-	 		+ "  SUM(CASE WHEN bookingstatus LIKE 'Hoàn Thành' THEN 1 ELSE 0 END) AS hoanthanh\r\n"
-	 		+ "FROM bookings\r\n"
-	 		+ "WHERE\r\n"
-	 		+ "  YEAR(bookingdate) = :year \r\n"
-	 		+ "GROUP BY booking_date_month\r\n"
-	 		+ "ORDER BY booking_date_month;", nativeQuery = true)
-	 List<Object[]> rpSoLuongBookingTrongNam(@Param("year") String year);
+	List<Object[]> rpSoLuongBookingTrongThang(@Param("year") String year, @Param("month") String month);
+
+	// rp so luong phieu dat san trong nam
+	@Query(value = "SELECT\r\n"
+			+ "  CONCAT('Tháng ', MONTH(bookingdate)) AS booking_date_month,\r\n"
+			+ "  COUNT(bookingid) AS tongphieu,\r\n"
+			+ "  SUM(CASE WHEN bookingstatus LIKE 'Hủy Đặt' THEN 1 ELSE 0 END) AS huy,\r\n"
+			+ "  SUM(CASE WHEN bookingstatus LIKE 'Đã Cọc' THEN 1 ELSE 0 END) AS coc,\r\n"
+			+ "  SUM(CASE WHEN bookingstatus LIKE 'Hoàn Thành' THEN 1 ELSE 0 END) AS hoanthanh\r\n"
+			+ "FROM bookings\r\n"
+			+ "WHERE\r\n"
+			+ "  YEAR(bookingdate) = :year \r\n"
+			+ "GROUP BY booking_date_month\r\n"
+			+ "ORDER BY booking_date_month;", nativeQuery = true)
+	List<Object[]> rpSoLuongBookingTrongNam(@Param("year") String year);
+
+
+	   Bookings findByBookingid(Integer bookingId);
+
+	   
+    List<Bookings> findAll();
+	
+
+	 // Lấy thông tin cơ bản cho Calendar (ONCE)
+    @Query(value = "SELECT bd.bookingid, f.namefield, s.nameshift, bd.playdate, s.starttime, s.endtime, 'ONCE' as type " +
+                   "FROM bookingdetails bd " +
+                   "JOIN field f ON bd.fieldid = f.fieldid " +
+                   "JOIN shifts s ON bd.shiftid = s.shiftid", nativeQuery = true)
+    List<Object[]> findBookingOnceEvents();
+
+    // Lấy thông tin cơ bản cho Calendar (PERMANENT)
+    @Query(value = "SELECT pb.booking_id, f.namefield, s.nameshift, pb.start_date, pb.end_date, pb.day_of_week, s.starttime, s.endtime, 'PERMANENT' as type " +
+                   "FROM permanent_booking pb " +
+                   "JOIN field f ON pb.field_id = f.fieldid " +
+                   "JOIN shifts s ON pb.shift_id = s.shiftid", nativeQuery = true)
+    List<Object[]> findBookingPermanentEvents();
+
+
+    // Lấy chi tiết 1 booking (cho popup)
+    @Query(value = "SELECT b.bookingid, b.username, b.phone, b.note, b.bookingstatus, b.booking_type, " +
+                   "f.namefield, f.image, s.nameshift, s.starttime, s.endtime, " +
+                   "b.bookingprice, bd.playdate, pb.start_date, pb.end_date, pb.day_of_week " +
+                   "FROM bookings b " +
+                   "LEFT JOIN bookingdetails bd ON b.bookingid = bd.bookingid " +
+                   "LEFT JOIN permanent_booking pb ON b.bookingid = pb.booking_id " +
+                   "LEFT JOIN field f ON (bd.fieldid = f.fieldid OR pb.field_id = f.fieldid) " +
+                   "LEFT JOIN shifts s ON (bd.shiftid = s.shiftid OR pb.shift_id = s.shiftid) " +
+                   "WHERE b.bookingid = :bookingId", nativeQuery = true)
+    List<Object[]> findBookingDetail(@Param("bookingId") Integer bookingId);
+
+
 }

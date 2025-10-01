@@ -7,7 +7,7 @@ import HomePage from "../Pages/user/home/HomePage";
 import ForgetPass from "../Pages/security/ForgetPass";
 import Login from "../Pages/security/Login";
 import Register from "../Pages/security/Register";
-import { AuthProvider } from "../utils/AuthContext";
+import { AuthProvider } from "../helper/AuthContext";
 import LayoutAdmin from "../layouts/LayoutAdmin";
 import PaymentResult from "../Pages/user/checkout/PaymentResult";
 import GroupChat from "../Pages/user/home/GroupChat";

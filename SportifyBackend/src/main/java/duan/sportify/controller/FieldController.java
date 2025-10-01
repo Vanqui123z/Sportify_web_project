@@ -1,14 +1,20 @@
 package duan.sportify.controller;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import duan.sportify.DTO.booking.PermanentBookingRequest;
 import duan.sportify.entities.Authorized;
 import duan.sportify.entities.Bookings;
 import duan.sportify.entities.Field;
@@ -40,7 +47,11 @@ import duan.sportify.service.ShiftService;
 import duan.sportify.service.SportTypeService;
 import duan.sportify.service.UserService;
 import duan.sportify.service.VoucherService;
+import duan.sportify.utils.BookingCalculator;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -66,18 +77,18 @@ public class FieldController {
 	// Biến chứa ID kiểu sportype khi click vào chọn
 	private String selectedSportTypeId; // Loại môn thể thao chọn để tìm kiếm
 	private String dateselect; // Ngày được chọn
-	String userlogin ; // username người dùng đã đăng nhập
+	String userlogin; // username người dùng đã đăng nhập
 	String phone = null; // SĐT
 
 	// Helper method to clean model data for serialization
 	private Map<String, Object> cleanModelData(Model model) {
 		Map<String, Object> result = new HashMap<>();
 		Map<String, Object> modelMap = model.asMap();
-		
+
 		for (Map.Entry<String, Object> entry : modelMap.entrySet()) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
-			
+
 			// Handle lists that may contain Hibernate proxies
 			if (value instanceof List) {
 				List<?> list = (List<?>) value;
@@ -95,11 +106,11 @@ public class FieldController {
 					continue;
 				}
 			}
-			
+
 			// Add other entries as is
 			result.put(key, value);
 		}
-		
+
 		return result;
 	}
 
@@ -303,58 +314,57 @@ public class FieldController {
 	LocalTime time = null; // giờ bắt đầu
 	// Chuyển hướng sang checkout booking
 
-@GetMapping("/user/field/booking/{idField}")
-public ResponseEntity<?> booking(
-        @PathVariable("idField") Integer idField,
-        @RequestParam("shiftid") Integer shiftId,
-        @RequestParam("dateselect") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateselect,
-        HttpServletRequest request) {
-    String username = (String) request.getSession().getAttribute("username"); 
-    if (username == null) {
-        return ResponseEntity.status(401)
-                .body(Collections.singletonMap("redirect", "/sportify/login"));
-    }
-    // Lấy thông tin user
-    Users profile = userService.findByUsername(username);
+	@GetMapping("/user/field/booking/{idField}")
+	public ResponseEntity<?> booking(
+			@PathVariable("idField") Integer idField,
+			@RequestParam("shiftid") Integer shiftId,
+			@RequestParam("dateselect") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateselect,
+			HttpServletRequest request) {
+		String username = (String) request.getSession().getAttribute("username");
+		if (username == null) {
+			return ResponseEntity.status(401)
+					.body(Collections.singletonMap("redirect", "/sportify/login"));
+		}
+		// Lấy thông tin user
+		Users profile = userService.findByUsername(username);
 
-    // Lấy danh sách ca theo shiftId
-    List<Shifts> shiftList = shiftservice.findShiftById(shiftId);
-    if (shiftList.isEmpty()) {
-        return ResponseEntity.badRequest()
-                .body(Collections.singletonMap("error", "Ca không tồn tại"));
-    }
+		// Lấy danh sách ca theo shiftId
+		List<Shifts> shiftList = shiftservice.findShiftById(shiftId);
+		if (shiftList.isEmpty()) {
+			return ResponseEntity.badRequest()
+					.body(Collections.singletonMap("error", "Ca không tồn tại"));
+		}
 
-    LocalTime time = shiftList.get(0).getStarttime();
-    String nameShift = shiftList.get(0).getNameshift();
+		LocalTime time = shiftList.get(0).getStarttime();
+		String nameShift = shiftList.get(0).getNameshift();
 
-    // Lấy thông tin sân
-    List<Field> fieldListById = fieldservice.findFieldById(idField);
-    if (fieldListById.isEmpty()) {
-        return ResponseEntity.badRequest()
-                .body(Collections.singletonMap("error", "Sân không tồn tại"));
-    }
+		// Lấy thông tin sân
+		List<Field> fieldListById = fieldservice.findFieldById(idField);
+		if (fieldListById.isEmpty()) {
+			return ResponseEntity.badRequest()
+					.body(Collections.singletonMap("error", "Sân không tồn tại"));
+		}
 
-    double giasan = fieldListById.get(0).getPrice();
-    String nameSportype = fieldservice.findNameSporttypeById(idField);
+		double giasan = fieldListById.get(0).getPrice();
+		String nameSportype = fieldservice.findNameSporttypeById(idField);
 
-    // Tính phụ thu
-    double phuthu = 0;
-    LocalTime timeToCompare = LocalTime.of(17, 0);
-    LocalTime timeToSix = LocalTime.of(6, 0);
-    if (time.isAfter(timeToCompare) || time.isBefore(timeToSix)) {
-        phuthu = giasan * 0.3;
-    }
-    double totalprice = giasan + phuthu;
+		// Tính phụ thu
+		double phuthu = 0;
+		LocalTime timeToCompare = LocalTime.of(17, 0);
+		LocalTime timeToSix = LocalTime.of(6, 0);
+		if (time.isAfter(timeToCompare) || time.isBefore(timeToSix)) {
 
-    // Trả về JSON
-    return ResponseEntity.ok(Map.of(
-            "user", profile,
-            "nameShift", nameShift,
-            "dateselect", dateselect,
-            "fieldListById", fieldListById,
-            "totalprice", totalprice
-    ));
-}
+		}
+		double totalprice = giasan;
+
+		// Trả về JSON
+		return ResponseEntity.ok(Map.of(
+				"user", profile,
+				"nameShift", nameShift,
+				"dateselect", dateselect,
+				"fieldListById", fieldListById,
+				"totalprice", totalprice));
+	}
 
 	// Kiểm tra giờ trống của sân trong Detail
 	@PostMapping("sportify/field/detail/check")
@@ -404,59 +414,161 @@ public ResponseEntity<?> booking(
 	@GetMapping("user/field/profile/historybooking")
 	public ResponseEntity<?> viewHistoryField(Model model, HttpServletRequest request) {
 
-		userlogin = (String) request.getSession().getAttribute("username"); 
+		userlogin = (String) request.getSession().getAttribute("username");
 		if (userlogin == null) {
 			return ResponseEntity.status(401)
 					.body(Collections.singletonMap("error", "Bạn chưa đăng nhập"));
 		}
-		List<Object[]> listbooking = bookingservice.getBookingInfoByUsername(userlogin);
+		List<Object[]> listbookingRaw = bookingservice.getBookingInfoByUsername(userlogin);
+		List<Map<String, Object>> listbooking = new ArrayList<>();
+
+		for (Object[] row : listbookingRaw) {
+			Map<String, Object> bookingMap = new HashMap<>();
+			bookingMap.put("bookingId", row[0]);
+			bookingMap.put("bookingDate", row[1]);
+			bookingMap.put("bookingPrice", row[2]);
+			bookingMap.put("note", row[3]);
+			bookingMap.put("bookingStatus", row[4]);
+			bookingMap.put("fieldName", row[5]);
+			bookingMap.put("fieldImage", row[6]);
+			bookingMap.put("startDate", row[7]); // permanent start date hoặc null
+			bookingMap.put("endDate", row[8]); // permanent end date hoặc null
+			bookingMap.put("dayOfWeeks", row[9]); // dayOfWeek list như "11,14" hoặc null
+			bookingMap.put("shiftIds", row[10]); // shiftId list như "4,5" hoặc null
+			bookingMap.put("fieldIds", row[11]); // fieldId list như "2,2" hoặc null
+			bookingMap.put("bookingType", row[12]); // "PERMANENT" hoặc "ONCE"
+
+			listbooking.add(bookingMap);
+		}
+
 		model.addAttribute("listbooking", listbooking);
+
 		return ResponseEntity.ok(cleanModelData(model));
 	}
 
-	// Chi tiết lịch sử đặt sân
 	@GetMapping("user/field/profile/historybooking/detail")
-	public ResponseEntity<?> viewDetail(Model model, @RequestParam("bookingId") String bookingId,
-			@RequestParam("bookingPrice") double bookingPrice, HttpServletRequest request) {
-				System.out.println("bookingId: " + bookingId);
-				System.out.println("bookingPrice: " + bookingPrice);
-		double giamgia = 0.0; // giảm giá
-		double phuthu = 0.0; // Phụ thu
-		double tiencoc = 0.0; // tiền cọc
-		double tamtinh = 0.0; // tạm tính
-		double conlai = 0.0; // tiền còn lại
-		Object[] listbookingdetail = bookingservice.getBookingInfoByBookingDetail(bookingId); // Chi tiết phiếu
-						System.out.println("listbookingdetail" +listbookingdetail);																		// bookingdetail theo
-																								// bookingid
-		for (Object object : listbookingdetail) {
-			if (object instanceof Object[]) { // kiểm tra phần tử hiện tại có phải đối tượng object hay không
-				Object[] arrayObject = (Object[]) object; // ép kiểu phần tử hiện tại thành mảng đối tượng
-				if (arrayObject.length >= 9) { // kiểm tra xem mảng đối tượng có ít nhất 9 đối tượng
-					int shiftid = (int) arrayObject[3]; // trích giá trị thứ 3
-					double price = (double) arrayObject[5]; // trích giá trị thứ 5
-					if (shiftid > 10 || shiftid < 3) { // điều kiện có phụ thu
-						phuthu = price * 30 / 100;
-						tamtinh = phuthu + price;
-						giamgia = bookingPrice - tamtinh;
-						tiencoc = bookingPrice * 30 / 100;
-						conlai = bookingPrice - tiencoc;
-					} else {
-						tamtinh = price;
-						giamgia = bookingPrice - tamtinh;
-						tiencoc = bookingPrice * 30 / 100;
-						conlai = bookingPrice - tiencoc;
-					}
-				}
-			}
+	public ResponseEntity<?> viewDetail(Model model,
+			@RequestParam("bookingId") Integer bookingId,
+			@RequestParam("bookingPrice") double bookingPrice,
+			HttpServletRequest request) {
+
+		double giamgia = 0.0;
+		double phuthu = 0.0;
+		double tiencoc = 0.0;
+		double tamtinh = 0.0;
+		double conlai = 0.0;
+		double soluongDat = 0.0;
+		double price = 0.0;
+
+		// =========================
+		// Lấy booking từ bookingId
+		Bookings booking = bookingservice.findByBookingid(bookingId);
+
+		// 1️⃣ Lấy chi tiết booking 1 lần
+		// =========================
+		List<Object[]> listBookingOnce = bookingservice.getBookingInfoByBookingDetail(bookingId);
+
+		if (!listBookingOnce.isEmpty()) {
+			Object[] bookingOnce = listBookingOnce.get(0);
+			Double priceBookOnce = (Double) bookingOnce[5];
+			price = priceBookOnce * 1;
 		}
-		// Đổ dữ liệu lên giao diện bookingdetail
+		// 2️⃣ Lấy chi tiết permanent booking
+		// =========================
+		List<Object[]> permanentDetails = bookingservice.getPermanentBookingByBookingId(bookingId);
+		// Gộp permanent shift theo bookingId + startDate + endDate + fieldId
+		List<Map<String, Object>> permanentGrouped = new ArrayList<>();
+		Map<String, Map<String, Object>> groupedMap = new LinkedHashMap<>();
+
+		for (Object[] row : permanentDetails) {
+			if (row == null || row.length < 8)
+				continue;
+			Integer bookingIdPermanent = parseToInteger(row[0]);
+			LocalDate startDate = row[1] instanceof java.sql.Date ? ((java.sql.Date) row[1]).toLocalDate() : null;
+			LocalDate endDate = row[2] instanceof java.sql.Date ? ((java.sql.Date) row[2]).toLocalDate() : null;
+			Integer shiftId = parseToInteger(row[3]);
+			Integer dayOfWeek = parseToInteger(row[4]);
+			Integer fieldId = parseToInteger(row[5]);
+			String fieldName = row[6] != null ? row[6].toString() : "";
+			String fieldImage = row[7] != null ? row[7].toString() : "";
+			Field field = fieldservice.findById(fieldId);
+
+			// Tạo key duy nhất để gộp
+			String key = bookingIdPermanent + "-" + startDate + "-" + endDate + "-" + fieldId;
+			Map<String, Object> group = groupedMap.get(key);
+			if (group == null) {
+				group = new HashMap<>();
+				group.put("bookingType", "PERMANENT");
+				group.put("startDate", startDate);
+				group.put("endDate", endDate);
+				group.put("fieldId", fieldId);
+				group.put("fieldName", fieldName);
+				group.put("fieldImage", fieldImage);
+				group.put("bookingId", bookingIdPermanent);
+				group.put("shifts", new ArrayList<Map<String, Object>>());
+				groupedMap.put(key, group);
+			}
+
+			// Thêm shift vào shifts
+			Map<String, Object> shiftInfo = new HashMap<>();
+			shiftInfo.put("shiftId", shiftId);
+			shiftInfo.put("dayOfWeek", dayOfWeek);
+
+			@SuppressWarnings("unchecked")
+			List<Map<String, Object>> shifts = (List<Map<String, Object>>) group.get("shifts");
+			shifts.add(shiftInfo);
+
+			List<Integer> dayOfWeeks = shifts.stream()
+					.map(shift -> (Integer) shift.get("dayOfWeek"))
+					.toList();
+
+			int totalDay = BookingCalculator.countTotalBookings(startDate, endDate, dayOfWeeks);
+			price = BookingCalculator.calculateTotalPrice(startDate, endDate, dayOfWeeks, field.getPrice());
+		}
+
+		// Flatten groupedMap sang permanentGrouped list
+		permanentGrouped.addAll(groupedMap.values());
+
+		conlai = price - booking.getBookingprice();
+		// =========================
+		// 5️⃣ Đổ dữ liệu lên model
+		// =========================
 		model.addAttribute("conlai", conlai);
-		model.addAttribute("thanhtien", bookingPrice);
+		model.addAttribute("thanhtien", price);
 		model.addAttribute("phuthu", phuthu);
 		model.addAttribute("giamgia", giamgia);
-		model.addAttribute("tamtinh", tamtinh);
-		model.addAttribute("tiencoc", tiencoc);
-		model.addAttribute("listbooking", listbookingdetail);
+		model.addAttribute("tamtinh", price);
+		model.addAttribute("tiencoc", booking.getBookingprice());
+		model.addAttribute("listBookingOnce", listBookingOnce);
+		model.addAttribute("listBookingPermanent", permanentGrouped);
+
 		return ResponseEntity.ok(cleanModelData(model));
+	}
+
+	// =========================
+	// Helper methods
+	// =========================
+	private Integer parseToInteger(Object obj) {
+		if (obj == null)
+			return null;
+		if (obj instanceof Number)
+			return ((Number) obj).intValue();
+		try {
+			return Integer.parseInt(obj.toString());
+		} catch (NumberFormatException e) {
+			return null;
+		}
+	}
+
+	private Double parseToDouble(Object obj) {
+		if (obj == null)
+			return 0.0;
+		if (obj instanceof Number)
+			return ((Number) obj).doubleValue();
+		try {
+			return Double.parseDouble(obj.toString());
+		} catch (NumberFormatException e) {
+			return 0.0;
+		}
 	}
 }

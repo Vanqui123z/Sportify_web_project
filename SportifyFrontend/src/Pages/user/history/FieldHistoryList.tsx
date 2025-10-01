@@ -1,29 +1,40 @@
 import React, { useEffect, useState } from "react";
 
-type BookingInfo = [
-  string, // bookingId
-  string, // bookingTime
-  number, // bookingPrice
-  string, // description
-  string, // status
-  string, // fieldName
-  string  // image
-];
+type BookingInfo = {
+  bookingId: number;
+  bookingDate: string;
+  bookingPrice: number;
+  note: string;
+  bookingStatus: string;
+  fieldName: string;
+  fieldImage: string;
+  bookingType: string;
+  startDate: string | null;
+  endDate: string | null;
+  dayOfWeeks: string | null;
+};
 
 const statusColor = (status: string) => {
   if (status === "Hoàn Thành") return "#39AEA9";
   if (status === "Đã Cọc") return "#FFA41B";
   if (status === "Hủy Đặt") return "red";
-  return "white";
+  return "#6C757D";
 };
 
-const formatDate = (dateStr: string) => {
+const formatDate = (dateStr: string | null) => {
+  if (!dateStr) return "--";
   const d = new Date(dateStr);
   return d.toLocaleString("vi-VN", { hour12: false });
 };
 
 const formatCurrency = (value: number) =>
   value.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+
+const bookingTypeLabel = (type: string) => {
+  if (type === "PERMANENT") return "Đặt cố định";
+  if (type === "ONCE") return "Đặt một lần";
+  return type;
+};
 
 const LichSuDatSan: React.FC = () => {
   const [listbooking, setListBooking] = useState<BookingInfo[]>([]);
@@ -37,7 +48,9 @@ const LichSuDatSan: React.FC = () => {
       },
     })
       .then((res) => res.json())
-      .then((data) => setListBooking(data.listbooking))
+      .then((data) => {
+        setListBooking(data.listbooking);
+      })
       .catch(() => setListBooking([]));
   }, []);
 
@@ -126,45 +139,57 @@ const LichSuDatSan: React.FC = () => {
             </h3>
           </div>
           
-          {listbooking.map((bookingInfo, idx) => (
+          {listbooking.map((booking, idx) => (
             <div key={idx} className="card col-12 mb-3" style={{ borderRadius: 10 }}>
-              <h6 className="card-header">
-                Mã phiếu #<span>{bookingInfo[0]}</span>
-                <span style={{ color: "#1F8A70", fontWeight: "bold", marginLeft: 10 }}>Đặt lúc</span>
-                <span style={{ color: "#1F8A70", fontWeight: "bold", marginLeft: 5 }}>
-                  {formatDate(bookingInfo[1])}
+              <h6 className="card-header d-flex justify-content-between align-items-center">
+                <span>
+                  <b>Mã phiếu:</b> #{booking.bookingId}
+                  <span style={{ color: "#1F8A70", fontWeight: "bold", marginLeft: 10 }}>
+                    Đặt lúc: {formatDate(booking.bookingDate)}
+                  </span>
                 </span>
                 <span
                   style={{
                     fontSize: "medium",
                     color: "snow",
                     fontWeight: "bold",
-                    marginLeft: "44%",
-                    padding: "3px 10px 3px 10px",
+                    padding: "3px 10px",
                     borderRadius: 10,
-                    backgroundColor: statusColor(bookingInfo[4]),
+                    backgroundColor: statusColor(booking.bookingStatus),
                   }}
                 >
-                  {bookingInfo[4]}
+                  {booking.bookingStatus}
                 </span>
               </h6>
-              <div className="card-body">
-                <h5 className="card-title text-success font-weight-bold">{bookingInfo[5]}</h5>
-                <img style={{ width: "20%", height: "50%" }} src={`/user/images/${bookingInfo[6]}`} alt="Image" />
-                <p className="card-text limited-length5">{bookingInfo[3]}</p>
-                <hr />
-                <p>
-                  Tổng tiền:{" "}
-                  <span className="text-danger font-weight-bold">{formatCurrency(bookingInfo[2])}</span>
-                  <a 
-                    style={{ paddingLeft: "70%" }} 
-                    href={`/sportify/field/profile/historybooking/detail?bookingId=${bookingInfo[0]}&bookingPrice=${bookingInfo[2]}`}
-                  >
-                    <button type="button" className="btn btn-outline-info">
-                      Xem Chi Tiết
-                    </button>
-                  </a>
-                </p>
+              <div className="card-body row">
+                <div className="col-md-3 d-flex align-items-center justify-content-center">
+                  <img style={{ width: "100%", borderRadius: 10 }} src={`/user/images/${booking.fieldImage}`} alt="Sân" />
+                </div>
+                <div className="col-md-9">
+                  <h5 className="card-title text-success font-weight-bold">{booking.fieldName}</h5>
+                  <p><b>Loại đặt sân:</b> {bookingTypeLabel(booking.bookingType)}</p>
+                  <p>
+                    <b>Ngày bắt đầu:</b> {formatDate(booking.startDate)}<br/>
+                    <b>Ngày kết thúc:</b> {formatDate(booking.endDate)}
+                  </p>
+                  {booking.dayOfWeeks && (
+                    <p><b>Ngày trong tuần:</b> {booking.dayOfWeeks}</p>
+                  )}
+                  <p className="card-text limited-length5">{booking.note || "Không có ghi chú"}</p>
+                  <hr />
+                  <p>
+                    <b>Tổng tiền:</b>{" "}
+                    <span className="text-danger font-weight-bold">{formatCurrency(booking.bookingPrice)}</span>
+                    <a 
+                      style={{ float: "right" }} 
+                      href={`/sportify/field/profile/historybooking/detail?bookingId=${booking.bookingId}&bookingPrice=${booking.bookingPrice}`}
+                    >
+                      <button type="button" className="btn btn-outline-info">
+                        Xem Chi Tiết
+                      </button>
+                    </a>
+                  </p>
+                </div>
               </div>
             </div>
           ))}

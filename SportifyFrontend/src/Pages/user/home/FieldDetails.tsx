@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
-import getImageUrl from "../../../utils/getImageUrl";
+import { useNavigate, useParams } from "react-router-dom";
+import getImageUrl from "../../../helper/getImageUrl";
 import HeroSection from "../../../components/user/Hero"; // Thêm import
 import { fetchFieldDetail } from '../../../service/user/home/fieldApi';
+import { PosthandlePermanentBookingData } from '../../../service/user/home/fieldApi';
 
 interface SportType {
     sporttypeid: string;
@@ -43,6 +44,7 @@ const DetailFields: React.FC = () => {
     const [selectedShift, setSelectedShift] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(true);
     const selectRef = useRef<HTMLSelectElement | null>(null);
+    const navigator = useNavigate();
     // State cho modal đặt sân cố định
     const [showFixedBooking, setShowFixedBooking] = useState(false);
     const [fixedStartDate, setFixedStartDate] = useState("");
@@ -74,13 +76,47 @@ const DetailFields: React.FC = () => {
         setFixedShifts(prev => ({ ...prev, [weekday]: shiftid }));
     };
 
+
+
     // Đặt sân cố định (submit)
-    const handleFixedBookingSubmit = (e: React.FormEvent) => {
+    const handlePermanentBookingSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // TODO: Gửi dữ liệu đặt sân cố định lên server
-        alert(`Đặt sân cố định từ ${fixedStartDate} đến ${fixedEndDate} vào các ngày: ${fixedWeekdays.map(w => weekdays.find(x => x.value === w)?.label).join(", ")} với ca: ${JSON.stringify(fixedShifts)}`);
+
+        // Chuyển đổi weekday về số (CN là 8, các thứ còn lại giữ nguyên)
+        const weekdayToNumber = (w: string) => w === "CN" ? 8 : Number(w);
+
+        // Tạo mảng details
+        const details = fixedWeekdays.map((w, idx) => ({
+            dayOfWeek: weekdayToNumber(w),
+            shiftId: Number(fixedShifts[w])
+        }));
+
+        const payload = {
+            fieldId: mainField?.fieldid,
+            startDate: fixedStartDate,
+            endDate: fixedEndDate,
+            active: 1,
+            details
+        };
+
+        console.log("Payload for permanent booking:", payload);
+        await PosthandlePermanentBookingData(mainField?.fieldid, payload);
+        navigator(`/sportify/field/booking/${idField}?parmanent=true`);
         setShowFixedBooking(false);
     };
+
+
+//      "permanentId": 5,
+//   "fieldId": 1,
+//   "username": "adminsportify",
+//   "startDate": "2025-10-01",
+//   "endDate": "2025-12-31",
+//   "active": 1,
+//   "details": [
+//     { "detailId": 10, "dayOfWeek": 1, "shiftId": 1 },
+//     { "detailId": 11, "dayOfWeek": 3, "shiftId": 2 },
+//     { "detailId": 12, "dayOfWeek": 6, "shiftId": 3 }
+//   ]
 
     useEffect(() => {
         const today = new Date();
@@ -378,7 +414,7 @@ const DetailFields: React.FC = () => {
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.3)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <div style={{ background: '#fff', padding: 30, borderRadius: 10, minWidth: 350, maxWidth: 400, boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
                         <h4 className="mb-3">Đặt sân cố định theo tuần</h4>
-                        <form onSubmit={handleFixedBookingSubmit}>
+                        <form onSubmit={handlePermanentBookingSubmit}>
                             <div className="form-group mb-2">
                                 <label>Ngày bắt đầu:</label>
                                 <input type="date" className="form-control" required value={fixedStartDate} min={minDate} max={maxDate} onChange={e => setFixedStartDate(e.target.value)} />
@@ -418,7 +454,7 @@ const DetailFields: React.FC = () => {
                             )}
                             <div className="d-flex justify-content-end mt-3">
                                 <button type="button" className="btn btn-secondary mr-2" onClick={() => setShowFixedBooking(false)}>Hủy</button>
-                                <a href={`/sportify/field/booking/${mainField?.fieldid}?shiftid=${selectedShift}&dateselect=${date}`} className="btn btn-success">Đặt sân</a>
+                                <button type="submit" className="btn btn-success">Đặt sân</button>
                             </div>
                         </form>
                     </div>
@@ -449,7 +485,7 @@ const DetailFields: React.FC = () => {
                     color: white; 
                     text-align: center; 
                     line-height: 15px; 
-                    border-radius: 50%; 
+                    border-radius: 50%;
                     cursor: pointer; 
                     position: relative; 
                 }

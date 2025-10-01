@@ -1,18 +1,23 @@
 package duan.sportify.entities;
 
 import javax.persistence.*;
+import javax.persistence.criteria.CriteriaBuilder.In;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
+
 @Entity
-@Table(name = "permanent_booking")
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@NoArgsConstructor
+@Table(name = "permanent_booking")
 public class PermanentBooking {
 
     @Id
@@ -20,25 +25,43 @@ public class PermanentBooking {
     @Column(name = "permanent_id")
     private Integer permanentId;
 
-    @Column(name = "field_id", nullable = false)
-    private Integer fieldId;
-
-    @Column(name = "username", nullable = false, length = 50)
-    private String username;
 
     @Column(name = "start_date", nullable = false)
+        @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate startDate;
 
     @Column(name = "end_date")
+        @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate endDate;
 
     @Column(name = "active", nullable = false)
     private Integer active = 1;
 
-    @OneToMany(mappedBy = "permanentBooking",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY)
-    @Builder.Default
-    private List<PermanentBookingDetail> details = new ArrayList<>();
+      @Column(name = "day_of_week", nullable = false)
+    private Integer dayOfWeek; // 1 = Monday ... 7 = Sunday
+
+    @Column(name = "field_id", nullable = false)
+    private Integer fieldId;
+
+    @Column(name = "shift_id", nullable = false)
+    private Integer shiftId;
+
+    @Column(name = "booking_id", nullable = false, length = 16)
+    private Integer bookingId;
+   
+
+    // Quan hệ với Field
+     @JsonIgnore
+    @OneToMany(mappedBy = "bookings")
+    private List<Bookingdetails> listOfBookingdetails;
+     @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "field_id", insertable = false, updatable = false)
+    private Field field;
+    // Quan hệ với Shift
+     @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "shift_id", insertable = false, updatable = false)
+    private Shifts shift;
+
 }

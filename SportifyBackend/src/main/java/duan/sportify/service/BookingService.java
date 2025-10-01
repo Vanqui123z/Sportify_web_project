@@ -1,26 +1,45 @@
 package duan.sportify.service;
 
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
-
+import duan.sportify.DTO.ShiftDTO;
+import duan.sportify.DTO.booking.BookingEventDTO;
+import duan.sportify.DTO.booking.BookingDetailDTO;
 import duan.sportify.entities.Authorized;
 import duan.sportify.entities.Bookings;
+import duan.sportify.entities.PermanentBooking;
 
 
 @SuppressWarnings("unused")
 public interface BookingService {
 	List<Bookings> findAll();
 
+	Bookings createBooking(String username, Double bookingprice, String phone,
+			String note, int shiftid, int fieldid, Date playdate, Double priceField);
+
+	Bookings createBookingPermanent(String username, Double bookingprice, String phone,
+			String note, List<ShiftDTO> shifts,
+			Integer fieldId, Double priceField,
+			LocalDate start_date, LocalDate end_date);
+
 	Bookings create(Bookings bookings);
 
 	Bookings update(Bookings bookings);
 
 	void delete(Integer id);
-	
-	Bookings findById(Integer id);
+
+	Bookings findByBookingid(Integer id);
 
 	List<Object[]> getBookingInfoByUsername(String username);
-	Object[] getBookingInfoByBookingDetail(String bookingid);
-	
+
+
+	List<Object[]> getPermanentBookingByBookingId(Integer bookingId);
+
+	List<Object[]> getBookingInfoByBookingDetail(Integer bookingid);
+
 	int countBooking();
+	List<BookingEventDTO> getCalendarEvents();
+	List<BookingDetailDTO> getBookingDetail(Integer bookingId);
 }

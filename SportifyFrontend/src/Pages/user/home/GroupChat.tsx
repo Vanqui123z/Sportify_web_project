@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import SockJS from "sockjs-client";
 import { over } from "stompjs";
 import axios from "axios";
-import { checkLogin } from "../../../utils/checkLogin";
+import { checkLogin } from "../../../helper/checkLogin";
 import "../../../styles/GroupChat.css";
 
 let stompClient: any = null;

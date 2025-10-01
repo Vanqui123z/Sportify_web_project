@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import Loader from "../../../components/user/Loader";
 import type { Field, Product } from "../../../Types/interface";
-import getImageUrl from "../../../utils/getImageUrl";
-import { useFtcoAnimation } from "../../../utils/useFtcoAnimation";
+import getImageUrl from "../../../helper/getImageUrl";
+import { useFtcoAnimation } from "../../../helper/useFtcoAnimation";
 import { fetchHomeData } from '../../../service/user/home/homeApi';
 
 

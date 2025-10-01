@@ -1,9 +1,9 @@
 
 import { useContext, useState, useEffect } from "react";
 import ConfirmModal from "./Modal";
-import { AuthContext } from "../../utils/AuthContext";
+import { AuthContext } from "../../helper/AuthContext";
 import { ShoppingCart } from "react-feather";
-import { getCartQuantity } from "../../utils/checkQuatityCart";
+import { getCartQuantity } from "../../helper/checkQuatityCart";
 
 export default function Header() {
 

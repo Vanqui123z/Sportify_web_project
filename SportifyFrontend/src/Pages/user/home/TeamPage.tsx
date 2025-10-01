@@ -1,5 +1,5 @@
 import React, { useState, useEffect, use } from "react";
-import getImageUrl from "../../../utils/getImageUrl";
+import getImageUrl from "../../../helper/getImageUrl";
 import { useNavigate } from "react-router-dom";
 import HeroSection from "../../../components/user/Hero"; // Thêm import
 

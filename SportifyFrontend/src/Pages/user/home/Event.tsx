@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchEvents } from '../../../service/user/home/eventApi';
-import getImageUrl from '../../../utils/getImageUrl';
+import getImageUrl from '../../../helper/getImageUrl';
 import HeroSection from "../../../components/user/Hero"; // Thêm import
 
 interface EventItem {

@@ -1,6 +1,6 @@
 // context/AuthContext.tsx
 import { createContext, useState, useEffect,type ReactNode } from "react";
-import { checkLogin } from "../utils/checkLogin";
+import { checkLogin } from "./checkLogin";
 
 interface User {
     loggedIn: boolean;

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
-import { AuthContext } from "../../utils/AuthContext";
+import { AuthContext } from "../../helper/AuthContext";
+import BookingCalendar from "../../components/admin/BookingCalendar";
 
 interface DashboardStats {
   countOrderInDate: number;
@@ -201,6 +202,7 @@ const Dashboard: React.FC = () => {
     <div className="page-wrapper">
       {/* Page Content */}
       <div className="content container-fluid">
+        <BookingCalendar />
         
         <div className="row">
           <div className="col-md-6 col-sm-6 col-lg-6 col-xl-3">

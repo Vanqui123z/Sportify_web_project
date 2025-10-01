@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { fetchFieldList } from '../../../service/user/home/fieldApi';
 import Loader from "../../../components/user/Loader";
-import getImageUrl from "../../../utils/getImageUrl";
-import { useFtcoAnimation } from "../../../utils/useFtcoAnimation";
+import getImageUrl from "../../../helper/getImageUrl";
+import { useFtcoAnimation } from "../../../helper/useFtcoAnimation";
 import HeroSection from "../../../components/user/Hero"; // Thêm import
 type Category = {
   sporttypeid: string;

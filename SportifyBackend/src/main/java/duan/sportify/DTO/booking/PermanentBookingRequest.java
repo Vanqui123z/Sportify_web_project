@@ -1,4 +1,4 @@
-package duan.sportify.DTO;
+package duan.sportify.DTO.booking;
 import lombok.Data;
 import java.time.LocalDate;
 import java.util.List;
@@ -6,7 +6,6 @@ import java.util.List;
 @Data
 public class PermanentBookingRequest {
     private Integer fieldId;
-    private String username;
     private LocalDate startDate;
     private LocalDate endDate;
     private List<DetailRequest> details;

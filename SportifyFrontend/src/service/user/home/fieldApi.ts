@@ -10,3 +10,16 @@ export async function fetchFieldDetail(idField: any) {
   if (!res.ok) throw new Error('Failed to fetch field detail');
   return res.json();
 }
+
+export async function PosthandlePermanentBookingData(idField: any, bookingData: any) {
+  const res = await fetch(`http://localhost:8081/api/user/field/permanent-booking/${idField}`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(bookingData),
+  });
+  if (!res.ok) throw new Error('Failed to post permanent booking data');
+  return res.json();
+}

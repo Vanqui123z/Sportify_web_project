@@ -16,6 +16,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -23,8 +24,6 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
-
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -40,49 +39,55 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name="bookings", catalog="sportify" )
+@Table(name = "bookings", catalog = "sportify")
 public class Bookings implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    //--- ENTITY PRIMARY KEY 
+    // --- ENTITY PRIMARY KEY
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    @Column(name="bookingid", nullable=false, unique = true)
-    private Integer    bookingid ;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "bookingid", nullable = false, unique = true)
+    private Integer bookingid;
 
-    //--- ENTITY DATA FIELDS 
-    @Column(name="username", nullable=false, length=16)
-    private String     username ;
+    // --- ENTITY DATA FIELDS
+    @Column(name = "username", nullable = false, length = 16)
+    private String username;
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name="bookingdate", nullable=false)
-    private Date       bookingdate ;
+    @Column(name = "bookingdate", nullable = false)
+    private Date bookingdate;
 
-    @Column(name="bookingprice", nullable=false)
-    private Double     bookingprice ;
+    @Column(name = "bookingprice", nullable = false)
+    private Double bookingprice;
     @Pattern(regexp = "^(0|\\+84)\\d{9,10}$", message = "{Pattern.bookings.phone}")
     @NotBlank(message = "{NotBlank.bookings.phone}")
-    @Column(name="phone", nullable=false, length=10)
-    private String     phone ;
+    @Column(name = "phone", nullable = false, length = 10)
+    private String phone;
 
-    @Column(name="note", length=200)
-    private String     note ;
+    @Column(name = "note", length = 200)
+    private String note;
 
-    @Column(name="bookingstatus", nullable=false, length=16)
-    private String     bookingstatus ;
+    @Column(name = "bookingstatus", nullable = false, length = 16)
+    private String bookingstatus;
+
+    @Column(name = "booking_type", nullable = false, length = 16)
+    private String bookingType ="ONCE";
+
+   
 
 
-    //--- ENTITY LINKS ( RELATIONSHIP )
+
+    // --- ENTITY LINKS ( RELATIONSHIP )
+    
     @JsonIgnore
-    @OneToMany(mappedBy="bookings")
-    private List<Bookingdetails> listOfBookingdetails ; 
+    @OneToMany(mappedBy = "bookings")
+    private List<Bookingdetails> listOfBookingdetails;
 
     @ManyToOne
-    @JoinColumn(name="username", referencedColumnName="username", insertable=false, updatable=false)
-    private Users      users ; 
+    @JoinColumn(name = "username", referencedColumnName = "username", insertable = false, updatable = false)
+    private Users users;
 
 
-    
 
 }

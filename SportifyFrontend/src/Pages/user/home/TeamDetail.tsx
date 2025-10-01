@@ -1,7 +1,7 @@
 import { type FC, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import getImageUrl from "../../../utils/getImageUrl";
+import getImageUrl from "../../../helper/getImageUrl";
 import HeroSection from "../../../components/user/Hero"; // Thêm import
 import GroupChat from "./GroupChat";
 

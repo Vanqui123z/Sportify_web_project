@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { validateSignup } from '../../utils/validateSignup';
+import { validateSignup } from '../../helper/validateSignup';
 
 export default function Register() {
 	// Signup fields required by API

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import BootstrapModal from "../../components/admin/BootstrapModal";
-import getImageUrl from "../../utils/getImageUrl";
+import getImageUrl from "../../helper/getImageUrl";
 
 interface Account {
   username: string;
