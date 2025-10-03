@@ -205,7 +205,7 @@ const BookingPage: React.FC = () => {
         {/* Edit Modal */}
         {showEdit && (
           <div className="modal fade show" style={{ display: "block" }}>
-            <div className="modal-dialog modal-lg modal-dialog-centered" style={{ maxWidth: 1300 }}>
+            <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" style={{ maxWidth: 1300 }}>
               <div className="modal-content">
                 <div className="modal-header">
                   <h5 className="modal-title">Chi tiết phiếu đặt sân</h5>

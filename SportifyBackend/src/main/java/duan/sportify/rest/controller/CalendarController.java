@@ -37,3 +37,9 @@ public class CalendarController {
     }
 }
 
+
+
+// table booking :bookingid,username,bookingdate,bookingprice,phone,note,bookingstatus,booking_type
+// table bookingdetail: bookingdetailid,bookingid,fieldid,starttime,endtime,price,status
+// table field: fieldid,fieldname,fieldtype,fieldstatus,description,location,
+

@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
+import { AuthContext } from "../../helper/AuthContext";
 import BookingCalendar from "../../components/admin/BookingCalendar";
 
 interface DashboardStats {
@@ -50,29 +51,8 @@ interface TopProduct {
   revenue: number;
 }
 
-// API Response Interfaces
-interface DashboardSummaryResponse {
-  countOrderInDate: number;
-  countBookingInDate: number;
-  countFieldActiving: number;
-  countProductActive: number;
-  totalProduct: number;
-  totalUser: number;
-  totalField: number;
-  totalOrderBooking: number;
-}
-
-interface DashboardDetailsResponse {
-  demLienHeTrongNgay: number;
-  thongKeOrderInDay: [string, number, number | null][];
-  thongkebookingtrongngay: [string, number, number][];
-  top3SanDatNhieu: [string, number, number, number][];
-  top3SanPhamBanNhieu: [string, number, number, number][];
-  danhsach3contact: any[];
-}
-
 const Dashboard: React.FC = () => {
-  const [loading, setLoading] = useState(true);
+  const { user } = useContext(AuthContext);
   const [stats, setStats] = useState<DashboardStats>({
     countOrderInDate: 0,
     countBookingInDate: 0,
@@ -99,107 +79,108 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     // Fetch dashboard data from APIs
-    fetchDashboardData();
+    fetchDashboardStats();
+    fetchBookingStats();
+    fetchOrderStats();
+    fetchRecentContacts();
+    fetchTopFields();
+    fetchTopProducts();
   }, []);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardStats = async () => {
     try {
-      setLoading(true);
-      // Fetch both APIs in parallel
-      const [summaryResponse, detailsResponse] = await Promise.all([
-        fetch('http://localhost:8081/rest/dashboard/summary'),
-        fetch('http://localhost:8081/rest/dashboard/all-details')
-      ]);
-
-      const summaryData: DashboardSummaryResponse = await summaryResponse.json();
-      const detailsData: DashboardDetailsResponse = await detailsResponse.json();
-
-      // Set dashboard stats
+      // Replace with actual API calls
       setStats({
-        countOrderInDate: summaryData.countOrderInDate,
-        countBookingInDate: summaryData.countBookingInDate,
-        countFieldActiving: summaryData.countFieldActiving,
-        countProductActive: summaryData.countProductActive,
-        countLienHe: detailsData.demLienHeTrongNgay,
+        countOrderInDate: 15,
+        countBookingInDate: 8,
+        countFieldActiving: 12,
+        countProductActive: 45,
+        countLienHe: 3,
       });
-
-      // Process booking stats from thongkebookingtrongngay
-      const bookingData = detailsData.thongkebookingtrongngay;
-      const totalBooking = bookingData.find(item => item[0] === "Tổng số booking");
-      const completedBooking = bookingData.find(item => item[0] === "Hoàn Thành");
-      const depositBooking = bookingData.find(item => item[0] === "Đã Cọc");
-      const cancelledBooking = bookingData.find(item => item[0] === "Hủy Đặt");
-
-      setBookingStats({
-        total: totalBooking ? totalBooking[1] : 0,
-        completed: completedBooking ? completedBooking[1] : 0,
-        deposit: depositBooking ? depositBooking[1] : 0,
-        cancelled: cancelledBooking ? cancelledBooking[1] : 0,
-        revenue: totalBooking ? totalBooking[2] : 0,
-      });
-
-      // Process order stats from thongKeOrderInDay
-      const orderData = detailsData.thongKeOrderInDay;
-      const totalOrder = orderData.find(item => item[0] === "Tổng số order");
-      const unpaidOrder = orderData.find(item => item[0] === "Chưa thanh toán");
-      const paidOrder = orderData.find(item => item[0] === "Đã thanh toán");
-
-      setOrderStats({
-        total: totalOrder ? totalOrder[1] : 0,
-        paid: paidOrder ? paidOrder[1] : 0,
-        unpaid: unpaidOrder ? unpaidOrder[1] : 0,
-        revenue: paidOrder ? paidOrder[2] || 0 : 0,
-      });
-
-      // Process top fields
-      const topFieldsData = detailsData.top3SanDatNhieu.map(field => ({
-        name: field[0],
-        price: field[1],
-        bookings: field[2],
-        revenue: field[3],
-      }));
-      setTopFields(topFieldsData);
-
-      // Process top products
-      const topProductsData = detailsData.top3SanPhamBanNhieu.map(product => ({
-        name: product[0],
-        price: product[1],
-        sales: product[2],
-        revenue: product[3],
-      }));
-      setTopProducts(topProductsData);
-
-      // Process contacts (if any) - currently empty from API
-      setContacts([]);
-
     } catch (error) {
-      console.error("Error fetching dashboard data:", error);
-      // Set default values in case of error
-      setStats({
-        countOrderInDate: 0,
-        countBookingInDate: 0,
-        countFieldActiving: 0,
-        countProductActive: 0,
-        countLienHe: 0,
-      });
+      console.error("Error fetching dashboard stats:", error);
+    }
+  };
+
+  const fetchBookingStats = async () => {
+    try {
       setBookingStats({
-        total: 0,
-        completed: 0,
-        deposit: 0,
-        cancelled: 0,
-        revenue: 0,
+        total: 25,
+        completed: 18,
+        deposit: 5,
+        cancelled: 2,
+        revenue: 15000000,
       });
+    } catch (error) {
+      console.error("Error fetching booking stats:", error);
+    }
+  };
+
+  const fetchOrderStats = async () => {
+    try {
       setOrderStats({
-        total: 0,
-        paid: 0,
-        unpaid: 0,
-        revenue: 0,
+        total: 20,
+        paid: 15,
+        unpaid: 5,
+        revenue: 8500000,
       });
-      setTopFields([]);
-      setTopProducts([]);
-      setContacts([]);
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching order stats:", error);
+    }
+  };
+
+  const fetchRecentContacts = async () => {
+    try {
+      setContacts([
+        {
+          contactid: "1",
+          title: "Góp ý về dịch vụ",
+          category: "Góp ý",
+          datecontact: "2024-01-15",
+          users: {
+            firstname: "Nguyễn",
+            lastname: "Văn A",
+            image: "avatar1.jpg",
+          },
+        },
+        {
+          contactid: "2",
+          title: "Phản hồi sản phẩm",
+          category: "Phản hồi",
+          datecontact: "2024-01-14",
+          users: {
+            firstname: "Trần",
+            lastname: "Thị B",
+            image: "avatar2.jpg",
+          },
+        },
+      ]);
+    } catch (error) {
+      console.error("Error fetching contacts:", error);
+    }
+  };
+
+  const fetchTopFields = async () => {
+    try {
+      setTopFields([
+        { name: "Sân bóng đá A", price: 300000, bookings: 45, revenue: 13500000 },
+        { name: "Sân tennis B", price: 250000, bookings: 38, revenue: 9500000 },
+        { name: "Sân cầu lông C", price: 150000, bookings: 52, revenue: 7800000 },
+      ]);
+    } catch (error) {
+      console.error("Error fetching top fields:", error);
+    }
+  };
+
+  const fetchTopProducts = async () => {
+    try {
+      setTopProducts([
+        { name: "Áo thể thao Nike", price: 150000, sales: 120, revenue: 18000000 },
+        { name: "Giày bóng đá Adidas", price: 800000, sales: 45, revenue: 36000000 },
+        { name: "Quần short Puma", price: 80000, sales: 95, revenue: 7600000 },
+      ]);
+    } catch (error) {
+      console.error("Error fetching top products:", error);
     }
   };
 
@@ -375,40 +356,30 @@ const Dashboard: React.FC = () => {
             <div className="card flex-fill">
               <div className="card-body">
                 <h4 className="card-title">
-                  Góp ý trong ngày của khách hàng <span
+                  Góp ý trong ngày của khách hàng trong ngày <span
                     className="badge bg-inverse-danger ml-2">{stats.countLienHe}</span>
                 </h4>
-                {loading ? (
-                  <div className="text-center p-4">
-                    <p>Đang tải...</p>
-                  </div>
-                ) : contacts.length > 0 ? (
-                  contacts.map((contact) => (
-                    <div key={contact.contactid} className="leave-info-box">
-                      <div className="media align-items-center">
-                        <div className="avatar">
-                          <img alt="" src={`/user/images/${contact.users.image || 'avatar1.png'}`} />
-                        </div>
-                        <div className="media-body">
-                          <div className="text-sm my-0">{contact.users.firstname + ' ' + contact.users.lastname}</div>
-                        </div>
+                {contacts.map((contact) => (
+                  <div key={contact.contactid} className="leave-info-box">
+                    <div className="media align-items-center">
+                      <div className="avatar">
+                        <img alt="" src={`/user/images/${contact.users.image || 'avatar1.png'}`} />
                       </div>
-                      <div className="row align-items-center mt-3">
-                        <div className="col-6">
-                          <h6 className="mb-0">{formatDate(contact.datecontact)}</h6>
-                          <span className="text-sm text-muted">{contact.title}</span>
-                        </div>
-                        <div className="col-6 text-right">
-                          <span className="badge bg-inverse-danger">{contact.category}</span>
-                        </div>
+                      <div className="media-body">
+                        <div className="text-sm my-0">{contact.users.firstname + ' ' + contact.users.lastname}</div>
                       </div>
                     </div>
-                  ))
-                ) : (
-                  <div className="text-center p-4">
-                    <p className="text-muted">Chưa có góp ý nào trong ngày hôm nay</p>
+                    <div className="row align-items-center mt-3">
+                      <div className="col-6">
+                        <h6 className="mb-0">{formatDate(contact.datecontact)}</h6>
+                        <span className="text-sm text-muted">{contact.title}</span>
+                      </div>
+                      <div className="col-6 text-right">
+                        <span className="badge bg-inverse-danger">{contact.category}</span>
+                      </div>
+                    </div>
                   </div>
-                )}
+                ))}
                 <div className="load-more text-center">
                   <a className="text-dark" href="/admin/contacts">Xem thêm</a>
                 </div>

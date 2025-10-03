@@ -299,7 +299,7 @@ const EventPage: React.FC = () => {
         {/* Add Modal */}
         {showAdd && (
           <div className="modal fade show" style={{ display: "block" }}>
-            <div className="modal-dialog modal-lg modal-dialog-centered">
+            <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
               <div className="modal-content">
                 <div className="modal-header">
                   <h5 className="modal-title">Tạo sự kiện mới</h5>
@@ -406,8 +406,8 @@ const EventPage: React.FC = () => {
         {/* Edit Modal */}
         {showEdit && (
           <div className="modal fade show" style={{ display: "block" }}>
-            <div className="modal-dialog modal-lg modal-dialog-centered">
-              <div className="modal-content">
+            <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+              <div className="modal-content" style={{ width: "150%", overflowY: 'auto' }}>
                 <div className="modal-header">
                   <h5 className="modal-title">Chỉnh sửa sự kiện</h5>
                   <button type="button" className="btn-close" onClick={() => setShowEdit(false)}></button>

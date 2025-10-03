@@ -75,9 +75,10 @@ const CheckoutDatSan: React.FC = () => {
         setUser(data.user);
         setField(f);
         setPricefield(f.price);
-        setThanhtien(data.totalPrice || 0);
-        setTamtinh(data.totalPrice || 0);
-        setAmount(Math.round(data.totalPrice * 0.3));
+        const totalPrice = data.totalprice || data.totalPrice || 0;
+        setThanhtien(totalPrice);
+        setTamtinh(totalPrice);
+        setAmount(Math.round(totalPrice * 0.3));
         setTotalDay(data.totalDay || 1);
         setNameshift(data.nameShift);
         setShifts(data.shifts || []);
@@ -152,9 +153,11 @@ const handleSubmit = async (e: React.FormEvent) => {
   
 };
  useEffect(() => {
-    setThanhtien(tamtinh);
-    setAmount(Math.round(tamtinh * 0.3));
-  }, [discountCode, tamtinh]);
+    if (tamtinh > 0) {
+      setThanhtien(tamtinh);
+      setAmount(Math.round(tamtinh * 0.3));
+    }
+  }, [tamtinh]);
 
  const handleApplyDiscount = async (e: React.MouseEvent) => {
   e.preventDefault();
@@ -184,12 +187,15 @@ const handleSubmit = async (e: React.FormEvent) => {
       const newThanhtien = tamtinh * (1 - discountPercent / 100);
       setThanhtien(newThanhtien);
       setAmount(Math.round(newThanhtien * 0.3));
-      setAppliedCode(discountCode); // ✅ lưu lại mã đúng
+      setAppliedCode(discountCode);
       alert(
         `Mã giảm giá "${discountCode}" đã được áp dụng! Bạn được giảm ${discountPercent}%`
       );
     } else {
-      setAppliedCode(null); // ✅ reset nếu sai
+      // Reset về giá gốc khi mã không hợp lệ
+      setThanhtien(tamtinh);
+      setAmount(Math.round(tamtinh * 0.3));
+      setAppliedCode(null);
       alert(`Mã giảm giá "${discountCode}" không hợp lệ hoặc đã hết hạn.`);
     }
   } catch (err) {
@@ -409,7 +415,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                         </div>
                         <div>
                           <span>Giảm giá :</span>
-                          <span style={{ color: "black" }}>0₫</span>
+                          <span style={{ color: "black" }}>{(tamtinh - thanhtien).toLocaleString()}₫</span>
                         </div>
                         <div>
                           <label> Mã giảm giá:</label>
@@ -422,9 +428,9 @@ const handleSubmit = async (e: React.FormEvent) => {
                         <div style={{ height: "40px", display: "flex", alignItems: "center" }}>
                           <span style={{ color: "red" }}>Thành Tiền:</span> &nbsp;
                           <span style={{ color: "black", fontWeight: "bold" }}>
-                            {thanhtien.toLocaleString()}₫
+                            {(thanhtien || 0).toLocaleString()}₫
                           </span>
-                          <input type="hidden" name="thanhtien" value={thanhtien} />
+                          <input type="hidden" name="thanhtien" value={thanhtien || 0} />
                         </div>
                         <div style={{ height: "40px", display: "flex", alignItems: "center" }}>
                           <span style={{ color: "red" }}>Cọc trước 30%
@@ -436,15 +442,15 @@ const handleSubmit = async (e: React.FormEvent) => {
                             </span> &nbsp;
                           </span>
                           <span style={{ color: "black", fontWeight: "bold" }}>
-                            {amount.toLocaleString()}₫
+                            {(amount || 0).toLocaleString()}₫
                           </span>
-                          <input type="hidden" id="amountInput" name="amount" value={amount} />
+                          <input type="hidden" id="amountInput" name="amount" value={amount || 0} />
                         </div>
                         <div style={{ height: "40px", display: "flex", alignItems: "center" }}>
                           <span style={{ color: "red" }}>Thanh toán khi nhận sân:</span>
                           &nbsp;
                           <span style={{ color: "black", fontWeight: "bold" }}>
-                            {(thanhtien - amount).toLocaleString()}₫
+                            {((thanhtien || 0) - (amount || 0)).toLocaleString()}₫
                           </span>
                         </div>
                       </div>
