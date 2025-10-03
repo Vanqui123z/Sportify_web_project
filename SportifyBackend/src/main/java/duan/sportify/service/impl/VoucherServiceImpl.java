@@ -1,6 +1,8 @@
 package duan.sportify.service.impl;
 
+import java.lang.StackWalker.Option;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,9 +45,9 @@ public class VoucherServiceImpl implements VoucherService{
 	}
 
 	@Override
-	public Voucher findById(String id) {
+	public Optional<Voucher> findById(String id) {
 		// TODO Auto-generated method stub
-		return voucherDAO.findById(id).get();
+		return voucherDAO.findById(id);
 	}
 
 	@Override
@@ -62,5 +64,6 @@ public class VoucherServiceImpl implements VoucherService{
 		}
 		voucherDAO.flush(); // lưu thay đổi vào db sau khi xóa
 	}
+	
 	
 }

@@ -51,11 +51,14 @@ const CheckoutDatSan: React.FC = () => {
   const [nameshift, setNameshift] = useState("");
   const [amount, setAmount] = useState(0);
   const [thanhtien, setThanhtien] = useState(0);
+  const [tamtinh, setTamtinh] = useState(0);
+   const [appliedCode, setAppliedCode] = useState<string | null>(null);
   const [pricefield, setPricefield] = useState(0);
   const [error, setError] = useState('');
   const [shifts, setShifts] = useState<{ dayOfWeek: number; shiftId: number }[]>([]);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [discountCode, setDiscountCode] = useState('');
 
   useEffect(() => {
     if (!fieldid) return;
@@ -69,12 +72,12 @@ const CheckoutDatSan: React.FC = () => {
           console.error("Không tìm thấy thông tin sân trong response");
           return;
         }
-
         setUser(data.user);
         setField(f);
         setPricefield(f.price);
-        setThanhtien(data.totalprice);
-        setAmount(Math.round(data.totalprice * 0.3));
+        setThanhtien(data.totalPrice || 0);
+        setTamtinh(data.totalPrice || 0);
+        setAmount(Math.round(data.totalPrice * 0.3));
         setTotalDay(data.totalDay || 1);
         setNameshift(data.nameShift);
         setShifts(data.shifts || []);
@@ -111,6 +114,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     fieldid: field?.fieldid || null,
     pricefield,
     phone: user?.phone || '',
+    discountCode: '', 
     shiftId: (shiftid) || null,
     shifts: shifts.map(s => ({ dayOfWeek: s.dayOfWeek, shiftId: s.shiftId })),
     playdate: dateselect,       // định dạng 'yyyy-MM-dd'
@@ -143,6 +147,55 @@ const handleSubmit = async (e: React.FormEvent) => {
     }
   } catch (err: any) {
     alert('Có lỗi khi thanh toán, vui lòng thử lại!');
+  }
+
+  
+};
+ useEffect(() => {
+    setThanhtien(tamtinh);
+    setAmount(Math.round(tamtinh * 0.3));
+  }, [discountCode, tamtinh]);
+
+ const handleApplyDiscount = async (e: React.MouseEvent) => {
+  e.preventDefault();
+
+  // Nếu đã áp dụng cùng mã rồi thì không gọi lại
+  if (appliedCode === discountCode) {
+    alert(`Mã "${discountCode}" đã được áp dụng rồi!`);
+    return;
+  }
+
+  try {
+    const res = await fetch(
+      `http://localhost:8081/api/user/discount/apply?code=${encodeURIComponent(discountCode)}`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      }
+    );
+
+    if (!res.ok) throw new Error(`API trả về lỗi ${res.status}`);
+
+    const data = await res.json();
+    const discountPercent = data?.voucher ?? 0;
+
+    if (discountPercent > 0) {
+      const newThanhtien = tamtinh * (1 - discountPercent / 100);
+      setThanhtien(newThanhtien);
+      setAmount(Math.round(newThanhtien * 0.3));
+      setAppliedCode(discountCode); // ✅ lưu lại mã đúng
+      alert(
+        `Mã giảm giá "${discountCode}" đã được áp dụng! Bạn được giảm ${discountPercent}%`
+      );
+    } else {
+      setAppliedCode(null); // ✅ reset nếu sai
+      alert(`Mã giảm giá "${discountCode}" không hợp lệ hoặc đã hết hạn.`);
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Có lỗi xảy ra khi áp dụng mã giảm giá!");
+    setAppliedCode(null); // ✅ tránh giữ mã cũ khi lỗi
   }
 };
 
@@ -352,11 +405,18 @@ const handleSubmit = async (e: React.FormEvent) => {
                         <hr />
                         <div>
                           <span>Tạm tính :</span>
-                          <span style={{ color: "black" }}>{thanhtien.toLocaleString()}₫</span>
+                          <span style={{ color: "black" }}>{tamtinh.toLocaleString()}₫</span>
                         </div>
                         <div>
                           <span>Giảm giá :</span>
                           <span style={{ color: "black" }}>0₫</span>
+                        </div>
+                        <div>
+                          <label> Mã giảm giá:</label>
+                          <input type="text" value={discountCode} onChange={(e) => setDiscountCode(e.target.value)} className="form-control" placeholder="Nhập mã giảm giá (nếu có)" />
+                        </div>
+                        <div>
+                          <button className="btn btn-primary py-3 px-4 mt-3" onClick={handleApplyDiscount}>Áp dụng</button>
                         </div>
                         <hr />
                         <div style={{ height: "40px", display: "flex", alignItems: "center" }}>

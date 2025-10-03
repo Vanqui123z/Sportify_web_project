@@ -1,6 +1,7 @@
 package duan.sportify.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import duan.sportify.entities.Authorized;
 import duan.sportify.entities.Voucher;
@@ -16,7 +17,7 @@ public interface VoucherService {
 
 	void delete(String id);
 	
-	Voucher findById(String id);
+	Optional<Voucher> findById(String id);
 
 	List<Voucher> findByVoucherId(String voucherid);
 
