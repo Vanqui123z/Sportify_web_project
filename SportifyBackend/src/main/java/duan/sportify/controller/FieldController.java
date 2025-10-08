@@ -25,6 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,6 +36,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import duan.sportify.DTO.booking.PermanentBookingRequest;
 import duan.sportify.entities.Authorized;
 import duan.sportify.entities.Bookings;
+import duan.sportify.entities.FavoriteField;
 import duan.sportify.entities.Field;
 import duan.sportify.entities.Shifts;
 import duan.sportify.entities.Sporttype;
@@ -570,5 +572,49 @@ public class FieldController {
 		} catch (NumberFormatException e) {
 			return 0.0;
 		}
+	}
+
+	@GetMapping("user/favorite")
+	public ResponseEntity<?> getAllFavoriteFields(HttpServletRequest request) {
+
+		// Lấy username người dùng đã đăng nhập
+		String userlogin = (String) request.getSession().getAttribute("username");
+		// user
+		List<FavoriteField> favoriteFields = fieldservice.findFavoriteByUsername(userlogin);
+
+		// ép load thủ công để tránh Lazy proxy
+		favoriteFields.forEach(f -> {
+			f.getUsername().getUsername();
+			f.getField().getFieldid();
+		});
+
+		return ResponseEntity.ok(favoriteFields);
+	}
+	@GetMapping("user/favorite/check")
+	public Object checkFavoriteField( @RequestParam Integer fieldId, HttpServletRequest request) {
+		// Lấy username người dùng đã đăng nhập
+		String username = (String) request.getSession().getAttribute("username");
+		boolean isFavorite = fieldservice.checkFavoriteField(username, fieldId);
+		return ResponseEntity.ok(Collections.singletonMap("isFavorite", isFavorite));
+	}
+	
+
+	// favorite
+	@PostMapping("user/favorite/{fieldId}")
+	public ResponseEntity<?> getFavoriteFields(@PathVariable Integer fieldId, HttpServletRequest request) {
+		// user
+		String userlogin = (String) request.getSession().getAttribute("username");
+		System.out.println("usernameLogin" + userlogin);
+
+		fieldservice.addFavoriteField(userlogin, fieldId);
+		return ResponseEntity.ok().body(Collections.singletonMap("message", "Thêm sân yêu thích thành công"));
+	}
+
+	@DeleteMapping("user/favorite/{fieldId}")
+	public ResponseEntity<?> removeFavoriteField(@PathVariable Integer fieldId, HttpServletRequest request) {
+		String userlogin = (String) request.getSession().getAttribute("username");
+		// user
+		fieldservice.removeFavoriteField(userlogin, fieldId);
+		return ResponseEntity.ok().body(Collections.singletonMap("message", "Xóa sân yêu thích thành công"));
 	}
 }

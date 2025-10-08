@@ -14,6 +14,24 @@ interface User {
   status: boolean;
 }
 
+interface Permanent {
+  bookingId: number;
+  username: string;
+  phone: string;
+  note: string;
+  bookingStatus: string;
+  bookingType: string;
+  fieldName: string;
+  fieldImage: string;
+  shiftName: string;
+  shiftStart: string;
+  shiftEnd: string;
+  price: number;
+  playDate: string | null;
+  startDate: string;
+  endDate: string;
+  dayOfWeek: number;
+}
 interface Booking {
   bookingid: number;
   username: string;
@@ -40,6 +58,7 @@ interface BookingDetail {
 
 const BookingPage: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [bookingPermanent, setBookingPermanent] = useState<Permanent[]>([]);
   const [form, setForm] = useState<Partial<Booking>>({});
   const [bookingDetail, setBookingDetail] = useState<BookingDetail[]>([]);
   const [showEdit, setShowEdit] = useState(false);
@@ -78,8 +97,12 @@ const BookingPage: React.FC = () => {
     setForm(booking);
     setShowEdit(true);
     axios.get(`http://localhost:8081/rest/bookingdetails/${booking.bookingid}`)
-      .then(res => setBookingDetail(res.data));
+      .then((res) => {
+        setBookingDetail(res.data.bookingDetail);
+        setBookingPermanent(res.data.bookingPermanent);
+      });
   };
+
 
   // Handle form change
   const handleFormChange = (field: keyof Booking, value: any) => {
@@ -286,7 +309,18 @@ const BookingPage: React.FC = () => {
                                 </tr>
                               </thead>
                               <tbody>
-                                {bookingDetail.map((b, idx) => (
+                                {(bookingDetail.length === 0 && bookingPermanent.length > 0) ? 
+                                  bookingPermanent.map((p, idx) => (
+                                    <tr key={p.bookingId}>
+                                      <td>{idx + 1}</td>
+                                      <td>{p.fieldName}</td>
+                                      <td>{p.startDate} - {p.endDate} (Thứ {p.dayOfWeek})</td>
+                                      <td>{p.shiftName}</td>
+                                      <td>{formatCurrency(p.price * 0.3)}</td>
+                                      <td>{formatCurrency(p.price - (p.price * 0.3))}</td>
+                                    </tr>
+                                  ))
+                                : bookingDetail.map((b, idx) => (
                                   <tr key={b.bookingdetailid}>
                                     <td>{idx + 1}</td>
                                     <td>{b.field?.namefield || ""}</td>
@@ -295,7 +329,8 @@ const BookingPage: React.FC = () => {
                                     <td>{formatCurrency((form.bookingprice || 0) * 0.3)}</td>
                                     <td>{formatCurrency((form.bookingprice || 0) - ((form.bookingprice || 0) * 0.3))}</td>
                                   </tr>
-                                ))}
+                                ))
+                              }
                               </tbody>
                             </table>
                           </div>

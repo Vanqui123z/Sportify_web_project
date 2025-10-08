@@ -17,9 +17,13 @@ import javax.servlet.http.HttpServletRequest;
 
 public class VNPayConfig {
 	  public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+	  public static String vnp_Token = "https://sandbox.vnpayment.vn/token_ui/create-token.html";
+	  public static String vnp_PayToken = "https://sandbox.vnpayment.vn/token_ui/payment-token.html";
 	    public static String vnp_Returnurl = "http://localhost:8081/api/user/payment/checkoutResult";
+	    public static String vnp_ReturnurlToken = "http://localhost:8081/api/user/token-payment";
 	    public static String vnp_TmnCode = "GMSZE87J";
 	    public static String vnp_HashSecret = "DCZRJJWNSBMX4L9ZKXNI7A64ANITCKGF";
+	    public static String vnp_Cancelurl = "http://localhost:8081/api/user/payment";
 	    public static String vnp_Version = "2.1.0";
 	    public static String vnp_Command = "pay";
 	    public static String vnp_apiUrl = "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";

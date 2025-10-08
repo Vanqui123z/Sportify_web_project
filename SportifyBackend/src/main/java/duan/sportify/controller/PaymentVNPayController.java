@@ -1,5 +1,6 @@
 package duan.sportify.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,6 +18,8 @@ import org.springframework.web.servlet.view.RedirectView;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import javax.persistence.EntityManager;
@@ -32,19 +35,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import duan.sportify.DTO.PaymentResDTO;
 import duan.sportify.DTO.PermanentPaymentRequest;
-import duan.sportify.DTO.ShiftDTO;
-import duan.sportify.DTO.booking.PermanentBookingRequest;
 import duan.sportify.config.VNPayConfig;
 import duan.sportify.config.appConfig;
 import duan.sportify.entities.Bookingdetails;
 import duan.sportify.entities.Bookings;
 import duan.sportify.entities.Orders;
+import duan.sportify.entities.PaymentMethod;
 import duan.sportify.entities.Users;
 import duan.sportify.service.BookingDetailService;
 import duan.sportify.service.BookingService;
 import duan.sportify.service.UserService;
 import duan.sportify.service.VNPayService;
 import duan.sportify.service.OrderService;
+import duan.sportify.service.PaymentMethodService;
 
 @Controller
 @RequestMapping("/")
@@ -62,6 +65,8 @@ public class PaymentVNPayController {
 	OrderService ordersService;
 	@Autowired
 	duan.sportify.service.CartService cartService; // Thêm dòng này
+	@Autowired
+	duan.sportify.service.PaymentMethodService paymentMethodService;
 
 	@Autowired
 	appConfig appConfig;
@@ -119,40 +124,48 @@ public class PaymentVNPayController {
 
 	// Gọi API VNPay cung cấp
 	@PostMapping("api/user/getIp/create")
-	public ResponseEntity<?> createPayment(@RequestBody PermanentPaymentRequest body, HttpServletRequest request,@RequestParam("parmanent") boolean parmanent)
+	public ResponseEntity<?> createPayment(@RequestBody PermanentPaymentRequest body, HttpServletRequest request)
 			throws Exception {
-
+		ipAddress = getIpAddress().get("ip");
 		String username = (String) request.getSession().getAttribute("username");
-		System.out.println("body: " + body);
 		if (body.getShifts() != null && !body.getShifts().isEmpty()) {
 			bookingService.createBookingPermanent(
-				username,
-				body.getAmount(),
-				body.getPhone(),
-				body.getNote(),
-				body.getShifts(),
-				body.getFieldid(),
-				body.getPricefield(),
-				body.getStartDate(),
-				body.getEndDate());
-			
-		} else {
-			 bookingService.createBooking(
-            username,
-            body.getAmount(),
-            body.getPhone(),
-            body.getNote(),
-            body.getShiftId(),
-            body.getFieldid(),
-            body.getPlaydate(),
-            body.getPricefield()
-    );
-		}
-		
-		// chuyển sang trang thanh toán
-		String paymentUrl = vnPayService.generatePaymentUrl(body.getAmount().toString(), request.getRemoteAddr());
+					username,
+					body.getAmount(),
+					body.getPhone(),
+					body.getNote(),
+					body.getShifts(),
+					body.getFieldid(),
+					body.getPricefield(),
+					body.getStartDate(),
+					body.getEndDate());
 
-		return ResponseEntity.ok(new PaymentResDTO("Ok", "Successfully", paymentUrl));
+		} else {
+			bookingService.createBooking(
+					username,
+					body.getAmount(),
+					body.getPhone(),
+					body.getNote(),
+					body.getShiftId(),
+					body.getFieldid(),
+					body.getPlaydate(),
+					body.getPricefield());
+		}
+		System.out.println("ip address: " + ipAddress);
+		if (body.getCardId() == null || body.getCardId().isEmpty()) {
+			// chuyển sang trang thanh toán
+			String paymentUrl = vnPayService.generatePaymentUrl(body.getAmount().toString(), ipAddress);
+			return ResponseEntity.ok(new PaymentResDTO("Ok", "Successfully", paymentUrl));
+		} else {
+
+			Long cardId = Long.parseLong(body.getCardId());
+			String token = paymentMethodService.getPaymentMethod(cardId).getToken();
+			System.out.println("body: " + token);
+			// chuyển sang trang thanh toán
+			String paymentUrl = vnPayService.generatePaymentUrlByToken(body.getAmount().toString(), ipAddress,
+					username, token);
+			return ResponseEntity.ok(new PaymentResDTO("Ok", "Successfully", paymentUrl));
+		}
 	}
 
 	// cart
@@ -193,6 +206,8 @@ public class PaymentVNPayController {
 		vnp_Params.put("vnp_Command", VNPayConfig.vnp_Command);
 		vnp_Params.put("vnp_TmnCode", VNPayConfig.vnp_TmnCode);
 		vnp_Params.put("vnp_Amount", String.valueOf(amount));
+		vnp_Params.put("vnp_Command", "pay_and_create");
+		vnp_Params.put("vnp_store_token", "1");
 		vnp_Params.put("vnp_CurrCode", "VND");
 		vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
 		vnp_Params.put("vnp_OrderInfo", "Thanh toán giỏ hàng #" + cartid);
@@ -246,7 +261,10 @@ public class PaymentVNPayController {
 	// Xử lý kết quả thanh toán duy nhất một endpoint
 	@GetMapping("api/user/payment/checkoutResult")
 	public RedirectView paymentCheckoutResult(HttpServletRequest request) {
+		System.out.println("VNPAY RETURN: " + request.getQueryString());
+		// user
 		String txnRef = request.getParameter("vnp_TxnRef");
+		txnRef = txnRef != null ? txnRef : request.getParameter("vnp_txn_ref");
 		Map<String, String> fields = new HashMap<>();
 		for (Enumeration<String> params = request.getParameterNames(); params.hasMoreElements();) {
 			String fieldName = params.nextElement();
@@ -255,16 +273,22 @@ public class PaymentVNPayController {
 				fields.put(fieldName, fieldValue);
 			}
 		}
+
 		String transactionStatus;
-		double amountInVND = fields.containsKey("vnp_Amount")
-				? Double.parseDouble(fields.get("vnp_Amount")) / 100
-				: 0;
+		double amountInVND = 0;
+		try {
+			amountInVND = Double.parseDouble(
+					fields.getOrDefault("vnp_Amount", fields.getOrDefault("vnp_amount", "0"))) / 100.0;
+		} catch (NumberFormatException e) {
+			System.err.println("Invalid vnp_Amount");
+		}
 
 		String redirectUrl = appConfig.getFrontendUrl();
 
 		if (txnRef != null && txnRef.startsWith("FIELD_")) {
 			// Xử lý đơn sân
-			if ("00".equals(request.getParameter("vnp_TransactionStatus"))) {
+			if ("00".equals(request.getParameter("vnp_TransactionStatus"))
+					|| "00".equals(request.getParameter("vnp_transaction_status"))) {
 				transactionStatus = "success";
 				try {
 					if (savebooking != null) {
@@ -307,6 +331,59 @@ public class PaymentVNPayController {
 					+ "&status=fail"
 					+ "&amount=" + amountInVND;
 		}
+		return new RedirectView(redirectUrl);
+	}
+
+	@PostMapping("api/user/generate-token")
+	public ResponseEntity<?> generateToken(
+			HttpServletRequest request,
+			@RequestParam String username,
+			@RequestParam String cardType,
+			@RequestParam String bankCode) {
+
+		String ipAddress = getIpAddress().get("ip");
+		try {
+			String tokenUrl = vnPayService.generateTokenUrl(ipAddress, username, cardType, bankCode);
+			return ResponseEntity.ok(Collections.singletonMap("url", tokenUrl));
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error generating token");
+		}
+	}
+
+	// xử lí dữ liệu token
+	@GetMapping("api/user/token-payment")
+	public RedirectView tokenPayment(HttpServletRequest request) {
+		String vnp_Token = request.getParameter("vnp_token");
+		String vnp_AppUserId = request.getParameter("vnp_app_user_id");
+		String vnp_TxnRef = request.getParameter("vnp_txn_ref");
+		String vnp_CardNumber = request.getParameter("vnp_card_number");
+		String vnp_CardType = request.getParameter("vnp_card_type");
+		String vnp_BankCode = request.getParameter("vnp_bank_code");
+		String vnp_TransactionStatus = request.getParameter("vnp_transaction_status");
+		String vnp_PayDate = request.getParameter("vnp_pay_date");
+
+		PaymentMethod paymentMethod = new PaymentMethod();
+		paymentMethod.setToken(vnp_Token);
+		paymentMethod.setUsername(vnp_AppUserId);
+		paymentMethod.setCardNumber(vnp_CardNumber);
+		paymentMethod.setCardType(vnp_CardType);
+		paymentMethod.setBankCode(vnp_BankCode);
+		paymentMethod.setCreatedAt(
+				LocalDate.parse(vnp_PayDate.substring(0, 8), DateTimeFormatter.ofPattern("yyyyMMdd")));
+
+		paymentMethodService.addPaymentMethod(paymentMethod);
+		String status = null;
+		if (vnp_TransactionStatus.equals("00")) {
+			status = "success";
+
+		} else {
+			status = "fail";
+		}
+		String redirectUrl = appConfig.getFrontendUrl() + "/payment-methods?" + "&status=" + status + "&vnp_TxnRef="
+				+ vnp_TxnRef + "&vnp_CardType=" + vnp_CardType + "&vnp_BankCode=" + vnp_BankCode + "&vnp_CardNumber="
+				+ vnp_CardNumber;
+		System.out.println("redirectUrl: " + redirectUrl);
 		return new RedirectView(redirectUrl);
 	}
 

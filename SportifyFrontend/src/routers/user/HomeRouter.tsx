@@ -22,6 +22,8 @@ import FieldHistoryList from "../../Pages/user/history/FieldHistoryList";
 import FieldHistoryListDetail from "../../Pages/user/history/FieldHistoryListDetail";
 import OrderHistoryList from "../../Pages/user/history/OrderHistoryList";
 import OrderHistoryListDetail from "../../Pages/user/history/OrderHistoryListDetail";
+import ListFavorite from "../../Pages/user/home/ListFavorite";
+import ListCardBank from "../../Pages/user/home/ManagerCardBank";
 
 
 const UserRoutes: React.FC = () => (
@@ -31,6 +33,8 @@ const UserRoutes: React.FC = () => (
 
     {/* <Route path="about" element={<HomeAbout />} /> */}
     <Route path="profile" element={<Profile />} />
+    <Route path="profile/listcard" element={<ListCardBank />} />
+
 
 
     {/* Chính sách & Quy định */}
@@ -53,6 +57,7 @@ const UserRoutes: React.FC = () => (
     <Route path="field/permanent-booking/create/:idField" element={<CheckoutDatSan />} />
     <Route path="field/profile/historybooking" element={<FieldHistoryList />} />
     <Route path="field/profile/historybooking/detail" element={<FieldHistoryListDetail />} />
+    <Route path="field/profile/favorite" element={<ListFavorite />} />
 
     {/* Order */}
     {/* <Route path="order/cart" element={<OrderCart />} />*/}

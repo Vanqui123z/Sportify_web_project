@@ -26,7 +26,7 @@ export default function Navbar() {
                 <a href="/sportify/team" className="nav-link">Đội</a>
               </li>
               <li className="nav-item dropdown">
-                <a className="nav-link dropdown-toggle" href="#" id="footballDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <a className="nav-link dropdown-toggle"  id="footballDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   Trực tiếp bóng đá
                 </a>
                 <div className="dropdown-menu" aria-labelledby="footballDropdown">

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { fetchBookingData } from '../../../service/user/checkout/checkBookingFields';
+import ListCardBank from '../../../components/user/ListCardBank';
 
 interface SportType {
   sporttypeid: string;
@@ -59,6 +60,8 @@ const CheckoutDatSan: React.FC = () => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [discountCode, setDiscountCode] = useState('');
+  const [showCardList, setShowCardList] = useState(false);
+  const [selectedCardId, setSelectedCardId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (!fieldid) return;
@@ -120,19 +123,20 @@ const handleSubmit = async (e: React.FormEvent) => {
     shifts: shifts.map(s => ({ dayOfWeek: s.dayOfWeek, shiftId: s.shiftId })),
     playdate: dateselect,       // định dạng 'yyyy-MM-dd'
     startDate,                  // định dạng 'yyyy-MM-dd'
-    endDate                     // định dạng 'yyyy-MM-dd'
+    endDate,                    // định dạng 'yyyy-MM-dd'
+    cardId: showCardList ? selectedCardId : undefined // Thêm cardId nếu chọn thẻ đã lưu
   };
 
   console.log('Payload JSON:', payload);
 
   try {
-    const res = await fetch('http://localhost:8081/api/user/getIp/create?parmanent=true', {
+    const res = await fetch('http://localhost:8081/api/user/getIp/create?', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       credentials: 'include',
-      body: JSON.stringify(payload),   // gửi JSON thay vì FormData
+      body: JSON.stringify(payload),  
     });
 
     if (!res.ok) {
@@ -144,7 +148,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     if (data && data.url) {
       window.location.href = data.url;
     } else {
-      alert('Đặt sân thành công!');
+      alert(" Có lỗi khi thanh toán, vui lòng thử lại!");
     }
   } catch (err: any) {
     alert('Có lỗi khi thanh toán, vui lòng thử lại!');
@@ -460,12 +464,47 @@ const handleSubmit = async (e: React.FormEvent) => {
                         <h3 className="billing-heading mb-4">Hình thức thanh toán</h3>
                         <div className="form-group">
                           <div className="col-md-12">
-                            <div className="radio">
-                              <label>
-                                <input type="radio" checked name="optradio" className="mr-2" readOnly />
-                                <img style={{ width: "12%", height: "14%" }} src="/user/images/iconVNP.png" alt="VNPay" />VNPay
-                              </label>
-                            </div>
+                           <div className="radio flex items-center gap-6">
+  <label className="flex items-center cursor-pointer">
+    <input
+      type="radio"
+      name="optradio"
+      className="mr-5 w-auto"
+      checked={!showCardList}
+      onChange={() => {
+        setShowCardList(false);
+        setSelectedCardId(undefined);
+      }}
+    />
+    <img
+      style={{ width: "24px", height: "24px", marginRight: "6px" }}
+      src="/user/images/iconVNP.png"
+      alt="VNPay"
+    />
+    <span>VNPay</span>
+  </label>
+
+  <label className="flex items-center cursor-pointer">
+    <input
+      type="radio"
+      name="optradio"
+      className="mr-5 w-auto"
+      checked={showCardList}
+      onChange={() => setShowCardList(true)}
+    />
+    <span>Chọn thẻ đã lưu</span>
+  </label>
+</div>
+
+{showCardList && user?.username && (
+  <ListCardBank
+    username={user.username}
+    showDeleteButton={false}
+    showDefaultButton={false}
+    selectedCardId={selectedCardId}
+    onCardSelect={(cardId) => setSelectedCardId(cardId)}
+  />
+)}
                           </div>
                         </div>
 

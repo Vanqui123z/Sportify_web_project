@@ -51,6 +51,9 @@ const DetailFields: React.FC = () => {
     const [fixedEndDate, setFixedEndDate] = useState("");
     const [fixedWeekdays, setFixedWeekdays] = useState<string[]>([]); // ['2', '4', ...]
     const [fixedShifts, setFixedShifts] = useState<{ [key: string]: string }>({}); // { '2': '1', '4': '2' }
+    // favorite
+     const [liked, setLiked] = useState(false);
+
 
     const weekdays = [
         { value: "2", label: "Thứ 2" },
@@ -105,19 +108,6 @@ const DetailFields: React.FC = () => {
         setShowFixedBooking(false);
     };
 
-
-//      "permanentId": 5,
-//   "fieldId": 1,
-//   "username": "adminsportify",
-//   "startDate": "2025-10-01",
-//   "endDate": "2025-12-31",
-//   "active": 1,
-//   "details": [
-//     { "detailId": 10, "dayOfWeek": 1, "shiftId": 1 },
-//     { "detailId": 11, "dayOfWeek": 3, "shiftId": 2 },
-//     { "detailId": 12, "dayOfWeek": 6, "shiftId": 3 }
-//   ]
-
     useEffect(() => {
         const today = new Date();
         const dd = String(today.getDate()).padStart(2, "0");
@@ -158,6 +148,23 @@ const DetailFields: React.FC = () => {
             }
         };
         fetchData();
+        const checkFavoriteStatus = async () => {
+            try {
+                const response = await fetch(`http://localhost:8081/api/user/favorite/check?fieldId=${idField}`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setLiked(data.isFavorite);
+                } else {
+                    setLiked(false);
+                }
+            } catch (error) {
+                console.error("Error checking favorite status:", error);
+            }
+        };
+        checkFavoriteStatus();
     }, [idField]);
 
     useEffect(() => {
@@ -201,11 +208,60 @@ const DetailFields: React.FC = () => {
             console.error("Error fetching shifts:", err);
         }
     };
+    //ca mặc định
     useEffect(() => {
         if (shiftsNull && shiftsNull.length > 0) {
             setSelectedShift(String(shiftsNull[0].shiftid));
         }
     }, [shiftsNull]);
+
+
+    //favorite
+const toggleFavorite = async () => {
+  if (loading) return;
+  setLoading(true);
+
+  try {
+    let response;
+
+    if (!liked) {
+      // Thêm vào danh sách yêu thích
+      response = await fetch(`http://localhost:8081/api/user/favorite/${idField}`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        setLiked(true);
+        alert("✅ Đã thêm vào danh sách yêu thích!");
+      } else if (response.status === 409) {
+        alert("⚠️ Mục này đã có trong danh sách yêu thích!");
+      } else {
+        throw new Error("Không thể thêm vào danh sách yêu thích.");
+      }
+
+    } else {
+      // Xóa khỏi danh sách yêu thích
+      response = await fetch(`http://localhost:8081/api/user/favorite/${idField}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        setLiked(false);
+        alert("❎ Đã xóa khỏi danh sách yêu thích!");
+      } else {
+        throw new Error("Không thể xóa khỏi danh sách yêu thích.");
+      }
+    }
+
+  } catch (error) {
+    console.error("Lỗi khi xử lý yêu thích:", error);
+    alert("🚫 Lỗi khi cập nhật danh sách yêu thích. Vui lòng thử lại!");
+  } finally {
+    setLoading(false);
+  }
+};
 
 
 
@@ -268,37 +324,51 @@ const DetailFields: React.FC = () => {
                                         </span>
                                     </span>
                                 </span>
-
-                                <form
-                                    onSubmit={handleSubmit}
-                                    className="mb-2 d-flex justify-content-center col-12"
-                                >
-                                    <input type="hidden" value={mainField?.fieldid} name="fieldid" />
-                                    <input
-                                        style={{ border: '2px solid gray', fontWeight: 'lighter' }}
-                                        id="dateInput"
-                                        name="dateInput"
-                                        required
-                                        className="form-control mr-1 col-9"
-                                        type="date"
-                                        placeholder="Search"
-                                        aria-label="Search"
-                                        value={date}
-                                        onChange={(e) => setDate(e.target.value)}
-                                        min={minDate}
-                                        max={maxDate}
-                                    />
-
-                                    <button
-                                        style={{ border: '2px solid #28a745' }}
-                                        className="btn btn-success col-3"
-                                        type="submit"
-                                        onClick={handleDateBooking}
+                                <div className="d-flex justify-content-center">
+                                    <form
+                                        onSubmit={handleSubmit}
+                                        className="mb-2 d-flex justify-content-center col-12"
                                     >
-                                        Tìm kiếm
-                                    </button>
-                                </form>
+                                        <input type="hidden" value={mainField?.fieldid} name="fieldid" />
+                                        <input
+                                            style={{ border: '2px solid gray', fontWeight: 'lighter' }}
+                                            id="dateInput"
+                                            name="dateInput"
+                                            required
+                                            className="form-control mr-1 col-9"
+                                            type="date"
+                                            placeholder="Search"
+                                            aria-label="Search"
+                                            value={date}
+                                            onChange={(e) => setDate(e.target.value)}
+                                            min={minDate}
+                                            max={maxDate}
+                                        />
 
+                                        <button
+                                            style={{ border: '2px solid #28a745' }}
+                                            className="btn btn-success col-3"
+                                            type="submit"
+                                            onClick={handleDateBooking}
+                                        >
+                                            Tìm kiếm
+                                        </button>
+                                    </form>
+                                    <button
+                                        className="btn btn-light border-0"
+                                        onClick={toggleFavorite}
+                                        disabled={loading}
+                                        style={{ cursor: loading ? "not-allowed" : "pointer" }}
+                                    >
+                                        <i
+                                            className={`bi ${liked ? "bi-heart-fill text-danger" : "bi-heart"}`}
+                                            style={{
+                                                fontSize: "1.5rem",
+                                                transition: "transform 0.2s ease",
+                                            }}
+                                        ></i>
+                                    </button>
+                                </div>
                                 {shiftsNull && (
                                     <div className="col-12">
                                         <span className="ml-1 mt-3 mb-1">

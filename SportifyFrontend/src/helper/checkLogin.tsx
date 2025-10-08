@@ -1,5 +1,7 @@
 
 // utils/auth.ts
+
+
 export async function checkLogin(): Promise<{ loggedIn: boolean, username?: string, role?: string }> {
   try {
     const response = await fetch("http://localhost:8081/api/user/rest/security/authentication", {
@@ -15,7 +17,8 @@ export async function checkLogin(): Promise<{ loggedIn: boolean, username?: stri
     return {
       loggedIn: data.loggedIn,
       username: data.username,
-      role: data.roles.roles.rolename
+      role: data.roles.roles.rolename,
+
     };
   } catch (error) {
     console.error("Error checking login:", error);

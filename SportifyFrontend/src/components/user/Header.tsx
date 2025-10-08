@@ -108,6 +108,7 @@ export default function Header() {
                           )}
                           <li className="nav-item"><a className="nav-link" href="/sportify/field/profile/historybooking">Lịch sử đặt sân</a></li>
                           <li className="nav-item"><a className="nav-link" href="/sportify/order/historyList">Lịch sử đơn hàng</a></li>
+                          <li className="nav-item"><a className="nav-link" href="/sportify/field/profile/favorite">Sân yêu thích</a></li>
                           <li><hr className="dropdown-divider" /></li>
                           <li>
                             <button className="dropdown-item text-danger" onClick={() => setShowModal(true)}>

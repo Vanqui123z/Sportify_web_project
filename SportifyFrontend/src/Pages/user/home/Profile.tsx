@@ -398,6 +398,9 @@ export default function Profile(): React.ReactElement {
                   >
                     Cập nhật hồ sơ
                   </button>
+                  <a className="btn btn-outline-primary" href="profile/listcard" style={{ marginLeft: '10px' }}>
+                    Quản lý tài khoản thẻ
+                  </a>
                 </div>
               </div>
             </div>

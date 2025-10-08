@@ -3,6 +3,15 @@ import axios from "axios";
 import BootstrapModal from "../../components/admin/BootstrapModal";
 import "../../styles/AdminModal.css";
 
+// Ensure JSX intrinsic elements are recognized
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      [elemName: string]: any;
+    }
+  }
+}
+
 interface Field {
   fieldid: number;
   sporttypeid: string;

@@ -3,13 +3,13 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import AdminRoutes from "./admin/AdminRoutes";
 import HomeRouter from "./user/HomeRouter";
 import Layout from "../layouts/Layout";
-import HomePage from "../Pages/user/home/HomePage";
 import ForgetPass from "../Pages/security/ForgetPass";
 import Login from "../Pages/security/Login";
 import Register from "../Pages/security/Register";
 import { AuthProvider } from "../helper/AuthContext";
 import LayoutAdmin from "../layouts/LayoutAdmin";
 import PaymentResult from "../Pages/user/checkout/PaymentResult";
+import PaymentMethodResult from "../Pages/user/checkout/PaymentMethodResult";
 import GroupChat from "../Pages/user/home/GroupChat";
 const AppRouter = () => (
   <Router>
@@ -32,6 +32,7 @@ const AppRouter = () => (
         </Route>
 
         <Route path="payment-result" element={<PaymentResult />} />
+        <Route path="payment-methods" element={<PaymentMethodResult />} />
 
 
         {/* Trang fallback */}

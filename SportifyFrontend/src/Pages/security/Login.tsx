@@ -35,6 +35,7 @@ const Login: React.FC = () => {
                 return res.json();
             }).then(data => {
                 console.log('Login successful:', data);
+                localStorage.setItem("username", data.username);
                 if (data.success === true) {
                     setNotification('Login successful');
                     window.location.href = '/sportify';
