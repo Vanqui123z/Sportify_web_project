@@ -71,7 +71,7 @@ public class Bookingdetails implements Serializable {
 
     @ManyToOne
     @JoinColumn(name="bookingid", referencedColumnName="bookingid", insertable=false, updatable=false)
-    private Bookings   bookings ; 
+    private Bookings   booking ; 
 
     @ManyToOne
     @JoinColumn(name="shiftid", referencedColumnName="shiftid", insertable=false, updatable=false)

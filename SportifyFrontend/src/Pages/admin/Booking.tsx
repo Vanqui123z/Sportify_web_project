@@ -67,6 +67,8 @@ const BookingPage: React.FC = () => {
     datebook: "",
     status: "",
   });
+  const [selectedBookings, setSelectedBookings] = useState<number[]>([]);
+  const [selectAll, setSelectAll] = useState(false);
 
   // Fetch all bookings
   useEffect(() => {
@@ -76,7 +78,8 @@ const BookingPage: React.FC = () => {
   }, []);
 
   // Search handler
-  const handleSearch = () => {
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     axios.get("http://localhost:8081/rest/bookings/search", {
       params: {
         keyword: search.keyword,
@@ -128,6 +131,50 @@ const BookingPage: React.FC = () => {
     return d.toLocaleString("vi-VN");
   };
 
+
+
+  // DELETE MULTIPLE BOOKINGS
+  // Handle checkbox selection
+  const handleSelect = (bookingId: number) => {
+    if (selectedBookings.includes(bookingId)) {
+      setSelectedBookings(prev => prev.filter(id => id !== bookingId));
+    } else {
+      setSelectedBookings(prev => [...prev, bookingId]);
+    }
+  };
+
+  // Handle select all
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedBookings([]);
+    } else {
+      setSelectedBookings(bookings.map(booking => booking.bookingid));
+    }
+    setSelectAll(!selectAll);
+  };
+
+  // Delete selected bookings
+  const handleDeleteSelected = () => {
+    if (selectedBookings.length === 0) return;
+
+    if (window.confirm(`Bạn có chắc chắn muốn xóa ${selectedBookings.length} phiếu đặt sân đã chọn?`)) {
+      axios.post("http://localhost:8081/rest/bookings/deleteMultiple", selectedBookings)
+        .then(() => {
+          // Remove deleted bookings from the list
+          setBookings(prev => prev.filter(booking => !selectedBookings.includes(booking.bookingid)));
+          setSelectedBookings([]);
+          setSelectAll(false);
+
+          // Show success message (you can implement a toast notification here)
+          alert(`Đã xóa ${selectedBookings.length} phiếu đặt sân thành công`);
+        })
+        .catch(error => {
+          console.error("Error deleting bookings:", error);
+          alert("Có lỗi xảy ra khi xóa phiếu đặt sân");
+        });
+    }
+  };
+
   return (
     <div className=" page-wrapper py-4">
       <div className="container bg-white rounded shadow-sm p-4">
@@ -146,7 +193,7 @@ const BookingPage: React.FC = () => {
         {/* /Page Header */}
 
         {/* Search Filter */}
-        <form className="row g-2 mb-3">
+        <form className="row g-2 mb-3" onSubmit={handleSearch}>
           <div className="col-sm-6 col-md-3">
             <label className="form-label">Họ tên người đặt</label>
             <input type="text" className="form-control"
@@ -175,19 +222,39 @@ const BookingPage: React.FC = () => {
             </select>
           </div>
           <div className="col-md-3 d-flex align-items-end gap-2">
-            <button type="button" className="btn btn-success w-100" onClick={handleSearch}>Tìm kiếm</button>
+            <button type="button" className="btn btn-success w-100">Tìm kiếm</button>
             <button type="button" className="btn btn-secondary w-100" onClick={handleRefresh}>Làm mới</button>
           </div>
         </form>
         {/* /Search Filter */}
 
+        {/* Action buttons */}
+        <div className="row mb-3">
+          <div className="col-12">
+            <button
+              className="btn btn-danger"
+              onClick={handleDeleteSelected}
+              disabled={selectedBookings.length === 0}
+            >
+              <i className="fa fa-trash me-1"></i>
+              Xóa ({selectedBookings.length}) phiếu đã chọn
+            </button>
+          </div>
+        </div>
+        {/* SELECT DELETE */}
         <div className="row">
           <div className="col-12">
             <div className="table-responsive">
               <table className="table table-bordered table-hover align-middle">
                 <thead className="table-light">
                   <tr>
-                    <th>#</th>
+
+                    <th> <input
+                      type="checkbox"
+                      className="mr-2"
+                      checked={selectAll}
+                      onChange={handleSelectAll}
+                    />#</th>
                     <th>Người đặt</th>
                     <th>Ngày đặt</th>
                     <th>Thành tiền</th>
@@ -199,7 +266,13 @@ const BookingPage: React.FC = () => {
                 <tbody>
                   {bookings.map((item, idx) => (
                     <tr key={item.bookingid}>
-                      <td>{idx + 1}</td>
+                      
+                      <td><input
+                        type="checkbox"
+                        className="mr-2"
+                        checked={selectedBookings.includes(item.bookingid)}
+                        onChange={() => handleSelect(item.bookingid)}
+                      /> {idx + 1} </td>
                       <td>
                         {item.users
                           ? `${item.users.firstname} ${item.users.lastname}`
@@ -309,7 +382,7 @@ const BookingPage: React.FC = () => {
                                 </tr>
                               </thead>
                               <tbody>
-                                {(bookingDetail.length === 0 && bookingPermanent.length > 0) ? 
+                                {(bookingDetail.length === 0 && bookingPermanent.length > 0) ?
                                   bookingPermanent.map((p, idx) => (
                                     <tr key={p.bookingId}>
                                       <td>{idx + 1}</td>
@@ -320,17 +393,17 @@ const BookingPage: React.FC = () => {
                                       <td>{formatCurrency(p.price - (p.price * 0.3))}</td>
                                     </tr>
                                   ))
-                                : bookingDetail.map((b, idx) => (
-                                  <tr key={b.bookingdetailid}>
-                                    <td>{idx + 1}</td>
-                                    <td>{b.field?.namefield || ""}</td>
-                                    <td>{b.playdate}</td>
-                                    <td>{b.shifts?.nameshift || ""}</td>
-                                    <td>{formatCurrency((form.bookingprice || 0) * 0.3)}</td>
-                                    <td>{formatCurrency((form.bookingprice || 0) - ((form.bookingprice || 0) * 0.3))}</td>
-                                  </tr>
-                                ))
-                              }
+                                  : bookingDetail.map((b, idx) => (
+                                    <tr key={b.bookingdetailid}>
+                                      <td>{idx + 1}</td>
+                                      <td>{b.field?.namefield || ""}</td>
+                                      <td>{b.playdate}</td>
+                                      <td>{b.shifts?.nameshift || ""}</td>
+                                      <td>{formatCurrency((form.bookingprice || 0) * 0.3)}</td>
+                                      <td>{formatCurrency((form.bookingprice || 0) - ((form.bookingprice || 0) * 0.3))}</td>
+                                    </tr>
+                                  ))
+                                }
                               </tbody>
                             </table>
                           </div>

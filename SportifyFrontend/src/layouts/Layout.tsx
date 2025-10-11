@@ -29,7 +29,7 @@ export default function Layout() {
         <link rel="stylesheet" href="/user/css/style.css" />
 
         <script src="/user/js/jquery.min.js"></script>
-        <script src="/user/js/angular.min.js"></script>
+        {/* <script src="/user/js/angular.min.js"></script> */}
         <script src="/user/js/jquery-migrate-3.0.1.min.js"></script>
         <script src="/user/js/popper.min.js"></script>
         <script src="/user/js/bootstrap.min.js"></script>

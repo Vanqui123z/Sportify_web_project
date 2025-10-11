@@ -1,6 +1,7 @@
 package duan.sportify.rest.controller;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,11 +9,11 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -39,35 +40,60 @@ public class BookingRestController {
 	MessageSource messagesource;
 	@Autowired
 	BookingDAO bookingDAO;
-	
+
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
 		return GlobalExceptionHandler.handleValidationException(ex);
 	}
+
 	@GetMapping("getAll")
-	public ResponseEntity<List<Bookings>> getAll(Model model){
+	public ResponseEntity<List<Bookings>> getAll(Model model) {
 		return ResponseEntity.ok(bookingDAO.findAllBooking());
 	}
+
 	@GetMapping("get/{id}")
 	public ResponseEntity<Bookings> getOne(@PathVariable("id") Integer id) {
-		if(!bookingDAO.existsById(id)) {
+		if (!bookingDAO.existsById(id)) {
 			return ResponseEntity.notFound().build();
 		}
 		return ResponseEntity.ok(bookingDAO.findById(id).get());
 	}
-	
+
 	@PutMapping("update/{id}")
 	public ResponseEntity<Bookings> update(@PathVariable("id") Integer id, @Valid @RequestBody Bookings booking) {
-		if(!bookingDAO.existsById(id)) {
+		if (!bookingDAO.existsById(id)) {
 			return ResponseEntity.notFound().build();
 		}
 		bookingDAO.save(booking);
 		return ResponseEntity.ok(booking);
 	}
-	
+
 	// search
-	@GetMapping("search")
-	public ResponseEntity<List<Bookings>> search(@RequestParam("keyword") String keyword, @RequestParam("datebook") Date datebook,@RequestParam("status") String status){
-		return ResponseEntity.ok(bookingDAO.findByConditions(keyword, datebook, status));
+	@GetMapping("/search")
+	public ResponseEntity<List<Bookings>> search(
+			@RequestParam(value = "keyword", required = false) String keyword,
+			@RequestParam(value = "datebook", required = false) String datebookStr,
+			@RequestParam(value = "status", required = false) String status) {
+
+		keyword = (keyword != null && keyword.trim().isEmpty()) ? null : keyword;
+		status = (status != null && status.trim().isEmpty()) ? null : status;
+
+		Date datebook = null;
+		if (datebookStr != null && !datebookStr.trim().isEmpty()) {
+			datebook = Date.valueOf(datebookStr); // format yyyy-MM-dd
+		}
+
+		return ResponseEntity.ok(bookingDAO.findByFlexibleConditions(keyword, datebook, status));
 	}
+
+	@PostMapping("/deleteMultiple")
+	@Transactional
+	public ResponseEntity<Void> deleteBookings(@RequestBody List<Integer> bookingIds) {
+		bookingDAO.deleteBookingDetailsByBookingIds(bookingIds);
+		bookingDAO.deletePermanentBookingByBookingIds(bookingIds);
+		bookingDAO.deleteAllByIdInBatch(bookingIds);
+		return ResponseEntity.ok().build();
+	}
+
+
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -13,34 +14,30 @@ import duan.sportify.entities.Contacts;
 
 public interface BookingDAO extends JpaRepository<Bookings, Integer> {
 
-@Query(value = "SELECT " +
-        "b.bookingid, " +
-        "b.bookingdate, " +
-        "b.bookingprice, " +
-        "b.note, " +
-        "b.bookingstatus, " +
-        "COALESCE(f.namefield, f2.namefield) AS field_name, " +
-        "COALESCE(f.image, f2.image) AS field_image, " +
-        "MIN(p.start_date) AS start_date, " +
-        "MAX(p.end_date) AS end_date, " +
-        "GROUP_CONCAT(p.day_of_week ORDER BY p.day_of_week ASC) AS day_of_weeks, " +
-        "GROUP_CONCAT(p.shift_id ORDER BY p.shift_id ASC) AS shift_ids, " +
-        "GROUP_CONCAT(p.field_id ORDER BY p.field_id ASC) AS field_ids, " +
-        "CASE WHEN COUNT(p.permanent_id) > 0 THEN 'PERMANENT' ELSE 'ONCE' END AS booking_type " +
-    "FROM bookings AS b " +
-    "LEFT JOIN bookingdetails AS bd ON b.bookingid = bd.bookingid " +
-    "LEFT JOIN field AS f ON bd.fieldid = f.fieldid " +
-    "LEFT JOIN permanent_booking AS p ON b.bookingid = p.booking_id " +
-    "LEFT JOIN field AS f2 ON p.field_id = f2.fieldid " +
-    "WHERE b.username = :username " +
-    "GROUP BY b.bookingid " +
-    "ORDER BY b.bookingdate DESC " +
-    "LIMIT 20",
-    nativeQuery = true)
-List<Object[]> getBookingInfoByUsername(@Param("username") String username);
-
-
-
+	@Query(value = "SELECT " +
+			"b.bookingid, " +
+			"b.bookingdate, " +
+			"b.bookingprice, " +
+			"b.note, " +
+			"b.bookingstatus, " +
+			"COALESCE(f.namefield, f2.namefield) AS field_name, " +
+			"COALESCE(f.image, f2.image) AS field_image, " +
+			"MIN(p.start_date) AS start_date, " +
+			"MAX(p.end_date) AS end_date, " +
+			"GROUP_CONCAT(p.day_of_week ORDER BY p.day_of_week ASC) AS day_of_weeks, " +
+			"GROUP_CONCAT(p.shift_id ORDER BY p.shift_id ASC) AS shift_ids, " +
+			"GROUP_CONCAT(p.field_id ORDER BY p.field_id ASC) AS field_ids, " +
+			"CASE WHEN COUNT(p.permanent_id) > 0 THEN 'PERMANENT' ELSE 'ONCE' END AS booking_type " +
+			"FROM bookings AS b " +
+			"LEFT JOIN bookingdetails AS bd ON b.bookingid = bd.bookingid " +
+			"LEFT JOIN field AS f ON bd.fieldid = f.fieldid " +
+			"LEFT JOIN permanent_booking AS p ON b.bookingid = p.booking_id " +
+			"LEFT JOIN field AS f2 ON p.field_id = f2.fieldid " +
+			"WHERE b.username = :username " +
+			"GROUP BY b.bookingid " +
+			"ORDER BY b.bookingdate DESC " +
+			"LIMIT 20", nativeQuery = true)
+	List<Object[]> getBookingInfoByUsername(@Param("username") String username);
 
 	@Query(value = "SELECT \r\n" + "    b.bookingid,\r\n" + "    b.bookingdate,\r\n" + "    b.bookingstatus,\r\n"
 			+ "    bd.shiftid,\r\n" + "    bd.playdate,\r\n" + "    bd.price,\r\n" + "    f.namefield,\r\n"
@@ -49,19 +46,15 @@ List<Object[]> getBookingInfoByUsername(@Param("username") String username);
 			+ "    field AS f ON bd.fieldid = f.fieldid\r\n" + "JOIN \r\n"
 			+ "    shifts AS s ON bd.shiftid = s.shiftid\r\n" + "WHERE \r\n"
 			+ "    b.bookingid = :bookingid", nativeQuery = true)
-	List<Object[]>  getBookingInfoByBookingDetail(Integer bookingid);
-
+	List<Object[]> getBookingInfoByBookingDetail(Integer bookingid);
 
 	@Query(value = "SELECT " +
-        "p.booking_id, p.start_date, p.end_date, p.shift_id, p.day_of_week, p.field_id, f.namefield, f.image " +
-        "FROM permanent_booking p " +
-        "LEFT JOIN field f ON p.field_id = f.fieldid " +
-        "WHERE p.booking_id = :bookingId " +
-        "ORDER BY p.start_date, p.field_id, p.shift_id",
-    nativeQuery = true)
-List<Object[]> getPermanentBookingByBookingId(@Param("bookingId") Integer bookingId);
-
-
+			"p.booking_id, p.start_date, p.end_date, p.shift_id, p.day_of_week, p.field_id, f.namefield, f.image " +
+			"FROM permanent_booking p " +
+			"LEFT JOIN field f ON p.field_id = f.fieldid " +
+			"WHERE p.booking_id = :bookingId " +
+			"ORDER BY p.start_date, p.field_id, p.shift_id", nativeQuery = true)
+	List<Object[]> getPermanentBookingByBookingId(@Param("bookingId") Integer bookingId);
 
 	@Query(value = "select count(*) from bookings", nativeQuery = true)
 	int countBooking();
@@ -76,12 +69,12 @@ List<Object[]> getPermanentBookingByBookingId(@Param("bookingId") Integer bookin
 	List<Bookings> findAllBooking();
 
 	// search admin
-	@Query(value = "SELECT b.* FROM bookings b "
-			+ "JOIN users u ON b.username = u.username "
-			+ "WHERE (CONCAT(u.firstname, ' ', u.lastname) LIKE %:keyword%) "
-			+ "AND b.bookingdate LIKE %:datebook% "
-			+ "AND b.bookingstatus LIKE %:status%", nativeQuery = true)
-	List<Bookings> findByConditions(@Param("keyword") String keyword,
+	@Query(value = "SELECT b.* FROM bookings b " +
+			"JOIN users u ON b.username = u.username " +
+			"WHERE (:keyword IS NULL OR CONCAT(u.firstname, ' ', u.lastname) LIKE %:keyword%) " +
+			"AND (:datebook IS NULL OR DATE(b.bookingdate) = :datebook) " +
+			"AND (:status IS NULL OR b.bookingstatus LIKE %:status%)", nativeQuery = true)
+	List<Bookings> findByFlexibleConditions(@Param("keyword") String keyword,
 			@Param("datebook") Date datebook,
 			@Param("status") String status);
 
@@ -250,39 +243,44 @@ List<Object[]> getPermanentBookingByBookingId(@Param("bookingId") Integer bookin
 			+ "ORDER BY booking_date_month;", nativeQuery = true)
 	List<Object[]> rpSoLuongBookingTrongNam(@Param("year") String year);
 
+	Bookings findByBookingid(Integer bookingId);
 
-	   Bookings findByBookingid(Integer bookingId);
+	List<Bookings> findAll();
 
-	   
-    List<Bookings> findAll();
-	
+	// Lấy thông tin cơ bản cho Calendar (ONCE)
+	@Query(value = "SELECT bd.bookingid, f.namefield, s.nameshift, bd.playdate, s.starttime, s.endtime, 'ONCE' as type "
+			+
+			"FROM bookingdetails bd " +
+			"JOIN field f ON bd.fieldid = f.fieldid " +
+			"JOIN shifts s ON bd.shiftid = s.shiftid", nativeQuery = true)
+	List<Object[]> findBookingOnceEvents();
 
-	 // Lấy thông tin cơ bản cho Calendar (ONCE)
-    @Query(value = "SELECT bd.bookingid, f.namefield, s.nameshift, bd.playdate, s.starttime, s.endtime, 'ONCE' as type " +
-                   "FROM bookingdetails bd " +
-                   "JOIN field f ON bd.fieldid = f.fieldid " +
-                   "JOIN shifts s ON bd.shiftid = s.shiftid", nativeQuery = true)
-    List<Object[]> findBookingOnceEvents();
+	// Lấy thông tin cơ bản cho Calendar (PERMANENT)
+	@Query(value = "SELECT pb.booking_id, f.namefield, s.nameshift, pb.start_date, pb.end_date, pb.day_of_week, s.starttime, s.endtime, 'PERMANENT' as type "
+			+
+			"FROM permanent_booking pb " +
+			"JOIN field f ON pb.field_id = f.fieldid " +
+			"JOIN shifts s ON pb.shift_id = s.shiftid", nativeQuery = true)
+	List<Object[]> findBookingPermanentEvents();
 
-    // Lấy thông tin cơ bản cho Calendar (PERMANENT)
-    @Query(value = "SELECT pb.booking_id, f.namefield, s.nameshift, pb.start_date, pb.end_date, pb.day_of_week, s.starttime, s.endtime, 'PERMANENT' as type " +
-                   "FROM permanent_booking pb " +
-                   "JOIN field f ON pb.field_id = f.fieldid " +
-                   "JOIN shifts s ON pb.shift_id = s.shiftid", nativeQuery = true)
-    List<Object[]> findBookingPermanentEvents();
+	// Lấy chi tiết 1 booking (cho popup)
+	@Query(value = "SELECT b.bookingid, b.username, b.phone, b.note, b.bookingstatus, b.booking_type, " +
+			"f.namefield, f.image, s.nameshift, s.starttime, s.endtime, " +
+			"b.bookingprice, bd.playdate, pb.start_date, pb.end_date, pb.day_of_week " +
+			"FROM bookings b " +
+			"LEFT JOIN bookingdetails bd ON b.bookingid = bd.bookingid " +
+			"LEFT JOIN permanent_booking pb ON b.bookingid = pb.booking_id " +
+			"LEFT JOIN field f ON (bd.fieldid = f.fieldid OR pb.field_id = f.fieldid) " +
+			"LEFT JOIN shifts s ON (bd.shiftid = s.shiftid OR pb.shift_id = s.shiftid) " +
+			"WHERE b.bookingid = :bookingId", nativeQuery = true)
+	List<Object[]> findBookingDetail(@Param("bookingId") Integer bookingId);
 
+	@Modifying
+	@Query("DELETE FROM Bookingdetails d WHERE d.booking.bookingid IN :ids")
+	void deleteBookingDetailsByBookingIds(@Param("ids") List<Integer> ids);
 
-    // Lấy chi tiết 1 booking (cho popup)
-    @Query(value = "SELECT b.bookingid, b.username, b.phone, b.note, b.bookingstatus, b.booking_type, " +
-                   "f.namefield, f.image, s.nameshift, s.starttime, s.endtime, " +
-                   "b.bookingprice, bd.playdate, pb.start_date, pb.end_date, pb.day_of_week " +
-                   "FROM bookings b " +
-                   "LEFT JOIN bookingdetails bd ON b.bookingid = bd.bookingid " +
-                   "LEFT JOIN permanent_booking pb ON b.bookingid = pb.booking_id " +
-                   "LEFT JOIN field f ON (bd.fieldid = f.fieldid OR pb.field_id = f.fieldid) " +
-                   "LEFT JOIN shifts s ON (bd.shiftid = s.shiftid OR pb.shift_id = s.shiftid) " +
-                   "WHERE b.bookingid = :bookingId", nativeQuery = true)
-    List<Object[]> findBookingDetail(@Param("bookingId") Integer bookingId);
-
+	@Modifying
+	@Query("DELETE FROM PermanentBooking p WHERE p.booking.bookingid IN :ids")
+	void deletePermanentBookingByBookingIds(@Param("ids") List<Integer> ids);
 
 }

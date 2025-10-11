@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -81,8 +82,11 @@ public class Bookings implements Serializable {
     // --- ENTITY LINKS ( RELATIONSHIP )
     
     @JsonIgnore
-    @OneToMany(mappedBy = "bookings")
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Bookingdetails> listOfBookingdetails;
+    @JsonIgnore
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PermanentBooking> listOfPermanentBookings;
 
     @ManyToOne
     @JoinColumn(name = "username", referencedColumnName = "username", insertable = false, updatable = false)

@@ -52,8 +52,11 @@ public class PermanentBooking {
 
     // Quan hệ với Field
      @JsonIgnore
-    @OneToMany(mappedBy = "bookings")
-    private List<Bookingdetails> listOfBookingdetails;
+     @ManyToOne
+
+    @JoinColumn(name="booking_id", referencedColumnName="bookingid", insertable=false, updatable=false)
+    private Bookings   booking ; 
+
      @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "field_id", insertable = false, updatable = false)

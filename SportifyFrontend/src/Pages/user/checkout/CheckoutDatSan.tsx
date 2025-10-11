@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { fetchBookingData } from '../../../service/user/checkout/checkBookingFields';
 import ListCardBank from '../../../components/user/ListCardBank';
+import PaymentExpression from '../../../components/user/PaymentExpression';
 
 interface SportType {
   sporttypeid: string;
@@ -53,7 +54,7 @@ const CheckoutDatSan: React.FC = () => {
   const [amount, setAmount] = useState(0);
   const [thanhtien, setThanhtien] = useState(0);
   const [tamtinh, setTamtinh] = useState(0);
-   const [appliedCode, setAppliedCode] = useState<string | null>(null);
+  const [appliedCode, setAppliedCode] = useState<string | null>(null);
   const [pricefield, setPricefield] = useState(0);
   const [error, setError] = useState('');
   const [shifts, setShifts] = useState<{ dayOfWeek: number; shiftId: number }[]>([]);
@@ -106,108 +107,108 @@ const CheckoutDatSan: React.FC = () => {
     }
   };
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (error) return;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (error) return;
 
-  // Tạo object JSON
-  const payload = {
-    amount,
-    thanhtien,
-    note,
-    fieldid: field?.fieldid || null,
-    pricefield,
-    phone: user?.phone || '',
-    discountCode: '', 
-    shiftId: (shiftid) || null,
-    shifts: shifts.map(s => ({ dayOfWeek: s.dayOfWeek, shiftId: s.shiftId })),
-    playdate: dateselect,       // định dạng 'yyyy-MM-dd'
-    startDate,                  // định dạng 'yyyy-MM-dd'
-    endDate,                    // định dạng 'yyyy-MM-dd'
-    cardId: showCardList ? selectedCardId : undefined // Thêm cardId nếu chọn thẻ đã lưu
+    // Tạo object JSON
+    const payload = {
+      amount,
+      thanhtien,
+      note,
+      fieldid: field?.fieldid || null,
+      pricefield,
+      phone: user?.phone || '',
+      discountCode: '',
+      shiftId: (shiftid) || null,
+      shifts: shifts.map(s => ({ dayOfWeek: s.dayOfWeek, shiftId: s.shiftId })),
+      playdate: dateselect,       // định dạng 'yyyy-MM-dd'
+      startDate,                  // định dạng 'yyyy-MM-dd'
+      endDate,                    // định dạng 'yyyy-MM-dd'
+      cardId: showCardList ? selectedCardId : undefined // Thêm cardId nếu chọn thẻ đã lưu
+    };
+
+    console.log('Payload JSON:', payload);
+
+    try {
+      const res = await fetch('http://localhost:8081/api/user/getIp/create?', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        throw new Error(`API trả về lỗi ${res.status}`);
+      }
+
+      const data = await res.json();
+
+      if (data && data.url) {
+        window.location.href = data.url;
+      } else {
+        alert(" Có lỗi khi thanh toán, vui lòng thử lại!");
+      }
+    } catch (err: any) {
+      alert('Có lỗi khi thanh toán, vui lòng thử lại!');
+    }
+
+
   };
-
-  console.log('Payload JSON:', payload);
-
-  try {
-    const res = await fetch('http://localhost:8081/api/user/getIp/create?', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify(payload),  
-    });
-
-    if (!res.ok) {
-      throw new Error(`API trả về lỗi ${res.status}`);
-    }
-
-    const data = await res.json();
-
-    if (data && data.url) {
-      window.location.href = data.url;
-    } else {
-      alert(" Có lỗi khi thanh toán, vui lòng thử lại!");
-    }
-  } catch (err: any) {
-    alert('Có lỗi khi thanh toán, vui lòng thử lại!');
-  }
-
-  
-};
- useEffect(() => {
+  useEffect(() => {
     if (tamtinh > 0) {
       setThanhtien(tamtinh);
       setAmount(Math.round(tamtinh * 0.3));
     }
   }, [tamtinh]);
 
- const handleApplyDiscount = async (e: React.MouseEvent) => {
-  e.preventDefault();
+  const handleApplyDiscount = async (e: React.MouseEvent) => {
+    e.preventDefault();
 
-  // Nếu đã áp dụng cùng mã rồi thì không gọi lại
-  if (appliedCode === discountCode) {
-    alert(`Mã "${discountCode}" đã được áp dụng rồi!`);
-    return;
-  }
-
-  try {
-    const res = await fetch(
-      `http://localhost:8081/api/user/discount/apply?code=${encodeURIComponent(discountCode)}`,
-      {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-      }
-    );
-
-    if (!res.ok) throw new Error(`API trả về lỗi ${res.status}`);
-
-    const data = await res.json();
-    const discountPercent = data?.voucher ?? 0;
-
-    if (discountPercent > 0) {
-      const newThanhtien = tamtinh * (1 - discountPercent / 100);
-      setThanhtien(newThanhtien);
-      setAmount(Math.round(newThanhtien * 0.3));
-      setAppliedCode(discountCode);
-      alert(
-        `Mã giảm giá "${discountCode}" đã được áp dụng! Bạn được giảm ${discountPercent}%`
-      );
-    } else {
-      // Reset về giá gốc khi mã không hợp lệ
-      setThanhtien(tamtinh);
-      setAmount(Math.round(tamtinh * 0.3));
-      setAppliedCode(null);
-      alert(`Mã giảm giá "${discountCode}" không hợp lệ hoặc đã hết hạn.`);
+    // Nếu đã áp dụng cùng mã rồi thì không gọi lại
+    if (appliedCode === discountCode) {
+      alert(`Mã "${discountCode}" đã được áp dụng rồi!`);
+      return;
     }
-  } catch (err) {
-    console.error(err);
-    alert("Có lỗi xảy ra khi áp dụng mã giảm giá!");
-    setAppliedCode(null); // ✅ tránh giữ mã cũ khi lỗi
-  }
-};
+
+    try {
+      const res = await fetch(
+        `http://localhost:8081/api/user/discount/apply?code=${encodeURIComponent(discountCode)}`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        }
+      );
+
+      if (!res.ok) throw new Error(`API trả về lỗi ${res.status}`);
+
+      const data = await res.json();
+      const discountPercent = data?.voucher ?? 0;
+
+      if (discountPercent > 0) {
+        const newThanhtien = tamtinh * (1 - discountPercent / 100);
+        setThanhtien(newThanhtien);
+        setAmount(Math.round(newThanhtien * 0.3));
+        setAppliedCode(discountCode);
+        alert(
+          `Mã giảm giá "${discountCode}" đã được áp dụng! Bạn được giảm ${discountPercent}%`
+        );
+      } else {
+        // Reset về giá gốc khi mã không hợp lệ
+        setThanhtien(tamtinh);
+        setAmount(Math.round(tamtinh * 0.3));
+        setAppliedCode(null);
+        alert(`Mã giảm giá "${discountCode}" không hợp lệ hoặc đã hết hạn.`);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Có lỗi xảy ra khi áp dụng mã giảm giá!");
+      setAppliedCode(null); // ✅ tránh giữ mã cũ khi lỗi
+    }
+  };
 
   if (!field) return <div>Loading...</div>;
   return (
@@ -460,63 +461,13 @@ const handleSubmit = async (e: React.FormEvent) => {
                       </div>
                     </div>
                     <div className="col-md-6">
-                      <div className="cart-detail p-3 p-md-4" style={{ backgroundColor: "#F1F6F9" }}>
-                        <h3 className="billing-heading mb-4">Hình thức thanh toán</h3>
-                        <div className="form-group">
-                          <div className="col-md-12">
-                           <div className="radio flex items-center gap-6">
-  <label className="flex items-center cursor-pointer">
-    <input
-      type="radio"
-      name="optradio"
-      className="mr-5 w-auto"
-      checked={!showCardList}
-      onChange={() => {
-        setShowCardList(false);
-        setSelectedCardId(undefined);
-      }}
-    />
-    <img
-      style={{ width: "24px", height: "24px", marginRight: "6px" }}
-      src="/user/images/iconVNP.png"
-      alt="VNPay"
-    />
-    <span>VNPay</span>
-  </label>
-
-  <label className="flex items-center cursor-pointer">
-    <input
-      type="radio"
-      name="optradio"
-      className="mr-5 w-auto"
-      checked={showCardList}
-      onChange={() => setShowCardList(true)}
-    />
-    <span>Chọn thẻ đã lưu</span>
-  </label>
-</div>
-
-{showCardList && user?.username && (
-  <ListCardBank
-    username={user.username}
-    showDeleteButton={false}
-    showDefaultButton={false}
-    selectedCardId={selectedCardId}
-    onCardSelect={(cardId) => setSelectedCardId(cardId)}
-  />
-)}
-                          </div>
-                        </div>
-
-                        <div style={{ color: "black" }} className="font-italic">
-                          Khi nhấn vào nút này bạn công nhận mình đã đọc và đồng ý với các
-                          <a href="/sportify/quydinh" style={{ color: "blue" }}> Điều khoản & Điều kiện </a> và
-                          <a href="/sportify/chinhsach" style={{ color: "blue" }}>Chính sách quyền riêng tư</a> của Sportify.
-                          <p>
-                            <button type="submit" className="btn btn-primary py-3 px-4 mt-3">Đặt Sân</button>
-                          </p>
-                        </div>
-                      </div>
+                      <PaymentExpression
+                        showCardList={showCardList}
+                        setShowCardList={setShowCardList}
+                        username={user?.username}
+                        selectedCardId={selectedCardId}
+                        setSelectedCardId={setSelectedCardId}
+                      />
                     </div>
                   </div>
                 </div>

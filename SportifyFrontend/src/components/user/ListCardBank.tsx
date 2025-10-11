@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import "../../styles/ListCard.css";
-import SavedCards from './SaveCard';
+import SavedCards from './SaveCardBank';
 
 // Constants
 const API_PAYMENT_BASE = 'http://localhost:8081/api/user/payment-methods';
