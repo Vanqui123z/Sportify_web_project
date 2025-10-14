@@ -1,49 +1,241 @@
 import React, { useRef, useState } from "react";
+import CustomCard from "../user/CustomCard";
+import "../../styles/GroupChat.css";
+import "../../styles/AIChatbox.css";
+import getImageUrl from "../../helper/getImageUrl";
 
-const style = `
-.ai-chat-fab { position: fixed; right: 20px; bottom: 20px; width: 56px; height: 56px; border-radius: 50%; background: #0ea5e9; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,.2); z-index: 9999; }
-.ai-chat-panel { position: fixed; right: 20px; bottom: 90px; width: 320px; height: 420px; background: #fff; border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,.25); display: none; flex-direction: column; overflow: hidden; z-index: 9999; border: 1px solid #e5e7eb; }
-.ai-chat-header { padding: 10px 12px; background: #0ea5e9; color: #fff; font-weight: 600; display:flex; align-items:center; justify-content: space-between; }
-.ai-chat-body { flex: 1; padding: 12px; overflow-y: auto; background: #f8fafc; }
-.ai-chat-input { display: flex; border-top: 1px solid #e5e7eb; }
-.ai-chat-input input { flex: 1; padding: 10px; border: none; outline: none; }
-.ai-chat-input button { padding: 0 14px; background: #0ea5e9; color: #fff; border: none; cursor: pointer; }
-.ai-msg { margin: 6px 0; padding: 8px 10px; border-radius: 10px; max-width: 90%; white-space: pre-wrap; }
-.ai-user { background: #dbeafe; margin-left: auto; }
-.ai-bot { background: #e5e7eb; margin-right: auto; }
-`;
+type Message = { 
+  role: "user" | "bot" | "typing"; 
+  text?: string;
+  fieldData?: any;
+  shiftData?: any;
+  bookingData?: any;
+  unknownData?: any;
+  infoNeededData?: any;
+};
 
-type Message = { role: "user" | "bot"; text: string };
+// Type definition for API responses
+interface Field {
+  fieldid: number;
+  namefield: string;
+  descriptionfield: string;
+  address: string;
+  price: number;
+  image: string;
+  sporttype: {
+    sporttypeid: string;
+    categoryname: string;
+  };
+  status: boolean;
+}
+
+interface Shift {
+  shiftid: number;
+  timeStart: string;
+  timeEnd: string;
+  nameshift?: string;
+  price?: number;
+}
+
+// Updated interface for the new shift response format
+interface AvailableShiftsResponse {
+  fieldId: number;
+  fieldName: string;
+  date: string;
+  message: string;
+  availableShifts: Shift[];
+}
+
+interface FieldResponse {
+  fields: Field[];
+}
+
+interface BookingResponse {
+  fieldName: string;
+  date: string;
+  time: string;
+  redirectUrl: string;
+  message: string;
+}
+
+interface UnknownResponse {
+  action: string;
+  message: string;
+}
+
+interface InfoNeededResponse {
+  message: string;
+}
+
+// Field list component
+const FieldList: React.FC<{ fields: Field[] }> = ({ fields }) => {
+  return (
+    <div className="ai-field-grid">
+      {fields.map((field) => (
+        <CustomCard
+          key={field.fieldid}
+          id={field.fieldid}
+          title={field.namefield}
+          image={getImageUrl(field.image)}
+          link={`/sportify/field/detail/${field.fieldid}`}
+          badgeText={field.sporttype.categoryname}
+          badgeColor="bg-success"
+          extraInfo={
+            <div>
+              <div><i className="fas fa-map-marker-alt me-1"></i>{field.address}</div>
+              <div className="mt-1 fw-bold text-primary">
+                <i className="fas fa-tag me-1"></i>{field.price.toLocaleString('vi-VN')}đ/giờ
+              </div>
+            </div>
+          }
+          buttonText="Xem chi tiết"
+        />
+      ))}
+    </div>
+  );
+};
+
+// New component for displaying available shifts
+const AvailableShifts: React.FC<{ data: AvailableShiftsResponse }> = ({ data }) => {
+  return (
+    <div className="ai-shifts-container">
+      <div className="fw-bold mb-2">{data.message}</div>
+      <div className="text-muted mb-2">Sân: {data.fieldName} - Ngày: {data.date}</div>
+      
+      <div className="ai-shifts-list">
+        {data.availableShifts.map(shift => (
+          <div key={shift.shiftid} className="ai-shift-card">
+            <div className="ai-shift-time">{shift.timeStart} - {shift.timeEnd}</div>
+            <div className="ai-shift-name">{shift.nameshift || `Ca ${shift.shiftid}`}</div>
+            {shift.price && <div className="text-primary fw-bold">{shift.price.toLocaleString('vi-VN')}đ</div>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Component for groups of shifts - keeping for backward compatibility
+const ShiftGroups: React.FC<{ data: any }> = ({ data }) => {
+  // Handle both old and new format
+  if (data.availableShifts) {
+    return <AvailableShifts data={data} />;
+  }
+  
+  return (
+    <div>
+      <div className="fw-bold mb-2">{data.message}</div>
+      <div className="text-muted mb-2">Sân: {data.fieldName} - Ngày: {data.date}</div>
+      
+      {data.availableShiftGroups?.map((group: any, index: number) => (
+        <div key={index} className="ai-shift-group">
+          <div className="fw-bold mb-2">Nhóm ca {index + 1}:</div>
+          {group.map((shift: any) => (
+            <div key={shift.shiftid} className="ai-shift-item">
+              <div>{shift.timeStart} - {shift.timeEnd}</div>
+              <div className="text-primary fw-bold">{shift.nameshift}</div>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Booking info component
+const BookingInfo: React.FC<{ data: BookingResponse }> = ({ data }) => {
+  React.useEffect(() => {
+    // Redirect after showing message
+    const timer = setTimeout(() => {
+      window.location.href = data.redirectUrl;
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [data.redirectUrl]);
+
+  return (
+    <div className="ai-book-info">
+      <div className="fw-bold">{data.message}</div>
+      <div>Sân: {data.fieldName}</div>
+      <div>Ngày: {data.date}</div>
+      <div>Giờ: {data.time}</div>
+      <div className="mt-2">
+        <a href={data.redirectUrl} className="btn btn-sm btn-primary">
+          Đặt ngay
+        </a>
+      </div>
+    </div>
+  );
+};
+
+// Typing indicator component that matches GroupChat styling
+const TypingIndicator: React.FC = () => {
+  return (
+    <div className="ai-typing-container">
+        <div className="ai-typing-bubble">
+        <div className="typing-dots">
+          <span className="dot"></span>
+          <span className="dot"></span>
+          <span className="dot"></span>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const AIChatbox: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    // Inject style only once
-    if (!document.getElementById("ai-chatbox-style")) {
-      const s = document.createElement("style");
-      s.id = "ai-chatbox-style";
-      s.textContent = style;
-      document.head.appendChild(s);
-    }
-  }, []);
 
   React.useEffect(() => {
     if (open && bodyRef.current) {
       bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
     }
-  }, [messages, open]);
+  }, [messages, open, isLoading]);
 
-  const append = (role: "user" | "bot", text: string) => {
-    setMessages((msgs) => [...msgs, { role, text }]);
+  const appendUserMessage = (text: string) => {
+    setMessages((msgs) => [...msgs, { role: "user", text }]);
+  };
+
+  const appendBotMessage = (responseData: any) => {
+    // Remove typing indicator first
+    setIsLoading(false);
+    
+    // Parse the response based on its structure
+    if (typeof responseData === 'string') {
+      setMessages((msgs) => [...msgs, { role: "bot", text: responseData }]);
+      return;
+    }
+
+    // Handle different response types
+    if (responseData.fields) {
+      // Fields response
+      setMessages((msgs) => [...msgs, { role: "bot", fieldData: responseData }]);
+    } else if (responseData.availableShifts || responseData.availableShiftGroups) {
+      // Shifts response - handle both formats
+      setMessages((msgs) => [...msgs, { role: "bot", shiftData: responseData }]);
+    } else if (responseData.redirectUrl) {
+      // Booking response
+      setMessages((msgs) => [...msgs, { role: "bot", bookingData: responseData }]);
+    } else if (responseData.action === "UNKNOWN") {
+      // Unknown response
+      setMessages((msgs) => [...msgs, { role: "bot", unknownData: responseData }]);
+    } else if (responseData.message && !responseData.action) {
+      // Info needed response
+      setMessages((msgs) => [...msgs, { role: "bot", infoNeededData: responseData }]);
+    } else {
+      // Default case
+      setMessages((msgs) => [...msgs, { role: "bot", text: JSON.stringify(responseData) }]);
+    }
   };
 
   const ask = async (msg: string) => {
-    append("user", msg);
+    appendUserMessage(msg);
     setInput("");
+    setIsLoading(true);
+    
     try {
       const res = await fetch("http://localhost:8081/sportify/rest/ai/analyze", {
         method: "POST",
@@ -51,10 +243,16 @@ const AIChatbox: React.FC = () => {
         body: JSON.stringify({ message: msg }),
       });
       const data = await res.json();
-      if (data && data.reply) append("bot", String(data.reply).trim());
-      else append("bot", "Xin lỗi, hiện chưa nhận được phản hồi.");
+      console.log(data);
+      
+      if (data && data.reply) {
+        appendBotMessage(data.reply);
+      } else {
+        appendBotMessage("Xin lỗi, hiện chưa nhận được phản hồi.");
+      }
     } catch {
-      append("bot", "Lỗi kết nối đến AI.");
+      setIsLoading(false);
+      appendBotMessage("Lỗi kết nối đến AI.");
     }
   };
 
@@ -65,6 +263,64 @@ const AIChatbox: React.FC = () => {
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") handleSend();
+  };
+
+  // Render a message based on its type
+  const renderMessage = (message: Message, index: number) => {
+    if (message.role === "user") {
+      return <div key={index} className="ai-msg ai-user">{message.text}</div>;
+    }
+    
+    if (message.role === "typing") {
+      return <TypingIndicator key={index} />;
+    }
+    
+    // Bot responses
+    if (message.text) {
+      return <div key={index} className="ai-msg ai-bot">{message.text}</div>;
+    }
+    
+    if (message.fieldData) {
+      return (
+        <div key={index} className="ai-msg ai-bot">
+          <FieldList fields={message.fieldData.fields} />
+        </div>
+      );
+    }
+    
+    if (message.shiftData) {
+      return (
+        <div key={index} className="ai-msg ai-bot">
+          <ShiftGroups data={message.shiftData} />
+        </div>
+      );
+    }
+    
+    if (message.bookingData) {
+      return (
+        <div key={index} className="ai-msg ai-bot">
+          <BookingInfo data={message.bookingData} />
+        </div>
+      );
+    }
+    
+    if (message.unknownData) {
+      return (
+        <div key={index} className="ai-msg ai-bot ai-unknown">
+          {message.unknownData.message}
+        </div>
+      );
+    }
+    
+    if (message.infoNeededData) {
+      return (
+        <div key={index} className="ai-msg ai-bot ai-info-needed">
+          {message.infoNeededData.message}
+        </div>
+      );
+    }
+    
+    return null;
   };
 
   return (
@@ -84,13 +340,6 @@ const AIChatbox: React.FC = () => {
         <div className="ai-chat-header">
           <span>Sportify AI</span>
           <button
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "#fff",
-              fontSize: 16,
-              cursor: "pointer",
-            }}
             onClick={() => setOpen(false)}
             aria-label="Đóng"
           >
@@ -98,11 +347,8 @@ const AIChatbox: React.FC = () => {
           </button>
         </div>
         <div className="ai-chat-body" ref={bodyRef}>
-          {messages.map((m, i) => (
-            <div key={i} className={`ai-msg ai-${m.role}`}>
-              {m.text}
-            </div>
-          ))}
+          {messages.map((message, index) => renderMessage(message, index))}
+          {isLoading && <TypingIndicator />}
         </div>
         <div className="ai-chat-input">
           <input
@@ -111,8 +357,11 @@ const AIChatbox: React.FC = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
+            disabled={isLoading}
           />
-          <button onClick={handleSend}>Gửi</button>
+          <button onClick={handleSend} disabled={isLoading}>
+            Gửi
+          </button>
         </div>
       </div>
     </>
@@ -120,3 +369,4 @@ const AIChatbox: React.FC = () => {
 };
 
 export default AIChatbox;
+    

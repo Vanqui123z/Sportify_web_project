@@ -1,6 +1,7 @@
 package duan.sportify.service.impl;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -127,5 +128,10 @@ public class FieldServiceImpl implements FieldService {
 	public boolean checkFavoriteField( String username, Integer fieldId) {
 		// TODO Auto-generated method stub
 		return favoriteFieldDAO.checkFavoriteField( username, fieldId);
+	}
+	@Override
+	public Optional<Field> findFieldByName(String name) {
+		// TODO Auto-generated method stub
+		return fieldDAO.findFieldByName(name);
 	}
 }

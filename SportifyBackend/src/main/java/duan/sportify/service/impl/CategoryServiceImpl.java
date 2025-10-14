@@ -19,7 +19,13 @@ import duan.sportify.service.CategoryService;
 @SuppressWarnings("unused")
 @Service
 public class CategoryServiceImpl implements CategoryService{
-	
+    @Autowired
+    CategoryDAO categoryDAO;
+
+    @Override
+    public List<Categories> findAll() {
+        return categoryDAO.findAll();
+    }
 	
 
 }

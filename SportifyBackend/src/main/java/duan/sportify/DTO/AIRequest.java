@@ -8,4 +8,5 @@ import lombok.Data;
 public class AIRequest {
     private String intent;
     private Map<String, Object> params;
+    private String userId;
 }

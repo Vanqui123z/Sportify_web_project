@@ -70,6 +70,9 @@ public interface FieldDAO extends JpaRepository<Field, Integer> {
 	@Query(value = "DELETE FROM field WHERE fieldid = :id", nativeQuery = true)
 	void deleteById(Integer id);
 
+	@Query(value = "SELECT * FROM field WHERE namefield LIKE %:name%", nativeQuery = true)
+	Optional<Field> findFieldByName(String name);
+
 
 
 }

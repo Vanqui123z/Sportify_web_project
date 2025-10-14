@@ -1,5 +1,7 @@
 package duan.sportify.service.impl;
+import duan.sportify.entities.Field;
 import duan.sportify.service.AIService;
+import duan.sportify.service.FieldService;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -9,6 +11,7 @@ import java.util.*;
 
 @Service
 public class GeminiServiceImpl implements AIService {
+   
 
    @Value("${ai.provider:openai}")
     private String aiProvider; // openai | gemini
@@ -65,4 +68,12 @@ public class GeminiServiceImpl implements AIService {
         if (parts == null || parts.isEmpty()) return null;
         return (String) parts.get(0).get("text");
     }
+
+    @Override 
+    public Object data(){
+        return new Object();
+    }
+
+    
+  
 }

@@ -10,6 +10,7 @@ import duan.sportify.entities.Categories;
 @SuppressWarnings("unused")
 @Service
 public interface CategoryService {
+    List<Categories> findAll();
 	
 	
 }

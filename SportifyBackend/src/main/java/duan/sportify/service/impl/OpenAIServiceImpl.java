@@ -62,4 +62,8 @@ public class OpenAIServiceImpl implements AIService {
         var msg = (Map<String, Object>) choices.get(0).get("message");
         return msg != null ? (String) msg.get("content") : null;
     }
+    @Override
+    public Object data() {
+        return null;
+    }
 }

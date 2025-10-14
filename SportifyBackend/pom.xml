@@ -19,6 +19,14 @@
 		<maven.compiler.target>17</maven.compiler.target>
 	</properties>
 	<dependencies>
+
+		<!-- Specification -->
+		<dependency>
+		    <groupId>org.springframework.data</groupId>
+		    <artifactId>spring-data-jpa</artifactId>
+		</dependency>
+
+
 		<!-- SPRING-WEB -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
