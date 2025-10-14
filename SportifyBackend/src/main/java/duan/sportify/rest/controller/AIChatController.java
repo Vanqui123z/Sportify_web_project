@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.tomcat.jni.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -18,9 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import duan.sportify.service.CategoryService;
 import duan.sportify.service.EventService;
 import duan.sportify.service.FieldService;
@@ -29,12 +25,12 @@ import duan.sportify.service.ShiftService;
 import duan.sportify.service.SportTypeService;
 import duan.sportify.service.UserService;
 import duan.sportify.service.impl.BookingServiceImpl;
-import duan.sportify.utils.PromptManager;
 import duan.sportify.utils.AI.AIActionHandler;
 import duan.sportify.utils.AI.AIServiceFactory;
+import duan.sportify.utils.AI.ChatContextManager;
+import duan.sportify.utils.PromptManager;
 import duan.sportify.DTO.AIRequest;
 import duan.sportify.DTO.FieldRequestAI;
-import duan.sportify.entities.Eventweb;
 import duan.sportify.entities.Field;
 import duan.sportify.entities.Users;
 
@@ -44,7 +40,7 @@ import duan.sportify.entities.Users;
 public class AIChatController {
 
   @Autowired
-  EventService eventWebService;
+  EventService eventService;
   @Autowired
   FieldService fieldService;
   @Autowired
@@ -54,11 +50,14 @@ public class AIChatController {
   @Autowired
   PromptManager promptManager;
   @Autowired
-  AIActionHandler AIActionHandler;
+  AIActionHandler aiActionHandler;
+  @Autowired
+  ChatContextManager contextManager;
 
   @PostMapping("/chat")
   public ResponseEntity<Map<String, Object>> chat(
       @RequestBody Map<String, Object> body,
+      HttpServletRequest request,
       @RequestParam(defaultValue = "openAI") String provider) {
 
     String message = body != null ? (String) body.get("message") : null;
@@ -66,37 +65,97 @@ public class AIChatController {
       return ResponseEntity.badRequest().body(Map.of("error", "Missing 'message'"));
     }
 
+    // Lấy userId từ session (hoặc từ request body nếu đã chứa)
+    String userId = (String) request.getSession().getAttribute("username");
+    if (userId == null && body.containsKey("userId")) {
+      userId = (String) body.get("userId");
+    }
+    if (userId == null) {
+      // Nếu không có userId, dùng sessionId làm userId tạm thời
+      userId = request.getSession().getId();
+    }
+
+    // Lấy context của user
+    ChatContextManager.UserChatContext userContext = contextManager.getOrCreateContext(userId);
+    
+    // Thêm tin nhắn người dùng vào lịch sử
+    userContext.addUserMessage(message);
+
     String prompt = """
             You are SportyBot — an intelligent AI assistant that helps users search for and book sports fields through natural conversation in Vietnamese.
         ## MỤC TIÊU:
         Phân tích và hiểu người dùng đang yêu cầu thông tin gì( tìm kiếm sân, tìm kiếm khung giờ trống,  )
-
-                                      """
-        .formatted(message);
-    ;
+        
+        ## LỊCH SỬ CUỘC TRÒ CHUYỆN:
+        %s
+        
+        ## TIN NHẮN MỚI NHẤT:
+        %s
+        """
+        .formatted(formatConversationHistory(userContext), message);
 
     var aiService = aiServiceFactory.getService(provider);
     String reply = aiService.chat(prompt);
+    
+    // Thêm câu trả lời vào lịch sử
+    userContext.addSystemMessage(reply);
 
     return ResponseEntity.ok(Map.of(
         "provider", provider,
-        "reply", reply));
+        "reply", reply,
+        "userId", userId));
   }
 
-  // API phân tích
-  // 🔹 Biến toàn cục tạm giữ state
-  private static Map<String, Object> lastState = new HashMap<>();
+  // Phương thức định dạng lịch sử trò chuyện để đưa vào prompt
+  private String formatConversationHistory(ChatContextManager.UserChatContext context) {
+    List<Map<String, String>> history = context.getConversationHistory();
+    if (history.isEmpty()) {
+      return "Đây là cuộc trò chuyện đầu tiên.";
+    }
+    
+    StringBuilder formatted = new StringBuilder();
+    for (Map<String, String> message : history) {
+      String role = message.get("role");
+      String content = message.get("content");
+      
+      if ("user".equals(role)) {
+        formatted.append("User: ").append(content).append("\n\n");
+      } else {
+        formatted.append("Bot: ").append(content).append("\n\n");
+      }
+    }
+    return formatted.toString();
+  }
 
   @PostMapping("/analyze")
-  public ResponseEntity<Map<String, Object>> analyze(@RequestBody Map<String, String> req) {
+  public ResponseEntity<Map<String, Object>> analyze(
+      @RequestBody Map<String, String> req,
+      HttpServletRequest request) {
+      
     String message = req.get("message");
     String provider = req.getOrDefault("provider", "gemini");
-
-    // 🔹 Biến lưu state tạm (chỉ cần static nếu 1 user)
-    if (lastState == null)
-      lastState = new HashMap<>();
-
-    // 🔹 Prompt mô tả nhiệm vụ
+    
+    // Lấy userId từ session hoặc request
+    String userId = (String) request.getSession().getAttribute("username");
+    if (userId == null && req.containsKey("userId")) {
+      userId = req.get("userId");
+    }
+    if (userId == null) {
+      // Nếu không có userId, dùng sessionId làm userId tạm thời
+      userId = request.getSession().getId();
+    }
+    
+    // Lấy context của user
+    ChatContextManager.UserChatContext userContext = contextManager.getOrCreateContext(userId);
+    
+    // Thêm tin nhắn mới vào context
+    userContext.addUserMessage(message);
+    
+    // Lấy thông tin hiện tại từ context
+    String currentAction = userContext.getCurrentAction();
+    Map<String, Object> currentParams = userContext.getCurrentParams();
+    
+    // Tạo prompt với context
     String systemPrompt = """
          Bạn là trợ lý AI của hệ thống đặt sân Sportify.
 
@@ -206,24 +265,28 @@ public class AIChatController {
         💡 Lưu ý:
         - đây chỉ là ví dụ , không lấy thực tế
         - Luôn ưu tiên hỏi thêm nếu thiếu thông tin.
-
         - Luôn giữ **action cũ** khi bổ sung param.
         - Chỉ trả về JSON, không thêm bất kỳ giải thích nào.
         - Nếu không hiểu → trả về {"action": "UNKNOWN"}.
         """;
 
-    // 🔹 Nếu có state cũ thì thêm vào prompt
     String fullPrompt = systemPrompt;
-    if (!lastState.isEmpty()) {
-      fullPrompt += "\nDữ liệu trước đó: " + lastState;
+    
+    // Thêm context của user vào prompt
+    if (currentAction != null) {
+        fullPrompt += "\n\nHành động đang thực hiện: " + currentAction;
+        fullPrompt += "\nThông tin đã có: " + currentParams;
     }
+    
+    // Thêm lịch sử trò chuyện rút gọn
+    fullPrompt += "\n\nLịch sử trò chuyện:\n" + formatConversationHistory(userContext);
     fullPrompt += "\nNgười dùng: " + message;
 
-    // 🔹 Gọi AI
+    // Gọi AI
     var aiService = aiServiceFactory.getService(provider);
     String reply = aiService.chat(fullPrompt);
 
-    // 🔹 Làm sạch markdown
+    // Làm sạch markdown
     String raw = reply.trim();
     if (raw.startsWith("```")) {
       int start = raw.indexOf("\n") + 1;
@@ -231,47 +294,83 @@ public class AIChatController {
       raw = raw.substring(start, end).trim();
     }
 
-    // 🔹 Parse JSON
+    // Parse JSON
     Map<String, Object> aiResponse = new HashMap<>();
     try {
       ObjectMapper mapper = new ObjectMapper();
-      aiResponse = mapper.readValue(raw, new TypeReference<Map<String, Object>>() {
-      });
+      aiResponse = mapper.readValue(raw, new TypeReference<Map<String, Object>>() {});
     } catch (Exception e) {
       return ResponseEntity.badRequest().body(Map.of(
           "error", "AI trả về JSON không hợp lệ",
           "raw_reply", reply));
     }
 
-    // 🔹 Merge nếu có state cũ
-    if (!lastState.isEmpty() && aiResponse.containsKey("params")) {
-      Map<String, Object> oldParams = (Map<String, Object>) lastState.get("params");
-      Map<String, Object> newParams = (Map<String, Object>) aiResponse.get("params");
-
-      for (var entry : oldParams.entrySet()) {
-        newParams.putIfAbsent(entry.getKey(), entry.getValue());
-      }
-      aiResponse.put("params", newParams);
+    // Cập nhật context với thông tin mới
+    String action = (String) aiResponse.get("action");
+    if (action != null) {
+        userContext.setCurrentAction(action);
     }
-
-    // 🔹 Cập nhật lại state (nếu còn missing)
+    
+    // Cập nhật params nếu có
+    if (aiResponse.containsKey("params")) {
+        Map<String, Object> params = (Map<String, Object>) aiResponse.get("params");
+        for (Map.Entry<String, Object> entry : params.entrySet()) {
+            if (entry.getValue() != null) {
+                userContext.addParam(entry.getKey(), entry.getValue());
+            }
+        }
+    }
+    
+    // Xử lý nếu không còn thông tin thiếu
     List<?> missing = (List<?>) aiResponse.getOrDefault("missing", List.of());
-    if (missing.isEmpty()) {
-      lastState.clear(); // đủ thông tin rồi, xóa
-    } else {
-      lastState = aiResponse; // lưu lại để lần sau ghép tiếp
+    if (missing.isEmpty() && action != null) {
+        // Lấy params hiện tại từ context để đảm bảo đầy đủ
+        Map<String, Object> fullParams = userContext.getCurrentParams();
+        
+        // Đặt lại params đầy đủ vào response
+        if (aiResponse.containsKey("params")) {
+            aiResponse.put("params", fullParams);
+        }
+        
+        // Xử lý hành động với tham số đầy đủ
+        Object result = aiActionHandler.handle(aiResponse);
+        
+        // Sau khi xử lý xong, reset context action và params
+        userContext.clearParams();
+        userContext.setCurrentAction(null);
+        
+        return ResponseEntity.ok(Map.of("reply", result));
     }
 
-    Object handle = AIActionHandler.handle(aiResponse);
+    // Thêm câu trả lời vào lịch sử
+    userContext.addSystemMessage(aiResponse.toString());
+    
+    // Trả về kết quả phân tích
+    Object handle = aiActionHandler.handle(aiResponse);
     return ResponseEntity.ok(Map.of("reply", handle));
   }
 
-  // 🔹 Biến toàn cục tạm giữ state
-  // API hành động
   @PostMapping("/execute")
-  public ResponseEntity<?> execute(@RequestBody AIRequest req) {
+  public ResponseEntity<?> execute(
+      @RequestBody AIRequest req,
+      HttpServletRequest request) {
+      
+    String userId = (String) request.getSession().getAttribute("username");
+    if (userId == null && req.getUserId() != null) {
+      userId = req.getUserId();
+    }
+    
     String intent = req.getIntent();
     Map<String, Object> params = req.getParams();
+
+    // Lưu thông tin vào context nếu có userId
+    if (userId != null) {
+      ChatContextManager.UserChatContext userContext = contextManager.getOrCreateContext(userId);
+      userContext.setCurrentAction(intent);
+      for (Map.Entry<String, Object> entry : params.entrySet()) {
+        userContext.addParam(entry.getKey(), entry.getValue());
+      }
+    }
 
     switch (intent) {
       case "create_booking":
@@ -286,20 +385,18 @@ public class AIChatController {
   }
 
   @Autowired
-  EventService eventService;
-  @Autowired
   ProductService productService;
   @Autowired
   SportTypeService sportTypeService;
   @Autowired
-  FieldService favoriteService;
+  CategoryService categoryService;
   @Autowired
   UserService userService;
 
   public ResponseEntity<FieldRequestAI.requestDataAI> getAllData(HttpServletRequest request) {
-
     String users = (String) request.getSession().getAttribute("username");
     users = users == null ? "nhanvien" : users;
+    
     // 🏟️ Field → FieldInfo
     List<FieldRequestAI.FieldInfo> fieldInfos = fieldService.findAll().stream()
         .map(f -> new FieldRequestAI.FieldInfo(
@@ -335,9 +432,10 @@ public class AIChatController {
             p.getQuantity(),
             p.getCategories().getCategoryname()))
         .collect(Collectors.toList());
-    // 🛒 Product → ProductsInfo
+        
+    // 👤 User Info
     Users user = userService.findByUsername(users);
-    FieldRequestAI.UserInfo userInfor = new FieldRequestAI.UserInfo(
+    FieldRequestAI.UserInfo userInfo = new FieldRequestAI.UserInfo(
         user.getUsername(),
         user.getFirstname(),
         user.getLastname(),
@@ -346,7 +444,8 @@ public class AIChatController {
         user.getAddress(),
         user.getGender());
 
-    List<FieldRequestAI.FavoriteInfo> favorites = favoriteService.findFavoriteByUsername(users).stream()
+    // ❤️ Favorites
+    List<FieldRequestAI.FavoriteInfo> favorites = fieldService.findFavoriteByUsername(users).stream()
         .map(fa -> new FieldRequestAI.FavoriteInfo(
             fa.getUsername().getUsername(),
             new FieldRequestAI.FieldInfo(
@@ -364,9 +463,29 @@ public class AIChatController {
         eventInfos,
         productInfos,
         favorites,
-        userInfor);
+        userInfo);
 
     return ResponseEntity.ok(response);
   }
-
+  
+  // Endpoint để xóa context của người dùng
+  @PostMapping("/clear-context")
+  public ResponseEntity<?> clearContext(
+      @RequestBody Map<String, String> req,
+      HttpServletRequest request) {
+      
+    String userId = (String) request.getSession().getAttribute("username");
+    if (userId == null && req.containsKey("userId")) {
+      userId = req.get("userId");
+    }
+    
+    if (userId != null) {
+      contextManager.clearContext(userId);
+      return ResponseEntity.ok(Map.of("message", "Context đã được xóa"));
+    } else {
+      return ResponseEntity.badRequest().body(Map.of("error", "Không tìm thấy userId"));
+    }
+  }
+  
+  
 }
