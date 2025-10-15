@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { fetchProductDetail, addProductToCart } from '../../../service/user/home/productApi';
 import { useParams } from 'react-router-dom';
 import HeroSection from "../../../components/user/Hero"; // Thêm import
+import CommentComponent from '../../../components/user/CommentComponent';
 
 interface Product {
   productid: number;
@@ -81,7 +82,7 @@ const ProductDetail: React.FC = () => {
             </div>
             <div className="col-lg-6 product-details pl-md-5">
               <h1>{product.productname}</h1>
-              <p className="price">
+              <div className="price">
                 <h3>
                   Giá gốc:
                   <del>
@@ -91,7 +92,7 @@ const ProductDetail: React.FC = () => {
                 <h3>
                   Giá bán: <span>{(product.price - product.discountprice).toLocaleString()} đ</span>
                 </h3>
-              </p>
+              </div>
 
               <div className="row mt-4">
                 <div className="w-100"></div>
@@ -170,6 +171,12 @@ const ProductDetail: React.FC = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+          {/* Comment Section - Uncomment if Comment component is available */}
+          <div className="row mt-5">
+            <div className="col-md-12">
+              <CommentComponent productId={product.productid} type="product" />
             </div>
           </div>
         </div>

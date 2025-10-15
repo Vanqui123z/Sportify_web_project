@@ -103,6 +103,15 @@ const Sidebar: React.FC = () => {
                           <span>Liên hệ</span>
                         </a>
                       </li>
+                      <li className="nav-item">
+                        <a
+                          href="/admin/comments"
+                          className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
+                        >
+                          <i className="fas fa-comments me-3 text-success"></i>
+                          <span>Quản lý bình luận</span>
+                        </a>
+                      </li>
                     </ul>
                   </div>
                 </div>

@@ -4,6 +4,7 @@ import getImageUrl from "../../../helper/getImageUrl";
 import HeroSection from "../../../components/user/Hero"; // Thêm import
 import { fetchFieldDetail } from '../../../service/user/home/fieldApi';
 import { PosthandlePermanentBookingData } from '../../../service/user/home/fieldApi';
+import CommentComponent from "../../../components/user/CommentComponent";
 
 interface SportType {
     sporttypeid: string;
@@ -475,6 +476,12 @@ const toggleFavorite = async () => {
                                 ))}
                             </div>
                         </div>
+                        <div>
+                            <h5 className="font-weight-bold" style={{ fontFamily: 'Arial, sans-serif' }}>
+                                    Đánh giá về sân :
+                                </h5>
+                        <CommentComponent fieldId={mainField.fieldid} type="field" />
+                        </div>
                     </div>
                 </div>
             </section>
@@ -520,7 +527,7 @@ const toggleFavorite = async () => {
                                     ))}
                                 </div>
                             ) : (
-                                <div className="form-group mb-2">Chọn ca cho từng ngày lỗi  </div>
+                                <div className="form-group mb-2">Chọn ca cho từng ngày  </div>
                             )}
                             <div className="d-flex justify-content-end mt-3">
                                 <button type="button" className="btn btn-secondary mr-2" onClick={() => setShowFixedBooking(false)}>Hủy</button>
@@ -529,9 +536,7 @@ const toggleFavorite = async () => {
                         </form>
                     </div>
                 </div>
-            ) : (
-                <div>Lỗi booking</div>
-            )}
+            ) : null}
 
             <style>{`
                 .info-content { 

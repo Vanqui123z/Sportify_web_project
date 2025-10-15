@@ -13,6 +13,7 @@ import CategoryProductPage from "../../Pages/admin/CategoryProduct";
 import CategorySportPage from "../../Pages/admin/CategorySport";
 import ReportBookingPage from "../../Pages/admin/ReportBooking";
 import ReportOrderPage from "../../Pages/admin/ReportOrder";
+import CommentPage from "../../Pages/admin/Comment";
 
 const AdminRoutes: React.FC = () => (
   <Routes>
@@ -24,6 +25,7 @@ const AdminRoutes: React.FC = () => (
     <Route path="events" element={<EventPage />} />
     <Route path="vouchers" element={<VoucherPage />} />
     <Route path="contacts" element={<ContactPage />} />
+    <Route path="comments" element={<CommentPage />} />
     <Route path="order-products" element={<OrderProductPage />} />
     <Route path="category-product" element={<CategoryProductPage />} />
     <Route path="category-sport" element={<CategorySportPage />} />
