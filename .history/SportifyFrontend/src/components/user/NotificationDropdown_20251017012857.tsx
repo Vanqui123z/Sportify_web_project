@@ -68,21 +68,20 @@ const NotificationDropdown: React.FC = () => {
   return (
     <div className="notification-dropdown-container" ref={dropdownRef}>
       <div className="d-flex align-items-center">
-        <a
-          className="notification-bell-btn d-flex align-items-center position-relative"
-          onClick={toggleDropdown}
-          aria-label="Thông báo"
-          style={{ cursor: 'pointer' }}
-        >
-          <div className="icon-container">
+        <div className="position-relative">
+          <button
+            className="notification-bell-btn d-flex align-items-center"
+            onClick={toggleDropdown}
+            aria-label="Thông báo"
+          >
             <Bell size={20} color="#fff" />
-            {unreadCount > 0 && (
-              <span className="position-absolute badge rounded-pill bg-danger sportify-badge">
-                {unreadCount > 99 ? '99+' : unreadCount}
-              </span>
-            )}
-          </div>
-        </a>
+          </button>
+          {unreadCount > 0 && (
+            <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
+        </div>
       </div>
 
       {isOpen && (

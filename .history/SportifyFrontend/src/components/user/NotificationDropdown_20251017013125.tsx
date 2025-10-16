@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Bell } from "react-feather";
 import { useNotification } from "../../helper/NotificationContext";
 import "../../styles/Notification.css";
+import "../../styles/HeaderBadges.css";
 
 const NotificationDropdown: React.FC = () => {
   const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotifications } = useNotification();
@@ -68,21 +69,18 @@ const NotificationDropdown: React.FC = () => {
   return (
     <div className="notification-dropdown-container" ref={dropdownRef}>
       <div className="d-flex align-items-center">
-        <a
+        <button
           className="notification-bell-btn d-flex align-items-center position-relative"
           onClick={toggleDropdown}
           aria-label="Thông báo"
-          style={{ cursor: 'pointer' }}
         >
-          <div className="icon-container">
-            <Bell size={20} color="#fff" />
-            {unreadCount > 0 && (
-              <span className="position-absolute badge rounded-pill bg-danger sportify-badge">
-                {unreadCount > 99 ? '99+' : unreadCount}
-              </span>
-            )}
-          </div>
-        </a>
+          <Bell size={20} color="#fff" />
+          {unreadCount > 0 && (
+            <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
+        </button>
       </div>
 
       {isOpen && (
