@@ -77,16 +77,11 @@ export default function Header() {
                         <a className="d-flex align-items-center position-relative text-dark" href="/sportify/cart/view">
                           <ShoppingCart size={20} color="#fff" />
                           {cartCount > 0 && (
-                            <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: '0.7rem' }}>
                               {cartCount}
                             </span>
                           )}
                         </a>
-                      </div>
-                      
-                      {/* icon thông báo */}
-                      <div className="me-4">
-                        <NotificationDropdown />
                       </div>
 
                       <div className="dropdown">

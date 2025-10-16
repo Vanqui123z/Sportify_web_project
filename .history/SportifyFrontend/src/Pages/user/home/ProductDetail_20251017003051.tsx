@@ -40,14 +40,14 @@ const ProductDetail: React.FC = () => {
     addProductToCart(productid, addQuantity)
       .then((data) => {
         if (data?.ok) {
-          addNotification("Thêm sản phẩm vào giỏ hàng thành công!", "success");
+          alert("Thêm sản phẩm vào giỏ hàng thành công!");
         } else {
-          addNotification("Thêm sản phẩm thất bại!", "error");
+          alert("Thêm sản phẩm thất bại!");
         }
       })
       .catch((err) => {
         console.error("Add to cart failed:", err);
-        addNotification("Có lỗi xảy ra khi thêm vào giỏ hàng!", "error");
+        alert("Có lỗi xảy ra khi thêm vào giỏ hàng!");
       });
     setCartCount(cartCount + addQuantity);
     if (product) {

@@ -12,7 +12,6 @@ function formatCurrency(amount: string | number | null) {
 export default function PaymentResult() {
   const location = useLocation();
   const query = new URLSearchParams(location.search);
-  const { addNotification } = useNotification();
 
   // Lấy các tham số từ URL do backend redirect về
   const orderId = query.get("orderId");
@@ -23,21 +22,6 @@ export default function PaymentResult() {
 
   const isSuccess = status === "success";
   const transactionStatus = isSuccess ? "Thành công" : "Thất bại";
-  
-  // Thêm thông báo khi trang được tải
-  useEffect(() => {
-    if (isSuccess) {
-      if (isField) {
-        addNotification("Thanh toán đặt sân thành công!", "success");
-      } else if (isCart) {
-        addNotification("Thanh toán đơn hàng thành công!", "success");
-      } else {
-        addNotification("Giao dịch của bạn đã được xử lý thành công", "success");
-      }
-    } else {
-      addNotification("Giao dịch không thành công, vui lòng thử lại", "error");
-    }
-  }, []);
 
   // Xác định mô tả giao dịch
   let description = "Thanh toán";

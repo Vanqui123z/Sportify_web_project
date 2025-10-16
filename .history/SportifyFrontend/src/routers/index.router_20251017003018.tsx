@@ -15,8 +15,7 @@ import GroupChat from "../Pages/user/home/GroupChat";
 const AppRouter = () => (
   <Router>
     <AuthProvider>
-      <NotificationProvider>
-        <Routes>
+      <Routes>
         {/* Auth routes - nằm ngoài layout chính */}
         <Route path="/login" element={<Login />} />
         <Route path="/chat" element={<GroupChat />} />
@@ -40,7 +39,6 @@ const AppRouter = () => (
         {/* Trang fallback */}
         <Route path="*" element={<Navigate to="/sportify" replace />} />
       </Routes>
-      </NotificationProvider>
     </AuthProvider>
   </Router>
 );

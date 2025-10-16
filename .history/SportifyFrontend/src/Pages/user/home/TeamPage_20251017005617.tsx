@@ -195,7 +195,7 @@ const TeamPage: React.FC = () => {
     data.append("newQuantity", formData.newQuantity);
     data.append("newSporttypeid", formData.newSporttypeid);
     data.append("newDescriptions", formData.newDescriptions);
-    
+    console.log("formData.newSporttypeid:", formData.newSporttypeid);
     try {
       const res = await fetch("http://localhost:8081/api/user/team/createTeam", {
         method: "POST",
@@ -203,14 +203,11 @@ const TeamPage: React.FC = () => {
         credentials: "include",
       });
       const result = await res.json();
-      
       if (!result.success) throw new Error(result.message);
-      
-      addNotification(`Đã tạo đội ${formData.newNameteam} thành công`, "success");
       setShowModal(false);
       fetchTeams(); // Reload
     } catch (err: any) {
-      addNotification(err.message, "error");
+      alert(err.message);
     }
   };
 
@@ -319,7 +316,7 @@ const TeamPage: React.FC = () => {
     
     // Nếu đang ở chế độ My Team, không cho phép search
     if (showMyTeamsOnly) {
-      addNotification("Vui lòng chuyển về chế độ 'Tất cả đội' để sử dụng tìm kiếm", "warning");
+      alert("Vui lòng chuyển về chế độ 'Tất cả đội' để sử dụng tìm kiếm");
       return;
     }
 
