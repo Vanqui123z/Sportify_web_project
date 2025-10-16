@@ -56,6 +56,8 @@ const CheckoutCart: React.FC = () => {
     formData.append('cartid', data.cartid.toString());
     formData.append('totalPrice', totalPrice.toString());
     formData.append('phone', data.user.phone.toString());
+    formData.append('productid', data.items.map(item => item.cartItemId).join(','));
+    formData.append('quantity', data.items.map(item => item.quantity).join(','));
 
     try {
       const res = await fetch('http://localhost:8081/api/user/cart/payment', {

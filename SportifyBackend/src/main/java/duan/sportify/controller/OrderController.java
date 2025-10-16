@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -83,8 +84,8 @@ public class OrderController {
 
 	@GetMapping("/order/historyList/detail/{id}")
 	public ResponseEntity<?> detail(@PathVariable("id") Integer id) {
-		Orderdetails orderdetails = orderDetailService.findById(id);
-		if (orderdetails == null) {
+		List<Orderdetails> orderdetails = orderDetailService.findByOrderId(id);
+		if (orderdetails == null || orderdetails.isEmpty()) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND)
 					.body(Map.of("success", false, "message", "Order not found"));
 		}
@@ -93,15 +94,15 @@ public class OrderController {
 				"order", orderdetails));
 	}
 
-	@GetMapping("/order/detail/cancelOrder/{id}")
+	@DeleteMapping("/order/cancelOrder/{id}")
 	public ResponseEntity<?> cancelOrder(@PathVariable Integer id) {
 		Orders updateOrder = orderService.findById(id);
 		if (updateOrder == null) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND)
 					.body(Map.of("success", false, "message", "Order not found"));
 		}
-		updateOrder.setOrderstatus("Hủy Đặt");
-		orderDAO.save(updateOrder);
+		orderDetailService.deleteByOrderId(id);
+		orderDAO.deleteById(id);
 		return ResponseEntity.ok(Map.of("success", true, "message", "Order canceled"));
 	}
 

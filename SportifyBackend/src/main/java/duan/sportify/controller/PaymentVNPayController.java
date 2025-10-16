@@ -39,15 +39,20 @@ import duan.sportify.config.VNPayConfig;
 import duan.sportify.config.appConfig;
 import duan.sportify.entities.Bookingdetails;
 import duan.sportify.entities.Bookings;
+import duan.sportify.entities.CartItem;
+import duan.sportify.entities.Orderdetails;
 import duan.sportify.entities.Orders;
 import duan.sportify.entities.PaymentMethod;
+import duan.sportify.entities.Products;
 import duan.sportify.entities.Users;
 import duan.sportify.service.BookingDetailService;
 import duan.sportify.service.BookingService;
+import duan.sportify.service.OrderDetailService;
 import duan.sportify.service.UserService;
 import duan.sportify.service.VNPayService;
 import duan.sportify.service.OrderService;
 import duan.sportify.service.PaymentMethodService;
+import duan.sportify.service.ProductService;
 
 @Controller
 @RequestMapping("/")
@@ -119,6 +124,10 @@ public class PaymentVNPayController {
 	int bookingidNew = 0;
 	Bookings savebooking;
 	Bookingdetails savebookingdetail;
+	@Autowired
+	OrderDetailService orderDetailService;
+	@Autowired
+	ProductService productsService;
 
 	Orders saveOrder;
 
@@ -174,6 +183,8 @@ public class PaymentVNPayController {
 			@RequestParam("cartid") int cartid,
 			@RequestParam("totalPrice") Double totalPrice,
 			@RequestParam("phone") String phone,
+			@RequestParam("productid") String productIds,
+			@RequestParam("quantity") String quantities,
 			HttpServletRequest request) throws Throwable {
 		// Lấy thông tin user
 		String userlogin = (String) request.getSession().getAttribute("username");
@@ -186,12 +197,33 @@ public class PaymentVNPayController {
 		newOrder.setCreatedate(currentDate);
 		newOrder.setTotalprice(totalPrice);
 		newOrder.setNote("Thanh toán giỏ hàng #" + cartid);
-		newOrder.setOrderstatus("Đã Thanh Toán");
+		newOrder.setOrderstatus("Chưa Thanh Toán");
 		newOrder.setPaymentstatus(false);
 		newOrder.setAddress(user != null ? user.getAddress() : "");
 
 		// Lưu đơn hàng vào DB và giữ lại để cập nhật sau khi thanh toán thành công
 		saveOrder = ordersService.create(newOrder);
+
+		// Tạo chi tiết đơn hàng (Orderdetails) từ giỏ hàng
+
+		// 3️⃣ Tạo chi tiết đơn hàng (OrderDetails)
+		String[] productIdArray = productIds.split(",");
+		String[] quantityArray = quantities.split(",");
+		for (int i = 0; i < productIdArray.length; i++) {
+			Integer pid = Integer.parseInt(productIdArray[i].trim());
+			int quantity = Integer.parseInt(quantityArray[i].trim());
+
+			// Lấy thông tin sản phẩm hoặc chi tiết giỏ hàng tương ứng (tuỳ bạn thiết kế)
+			Products cartItem = productsService.findById(pid); // giả sử có service này
+
+			Orderdetails detail = new Orderdetails();
+			detail.setOrders(saveOrder);
+			detail.setProducts(cartItem);
+			detail.setQuantity((Double.valueOf(quantity)));
+			detail.setPrice(totalPrice);
+
+			orderDetailService.create(detail);
+		}
 		System.out.println("Username: " + saveOrder.getUsername());
 		// Lấy IP
 		getIpAddress();

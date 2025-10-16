@@ -47,5 +47,13 @@ public class OrderDetailServiceImpl implements OrderDetailService{
 		// TODO Auto-generated method stub
 		return orderDetailDAO.findById(id).get();
 	}
+	@Override
+	public void deleteByOrderId(Integer orderId) {
+		orderDetailDAO.deleteByOrderId(orderId);
+	}
+	@Override
+	public List<Orderdetails> findByOrderId(Integer orderId) {
+		return orderDetailDAO.findByOrderId(orderId);
+	}
 	
 }

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import BookingCalendar from "../../components/admin/BookingCalendar";
+import getImageUrl from "../../helper/getImageUrl";
 
 interface DashboardStats {
   countOrderInDate: number;
@@ -29,10 +30,12 @@ interface ContactItem {
   title: string;
   category: string;
   datecontact: string;
+  meesagecontact?: string;
   users: {
     firstname: string;
     lastname: string;
     image?: string;
+    username?: string;
   };
 }
 
@@ -68,7 +71,7 @@ interface DashboardDetailsResponse {
   thongkebookingtrongngay: [string, number, number][];
   top3SanDatNhieu: [string, number, number, number][];
   top3SanPhamBanNhieu: [string, number, number, number][];
-  danhsach3contact: any[];
+  danhsach3contact: ContactItem[];
 }
 
 const Dashboard: React.FC = () => {
@@ -169,8 +172,12 @@ const Dashboard: React.FC = () => {
       }));
       setTopProducts(topProductsData);
 
-      // Process contacts (if any) - currently empty from API
-      setContacts([]);
+      // Process contacts from API response
+      if (detailsData.danhsach3contact && detailsData.danhsach3contact.length > 0) {
+        setContacts(detailsData.danhsach3contact);
+      } else {
+        setContacts([]);
+      }
 
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -385,23 +392,35 @@ const Dashboard: React.FC = () => {
                 ) : contacts.length > 0 ? (
                   contacts.map((contact) => (
                     <div key={contact.contactid} className="leave-info-box">
-                      <div className="media align-items-center">
-                        <div className="avatar">
-                          <img alt="" src={`/user/images/${contact.users.image || 'avatar1.png'}`} />
+                      <div className="media row"  >
+                        <div className="media-left col-8 d-flex align-items-center">
+                          <div className="avatar">
+                          <img alt="" src={ contact.users.image ? getImageUrl(contact.users.image)
+                              : `/user/images/${contact.users.image || 'avatar1.png'}`} />
                         </div>
                         <div className="media-body">
                           <div className="text-sm my-0">{contact.users.firstname + ' ' + contact.users.lastname}</div>
                         </div>
+                        </div>
+                        <div className="media-right col-4 text-right">
+                          <div className="text-sm my-0">{formatDate(contact.datecontact)}</div>
+                        </div>
                       </div>
                       <div className="row align-items-center mt-3">
                         <div className="col-6">
-                          <h6 className="mb-0">{formatDate(contact.datecontact)}</h6>
                           <span className="text-sm text-muted">{contact.title}</span>
                         </div>
                         <div className="col-6 text-right">
                           <span className="badge bg-inverse-danger">{contact.category}</span>
                         </div>
                       </div>
+                      {contact.meesagecontact && (
+                        <div className="row mt-2">
+                          <div className="col-12">
+                            <p className="text-muted small">{contact.meesagecontact}</p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))
                 ) : (

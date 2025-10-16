@@ -54,17 +54,20 @@ interface OrderDetail {
 }
 
 interface ApiResponse {
-  order: OrderDetail;
+  order: OrderDetail[];
   success: boolean;
 }
 
 const OrderDetail: React.FC = () => {
-  const Bookingid = useParams().id;
+  const orderId = useParams().id;
   const [data, setData] = useState<ApiResponse | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    setLoading(true);
     fetch(
-      `http://localhost:8081/api/user/order/historyList/detail/${Bookingid}`,
+      `http://localhost:8081/api/user/order/historyList/detail/${orderId}`,
       {
         method: "GET",
         credentials: "include",
@@ -74,9 +77,16 @@ const OrderDetail: React.FC = () => {
       }
     )
       .then((res) => res.json())
-      .then((data) => setData(data))
-      .catch(() => setData(null));
-  }, [Bookingid]);
+      .then((data) => {
+        setData(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError("Không thể tải dữ liệu đơn hàng");
+        setLoading(false);
+        console.error(err);
+      });
+  }, [orderId]);
 
   const handleDelete = (orderid: number) => {
     fetch(`http://localhost:8081/api/user/order/cancelOrder/${orderid}`, {
@@ -90,14 +100,48 @@ const OrderDetail: React.FC = () => {
       .then((data) => {
         if (data.success) {
           alert("Hủy đơn hàng thành công");
-          setData(null);
+          window.history.back();
         }
+      })
+      .catch((err) => {
+        alert("Có lỗi xảy ra khi hủy đơn hàng");
+        console.error(err);
       });
   };
 
-  if (!data) return <div>Loading...</div>;
+  if (loading) return (
+    <div className="d-flex justify-content-center py-5">
+      <div className="spinner-border text-primary" role="status">
+        <span className="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  );
 
-  const { order } = data;
+  if (error || !data || !data.order || data.order.length === 0) return (
+    <div className="alert alert-danger text-center my-5">
+      {error || "Không tìm thấy thông tin đơn hàng"}
+    </div>
+  );
+
+  // Lấy thông tin đơn hàng từ chi tiết đầu tiên
+  const orderInfo = data.order[0].orders;
+  
+  // Tính tổng tiền thực tế từ tất cả các chi tiết đơn hàng
+  const totalOrderAmount = data.order.reduce((sum, item) => 
+    sum + (item.price * item.quantity), 0
+  );
+
+  // Format date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('vi-VN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   return (
     <>
@@ -123,60 +167,113 @@ const OrderDetail: React.FC = () => {
       {/* container sản phẩm */}
       <section className="ftco-section">
         <div className="container">
-          <a href="/sportify/order/historyList">Quay lại Lịch sử đặt hàng</a>
-          <div className="row">
-            {/* show sản phẩm */}
-            <h1 className="d-flex justify-content-center col-md-12 mt-1">
-              Đơn hàng #{order.orders.orderid}
-            </h1>
+          <a href="/sportify/order/historyList" className="btn btn-outline-secondary mb-3">
+            <i className="fa fa-arrow-left me-2"></i>
+            Quay lại Lịch sử đặt hàng
+          </a>
+          
+          <div className="card mb-4">
+            <div className="card-header bg-primary text-white">
+              <h5 className="mb-0">Đơn hàng #{orderInfo.orderid}</h5>
+            </div>
+            <div className="card-body">
+              <div className="row mb-3">
+                <div className="col-md-6">
+                  <p><strong>Người đặt:</strong> {orderInfo.users.firstname} {orderInfo.users.lastname}</p>
+                  <p><strong>Địa chỉ:</strong> {orderInfo.address}</p>
+                  <p><strong>Ngày đặt:</strong> {formatDate(orderInfo.createdate)}</p>
+                </div>
+                <div className="col-md-6">
+                  <p><strong>Trạng thái đơn hàng:</strong> <span className={`badge ${
+                    orderInfo.orderstatus === 'Đã Thanh Toán' ? 'bg-success' :
+                    orderInfo.orderstatus === 'Chờ Xác Nhận' ? 'bg-warning' :
+                    'bg-primary'
+                  }`}>{orderInfo.orderstatus}</span></p>
+                  <p><strong>Trạng thái thanh toán:</strong> <span className={`badge ${orderInfo.paymentstatus ? 'bg-success' : 'bg-danger'}`}>
+                    {orderInfo.paymentstatus ? 'Đã thanh toán' : 'Chưa thanh toán'}
+                  </span></p>
+                  {orderInfo.note && <p><strong>Ghi chú:</strong> {orderInfo.note}</p>}
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="col-12">
-            <table className="table table-hover table-bordered">
-              <thead>
-                <tr className="text-center bg-secondary text-light">
-                  <th scope="col">ID</th>
-                  <th scope="col">Hình</th>
-                  <th scope="col">Tên SP</th>
-                  <th scope="col">Giá</th>
-                  <th scope="col">Số lượng</th>
-                  <th scope="col">Thành tiền</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="text-center">
-                  <th scope="row">{order.products.productid}</th>
-                  <td>
-                    <img
-                      className="img d-flex align-items-center justify-content-center"
-                      src={`/user/images/${order.products.image}`}
-                      alt="Error"
-                    />
-                  </td>
-                  <td>{order.products.productname}</td>
-                  <td>
-                    {order.price.toLocaleString("vi-VN", {
-                      style: "currency",
-                      currency: "VND",
-                    })}
-                  </td>
-                  <td>{order.quantity}</td>
-                  <td>
-                    {(order.price * order.quantity).toLocaleString("vi-VN", {
-                      style: "currency",
-                      currency: "VND",
-                    })}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <div>
-              {order.orders.orderstatus === "Chờ Xác Nhận" && (
-                  <button onClick={() => {handleDelete(order.orders.orderid)}}
-                    className="btn btn-danger"
-                    style={{ float: "right" }}
-                  >
-                    Hủy đơn hàng
-                  </button>
+
+          <div className="card">
+            <div className="card-header bg-light">
+              <h5 className="mb-0">Chi tiết sản phẩm</h5>
+            </div>
+            <div className="card-body p-0">
+              <div className="table-responsive">
+                <table className="table table-hover table-striped mb-0">
+                  <thead>
+                    <tr className="text-center">
+                      <th scope="col">ID</th>
+                      <th scope="col">Hình</th>
+                      <th scope="col">Tên sản phẩm</th>
+                      <th scope="col">Danh mục</th>
+                      <th scope="col">Giá</th>
+                      <th scope="col">Số lượng</th>
+                      <th scope="col">Thành tiền</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.order.map((item) => (
+                      <tr key={item.orderdetailsid} className="text-center">
+                        <th scope="row">{item.products.productid}</th>
+                        <td>
+                          <img
+                            className="img-fluid"
+                            src={
+                              item.products.image.startsWith("v") 
+                                ? `${import.meta.env.VITE_CLOUDINARY_BASE_URL}/${item.products.image}`
+                                : `/user/images/${item.products.image}`
+                            }
+                            alt={item.products.productname}
+                            style={{ maxHeight: "80px", maxWidth: "80px", objectFit: "contain" }}
+                          />
+                        </td>
+                        <td className="text-start">{item.products.productname}</td>
+                        <td>{item.products.categories.categoryname}</td>
+                        <td>
+                          {item.price.toLocaleString("vi-VN", {
+                            style: "currency",
+                            currency: "VND",
+                          })}
+                        </td>
+                        <td>{item.quantity}</td>
+                        <td>
+                          {(item.price * item.quantity).toLocaleString("vi-VN", {
+                            style: "currency",
+                            currency: "VND",
+                          })}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot className="table-group-divider">
+                    <tr>
+                      <td colSpan={5}></td>
+                      <td className="text-end fw-bold">Tổng tiền:</td>
+                      <td className="text-center fw-bold">
+                        {totalOrderAmount.toLocaleString("vi-VN", {
+                          style: "currency",
+                          currency: "VND",
+                        })}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+            <div className="card-footer text-end">
+              {orderInfo.orderstatus === "Chờ Xác Nhận" && (
+                <button 
+                  onClick={() => {handleDelete(orderInfo.orderid)}}
+                  className="btn btn-danger"
+                >
+                  <i className="fa fa-times-circle me-1"></i>
+                  Hủy đơn hàng
+                </button>
               )}
             </div>
           </div>

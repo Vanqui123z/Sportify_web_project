@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { BookingStatusRadarChart, BookingRevenueBarChart } from "../../components/admin/Chart";
 
 const months = [
   "01", "02", "03", "04", "05", "06",
@@ -13,12 +14,18 @@ const ReportBookingPage: React.FC = () => {
   const [rpDTNam, setRpDTNam] = useState<any[]>([]);
   const [rpSLThang, setRpSLThang] = useState<any[]>([]);
   const [rpSLNam, setRpSLNam] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<any[]>([]);
 
   // Fetch years on mount
   useEffect(() => {
     fetch("http://localhost:8081/rest/reportBooking/getYearBooking")
       .then(res => res.json())
       .then(data => setYears(data.map((y: string[]) => y[0])));
+    
+    // Fetch all bookings
+    fetch("http://localhost:8081/rest/bookings/getAll")
+      .then(res => res.json())
+      .then(data => setBookings(data));
   }, []);
 
   // Fetch report data when year/month changes
@@ -69,6 +76,16 @@ const ReportBookingPage: React.FC = () => {
           </div>
         </div>
         {/* /Page Header */}
+
+        {/* Charts Section */}
+        <div className="row mb-4">
+          <div className="col-md-6 mb-4">
+            <BookingStatusRadarChart bookings={bookings} />
+          </div>
+          <div className="col-md-6 mb-4">
+            <BookingRevenueBarChart bookings={bookings} />
+          </div>
+        </div>
 
         {/* Filter */}
         <form className="row g-2 mb-3">
@@ -253,3 +270,4 @@ const ReportBookingPage: React.FC = () => {
 };
 
 export default ReportBookingPage;
+      

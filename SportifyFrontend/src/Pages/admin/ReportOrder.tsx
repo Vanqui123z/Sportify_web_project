@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { OrderStatusRadarChart, OrderRevenueBarChart } from "../../components/admin/Chart";
 
 const months = [
   "01", "02", "03", "04", "05", "06",
@@ -15,12 +16,19 @@ const ReportOrderPage: React.FC = () => {
   const [rpDTNam, setRpDTNam] = useState<any[]>([]);
   const [rpSLThang, setRpSLThang] = useState<any[]>([]);
   const [rpSLNam, setRpSLNam] = useState<any[]>([]);
+  const [orders, setOrders] = useState<any[]>([]);
 
-  // Fetch years on mount
+  // Fetch years and orders on mount
   useEffect(() => {
     fetch("http://localhost:8081/rest/reportOrder/getYearOrder")
       .then(res => res.json())
       .then(data => setYears(data.map((y: string[]) => y[0])));
+    
+    // Fetch all orders
+    fetch("http://localhost:8081/sportify/rest/orders")
+      .then(res => res.json())
+      .then(data => setOrders(data))
+      .catch(err => console.error("Error fetching orders:", err));
   }, []);
 
   // Fetch report data when year/month/type/mode changes
@@ -73,6 +81,16 @@ const ReportOrderPage: React.FC = () => {
           </div>
         </div>
         {/* /Page Header */}
+
+        {/* Charts Section */}
+        <div className="row mb-4">
+          <div className="col-md-6 mb-4">
+            <OrderStatusRadarChart orders={orders} />
+          </div>
+          <div className="col-md-6 mb-4">
+            <OrderRevenueBarChart orders={orders} />
+          </div>
+        </div>
 
         {/* Filter */}
         <form className="row g-2 mb-3">

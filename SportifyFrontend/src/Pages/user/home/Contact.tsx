@@ -3,13 +3,9 @@ import React, { useEffect, useState } from 'react';
 import Nav_contact from '../../../components/user/Nav_contact';
 import { sendContact } from '../../../service/user/home/contactApi';
 type ContactPayload = {
-  contactid: null | string;
-  username: null | string;
-  datecontact: null | string;
   category: string | null;
   title: string | null;
   meesagecontact: string | null;
-  users: null | object;
 };
 
 const Contact: React.FC = () => {
@@ -63,13 +59,9 @@ const Contact: React.FC = () => {
 
     const payload = {
       contacts: {
-        contactid: null,
-        username: null,
-        datecontact: null,
         category: contactType,
         title,
         meesagecontact,
-        users: null,
       } as ContactPayload,
     };
 

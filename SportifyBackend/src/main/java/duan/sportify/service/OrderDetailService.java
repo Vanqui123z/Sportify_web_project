@@ -8,6 +8,10 @@ import duan.sportify.entities.Orderdetails;
 
 @SuppressWarnings("unused")
 public interface OrderDetailService {
+
+	void deleteByOrderId(Integer orderId);
+	List<Orderdetails> findByOrderId(Integer orderId);
+
 	List<Orderdetails> findAll();
 
 	Orderdetails create(Orderdetails orderdetails);
