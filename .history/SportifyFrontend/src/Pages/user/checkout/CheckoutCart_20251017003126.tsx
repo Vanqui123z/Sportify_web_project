@@ -76,14 +76,13 @@ const CheckoutCart: React.FC = () => {
       
       // Nếu API trả về url để redirect, chuyển hướng tại đây
       if (responseData && responseData.url) {
-        addNotification("Đang chuyển hướng đến trang thanh toán...", "info");
         window.location.href = responseData.url;
       } else {
         // Xử lý khi không có url trả về
-        addNotification("Thanh toán thành công!", "success");
+        alert('Thanh toán thành công!');
       }
     } catch (err: any) {
-      addNotification("Có lỗi khi thanh toán, vui lòng thử lại!", "error");
+      alert('Có lỗi khi thanh toán, vui lòng thử lại!');
     }
   };
 

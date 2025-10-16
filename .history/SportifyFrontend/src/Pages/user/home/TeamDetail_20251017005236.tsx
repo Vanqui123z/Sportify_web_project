@@ -157,14 +157,12 @@ const TeamDetail: FC<{ teamIdProp?: string }> = ({ teamIdProp }) => {
 				{ withCredentials: true }
 			);
 
+			alert(response.data.message);
 			if (response.data.success) {
-				addNotification(`Đã chấp nhận ${username} vào đội`, "success");
 				fetchTeamDetail();
-			} else {
-				addNotification(response.data.message, "error");
 			}
 		} catch (error: any) {
-			addNotification(error.response?.data?.message || "Có lỗi xảy ra khi xác nhận thành viên", "error");
+			alert(error.response?.data?.message || "Có lỗi xảy ra khi xác nhận thành viên");
 		}
 	};
 
@@ -179,14 +177,12 @@ const TeamDetail: FC<{ teamIdProp?: string }> = ({ teamIdProp }) => {
 				{ withCredentials: true }
 			);
 
+			alert(response.data.message);
 			if (response.data.success) {
-				addNotification(`Đã từ chối yêu cầu tham gia đội của ${username}`, "info");
 				fetchTeamDetail();
-			} else {
-				addNotification(response.data.message, "error");
 			}
 		} catch (error: any) {
-			addNotification(error.response?.data?.message || "Có lỗi xảy ra khi từ chối thành viên", "error");
+			alert(error.response?.data?.message || "Có lỗi xảy ra khi từ chối thành viên");
 		}
 	};
 
@@ -203,14 +199,12 @@ const TeamDetail: FC<{ teamIdProp?: string }> = ({ teamIdProp }) => {
 				{ withCredentials: true }
 			);
 
+			alert(response.data.message);
 			if (response.data.success) {
-				addNotification(`Đã loại ${username} khỏi đội`, "success");
 				fetchTeamDetail();
-			} else {
-				addNotification(response.data.message, "error");
 			}
 		} catch (error: any) {
-			addNotification(error.response?.data?.message || "Có lỗi xảy ra khi kick thành viên", "error");
+			alert(error.response?.data?.message || "Có lỗi xảy ra khi kick thành viên");
 		}
 	};
 
@@ -227,14 +221,12 @@ const TeamDetail: FC<{ teamIdProp?: string }> = ({ teamIdProp }) => {
 				{ withCredentials: true }
 			);
 
+			alert(response.data.message);
 			if (response.data.success) {
-				addNotification(`Đã phong ${username} làm đội trưởng mới`, "success");
 				fetchTeamDetail();
-			} else {
-				addNotification(response.data.message, "error");
 			}
 		} catch (error: any) {
-			addNotification(error.response?.data?.message || "Có lỗi xảy ra khi phong đội trưởng", "error");
+			alert(error.response?.data?.message || "Có lỗi xảy ra khi phong đội trưởng");
 		}
 	};
 

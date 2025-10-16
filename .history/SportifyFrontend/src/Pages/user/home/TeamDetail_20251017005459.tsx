@@ -227,14 +227,12 @@ const TeamDetail: FC<{ teamIdProp?: string }> = ({ teamIdProp }) => {
 				{ withCredentials: true }
 			);
 
+			alert(response.data.message);
 			if (response.data.success) {
-				addNotification(`Đã phong ${username} làm đội trưởng mới`, "success");
 				fetchTeamDetail();
-			} else {
-				addNotification(response.data.message, "error");
 			}
 		} catch (error: any) {
-			addNotification(error.response?.data?.message || "Có lỗi xảy ra khi phong đội trưởng", "error");
+			alert(error.response?.data?.message || "Có lỗi xảy ra khi phong đội trưởng");
 		}
 	};
 

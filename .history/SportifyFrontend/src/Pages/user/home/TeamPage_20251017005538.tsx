@@ -33,7 +33,6 @@ const sporttypeList: SportType[] = [
 const TeamPage: React.FC = () => {
   // Modal state
   const [showModal, setShowModal] = useState(false);
-  const { addNotification } = useNotification();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -66,6 +65,7 @@ const TeamPage: React.FC = () => {
         headers: { "Content-Type": "application/json" },
       });
        
+
       const data = await response.json();
 
       if (data.success && data.role) {
@@ -74,11 +74,12 @@ const TeamPage: React.FC = () => {
       }
       else {
         // ❌ Các trường hợp khác → hiện thông báo
-        addNotification(data.message, "info");
+        alert(data.message); 
+        // hoặc dùng toast, modal,... tùy UI
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      addNotification("Đã xảy ra lỗi khi kiểm tra team", "error");
+      alert("Đã xảy ra lỗi khi kiểm tra team");
     }
   };
 
@@ -165,7 +166,7 @@ const TeamPage: React.FC = () => {
   const handleFilter = (sporttypeid: string | null) => {
     // Nếu đang ở chế độ My Team, không cho phép filter
     if (showMyTeamsOnly) {
-      addNotification("Vui lòng chuyển về chế độ 'Tất cả đội' để sử dụng bộ lọc", "warning");
+      alert("Vui lòng chuyển về chế độ 'Tất cả đội' để sử dụng bộ lọc");
       return;
     }
 
@@ -195,7 +196,7 @@ const TeamPage: React.FC = () => {
     data.append("newQuantity", formData.newQuantity);
     data.append("newSporttypeid", formData.newSporttypeid);
     data.append("newDescriptions", formData.newDescriptions);
-    
+    console.log("formData.newSporttypeid:", formData.newSporttypeid);
     try {
       const res = await fetch("http://localhost:8081/api/user/team/createTeam", {
         method: "POST",
@@ -203,14 +204,11 @@ const TeamPage: React.FC = () => {
         credentials: "include",
       });
       const result = await res.json();
-      
       if (!result.success) throw new Error(result.message);
-      
-      addNotification(`Đã tạo đội ${formData.newNameteam} thành công`, "success");
       setShowModal(false);
       fetchTeams(); // Reload
     } catch (err: any) {
-      addNotification(err.message, "error");
+      alert(err.message);
     }
   };
 
@@ -319,7 +317,7 @@ const TeamPage: React.FC = () => {
     
     // Nếu đang ở chế độ My Team, không cho phép search
     if (showMyTeamsOnly) {
-      addNotification("Vui lòng chuyển về chế độ 'Tất cả đội' để sử dụng tìm kiếm", "warning");
+      alert("Vui lòng chuyển về chế độ 'Tất cả đội' để sử dụng tìm kiếm");
       return;
     }
 
