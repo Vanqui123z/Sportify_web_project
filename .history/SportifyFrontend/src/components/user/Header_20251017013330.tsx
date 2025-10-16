@@ -75,14 +75,12 @@ export default function Header() {
                       {/* icon giỏ hàng */}
                       <div className="me-4">
                         <a className="d-flex align-items-center position-relative text-dark" href="/sportify/cart/view">
-                          <div className="icon-container">
-                            <ShoppingCart size={20} color="#fff" />
-                            {cartCount > 0 && (
-                              <span className="position-absolute badge rounded-pill bg-danger sportify-badge">
-                                {cartCount}
-                              </span>
-                            )}
-                          </div>
+                          <ShoppingCart size={20} color="#fff" />
+                          {cartCount > 0 && (
+                            <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger sportify-badge">
+                              {cartCount}
+                            </span>
+                          )}
                         </a>
                       </div>
                       

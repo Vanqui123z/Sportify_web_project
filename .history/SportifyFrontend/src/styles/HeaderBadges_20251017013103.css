@@ -1,0 +1,11 @@
+/* CSS để đồng bộ hóa các badge trong header */
+.position-absolute.top-0.start-100.translate-middle.badge.rounded-pill.bg-danger {
+  font-size: 0.65rem !important;
+  padding: 0.2rem 0.45rem !important;
+  min-width: 16px !important;
+  height: 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transform: translate(40%, -40%) !important;
+}
