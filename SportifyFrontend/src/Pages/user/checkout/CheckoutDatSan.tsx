@@ -174,39 +174,40 @@ const CheckoutDatSan: React.FC = () => {
     }
 
     try {
+      // Gọi API mới với phương thức POST
       const res = await fetch(
-        `http://localhost:8081/api/user/discount/apply?code=${encodeURIComponent(discountCode)}`,
+        `http://localhost:8081/api/user/order/cart/voucher?voucherId=${encodeURIComponent(discountCode)}`,
         {
-          method: "GET",
+          method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
+          body: JSON.stringify({ discountPercent: 0 }), // discountPercent có thể bỏ qua hoặc để 0, backend sẽ tự lấy
         }
       );
 
       if (!res.ok) throw new Error(`API trả về lỗi ${res.status}`);
 
       const data = await res.json();
-      const discountPercent = data?.voucher ?? 0;
+      const discountPercent = data?.discountPercent ?? 0;
+      const voucherMsg = data?.voucherMsg || "";
 
       if (discountPercent > 0) {
         const newThanhtien = tamtinh * (1 - discountPercent / 100);
         setThanhtien(newThanhtien);
         setAmount(Math.round(newThanhtien * 0.3));
         setAppliedCode(discountCode);
-        alert(
-          `Mã giảm giá "${discountCode}" đã được áp dụng! Bạn được giảm ${discountPercent}%`
-        );
+        alert(voucherMsg || `Mã giảm giá "${discountCode}" đã được áp dụng! Bạn được giảm ${discountPercent}%`);
       } else {
         // Reset về giá gốc khi mã không hợp lệ
         setThanhtien(tamtinh);
         setAmount(Math.round(tamtinh * 0.3));
         setAppliedCode(null);
-        alert(`Mã giảm giá "${discountCode}" không hợp lệ hoặc đã hết hạn.`);
+        alert(voucherMsg || `Mã giảm giá "${discountCode}" không hợp lệ hoặc đã hết hạn.`);
       }
     } catch (err) {
       console.error(err);
       alert("Có lỗi xảy ra khi áp dụng mã giảm giá!");
-      setAppliedCode(null); // ✅ tránh giữ mã cũ khi lỗi
+      setAppliedCode(null);
     }
   };
 

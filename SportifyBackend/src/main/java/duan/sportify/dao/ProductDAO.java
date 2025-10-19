@@ -40,4 +40,7 @@ public interface ProductDAO extends JpaRepository<Products, Integer> {
 			+ "ORDER BY total_sold DESC\r\n"
 			+ "LIMIT 4", nativeQuery = true)
 	List<Object[]> Top4OrderProduct();
+
+	@Query("Select p From Products p Where p.productname like :name")
+	List<Products> findByProductName(@Param("name") String name);
 }

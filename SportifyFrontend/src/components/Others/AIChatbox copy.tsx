@@ -12,9 +12,6 @@ type Message = {
   bookingData?: any;
   unknownData?: any;
   infoNeededData?: any;
-  productListData?: any;
-  singleProductData?: any;
-  orderProductData?: any;
 };
 
 // Type definition for API responses
@@ -68,43 +65,6 @@ interface UnknownResponse {
 
 interface InfoNeededResponse {
   message: string;
-}
-
-// Product interfaces
-interface Category {
-  categoryid: number;
-  categoryname: string;
-}
-
-interface Product {
-  productid: number;
-  productname: string;
-  image: string;
-  price: number;
-  discountprice: number;
-  quantity: number;
-  descriptions: string;
-  productstatus: boolean;
-  datecreate: string;
-  categories: Category;
-  categoryid: number;
-}
-
-interface ProductListResponse {
-  message: string;
-  products: Product[];
-}
-
-interface SingleProductResponse {
-  message: string;
-  product: Product;
-}
-
-interface OrderProductResponse {
-  message: string;
-  quantity: number;
-  redirectUrl: string;
-  product: Product;
 }
 
 // Field list component
@@ -207,132 +167,6 @@ const BookingInfo: React.FC<{ data: BookingResponse }> = ({ data }) => {
   );
 };
 
-// Modify the ProductList component to use our newly created grid
-const ProductList: React.FC<{ data: ProductListResponse }> = ({ data }) => {
-  return (
-    <div className="ai-product-list">
-      <div className="fw-bold mb-2">{data.message}</div>
-      <div className="ai-product-grid">
-        {data.products.map(product => (
-          <CustomCard
-            key={product.productid}
-            id={product.productid}
-            title={product.productname}
-            image={getImageUrl(product.image)}
-            link={`/sportify/product/detail/${product.productid}`}
-            badgeText={product.categories.categoryname}
-            badgeColor="bg-info"
-            extraInfo={
-              <div>
-                <div className="mt-1 fw-bold text-primary">
-                  <i className="fas fa-tag me-1"></i>
-                  {product.discountprice > 0 ? (
-                    <>
-                      <span className="text-decoration-line-through text-muted me-2">
-                        {product.price.toLocaleString('vi-VN')}đ
-                      </span>
-                      <span>{product.discountprice.toLocaleString('vi-VN')}đ</span>
-                    </>
-                  ) : (
-                    <span>{product.price.toLocaleString('vi-VN')}đ</span>
-                  )}
-                </div>
-                <div><i className="fas fa-cubes me-1"></i>Còn {product.quantity} sản phẩm</div>
-              </div>
-            }
-            buttonText="Xem chi tiết"
-          />
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// Single product component
-const SingleProduct: React.FC<{ data: SingleProductResponse }> = ({ data }) => {
-  return (
-    <div className="ai-single-product">
-      <div className="fw-bold mb-2">{data.message}</div>
-      <div className="ai-product-card">
-        <div className="ai-product-img">
-          <img src={getImageUrl(data.product.image)} alt={data.product.productname} />
-        </div>
-        <div className="ai-product-info">
-          <h5>{data.product.productname}</h5>
-          <div className="ai-product-price">
-            {data.product.discountprice > 0 ? (
-              <>
-                <span className="text-decoration-line-through text-muted me-2">
-                  {data.product.price.toLocaleString('vi-VN')}đ
-                </span>
-                <span className="text-primary fw-bold">
-                  {data.product.discountprice.toLocaleString('vi-VN')}đ
-                </span>
-              </>
-            ) : (
-              <span className="text-primary fw-bold">
-                {data.product.price.toLocaleString('vi-VN')}đ
-              </span>
-            )}
-          </div>
-          <div className="ai-product-meta">
-            <div><i className="fas fa-box me-1"></i>Loại: {data.product.categories.categoryname}</div>
-            <div><i className="fas fa-cubes me-1"></i>Còn: {data.product.quantity} sản phẩm</div>
-          </div>
-          <div className="mt-2">
-            <a href={`/sportify/product/detail/${data.product.productid}`} className="btn btn-sm btn-primary">
-              Xem chi tiết
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Order product component
-const OrderProduct: React.FC<{ data: OrderProductResponse }> = ({ data }) => {
-  React.useEffect(() => {
-    // Redirect after showing message
-    const timer = setTimeout(() => {
-      window.location.href = data.redirectUrl;
-    }, 3000);
-    return () => clearTimeout(timer);
-  }, [data.redirectUrl]);
-
-  return (
-    <div className="ai-order-product">
-      <div className="fw-bold">{data.message}</div>
-      <div className="ai-order-details">
-        <div><b>Sản phẩm:</b> {data.product.productname}</div>
-        <div><b>Số lượng:</b> {data.quantity}</div>
-        <div className="ai-product-price mt-1">
-          <b>Giá:</b> {' '}
-          {data.product.discountprice > 0 ? (
-            <>
-              <span className="text-decoration-line-through text-muted me-2">
-                {data.product.price.toLocaleString('vi-VN')}đ
-              </span>
-              <span className="text-primary fw-bold">
-                {data.product.discountprice.toLocaleString('vi-VN')}đ
-              </span>
-            </>
-          ) : (
-            <span className="text-primary fw-bold">
-              {data.product.price.toLocaleString('vi-VN')}đ
-            </span>
-          )}
-        </div>
-      </div>
-      <div className="mt-2">
-        <a href={data.redirectUrl} className="btn btn-sm btn-primary">
-          Đến trang thanh toán
-        </a>
-      </div>
-    </div>
-  );
-};
-
 // Typing indicator component that matches GroupChat styling
 const TypingIndicator: React.FC = () => {
   return (
@@ -382,18 +216,9 @@ const AIChatbox: React.FC = () => {
     } else if (responseData.availableShifts || responseData.availableShiftGroups) {
       // Shifts response - handle both formats
       setMessages((msgs) => [...msgs, { role: "bot", shiftData: responseData }]);
-    } else if (responseData.redirectUrl && responseData.fieldName) {
+    } else if (responseData.redirectUrl) {
       // Booking response
       setMessages((msgs) => [...msgs, { role: "bot", bookingData: responseData }]);
-    } else if (responseData.products) {
-      // Product list response
-      setMessages((msgs) => [...msgs, { role: "bot", productListData: responseData }]);
-    } else if (responseData.product && !responseData.redirectUrl) {
-      // Single product response
-      setMessages((msgs) => [...msgs, { role: "bot", singleProductData: responseData }]);
-    } else if (responseData.product && responseData.redirectUrl) {
-      // Order product response
-      setMessages((msgs) => [...msgs, { role: "bot", orderProductData: responseData }]);
     } else if (responseData.action === "UNKNOWN") {
       // Unknown response
       setMessages((msgs) => [...msgs, { role: "bot", unknownData: responseData }]);
@@ -479,30 +304,6 @@ const AIChatbox: React.FC = () => {
       );
     }
     
-    if (message.productListData) {
-      return (
-        <div key={index} className="ai-msg ai-bot">
-          <ProductList data={message.productListData} />
-        </div>
-      );
-    }
-    
-    if (message.singleProductData) {
-      return (
-        <div key={index} className="ai-msg ai-bot">
-          <SingleProduct data={message.singleProductData} />
-        </div>
-      );
-    }
-    
-    if (message.orderProductData) {
-      return (
-        <div key={index} className="ai-msg ai-bot">
-          <OrderProduct data={message.orderProductData} />
-        </div>
-      );
-    }
-    
     if (message.unknownData) {
       return (
         <div key={index} className="ai-msg ai-bot ai-unknown">
@@ -568,3 +369,4 @@ const AIChatbox: React.FC = () => {
 };
 
 export default AIChatbox;
+    

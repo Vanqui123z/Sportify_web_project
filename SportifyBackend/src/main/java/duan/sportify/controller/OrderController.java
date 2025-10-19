@@ -1,6 +1,6 @@
 package duan.sportify.controller;
 
-import java.sql.Date;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.chrono.ChronoLocalDate;
@@ -10,28 +10,22 @@ import java.util.Map;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.constraints.NotNull;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import duan.sportify.dao.OrderDAO;
 import duan.sportify.dao.VoucherDAO;
 import duan.sportify.entities.Orderdetails;
 import duan.sportify.entities.Orders;
-import duan.sportify.entities.Products;
 import duan.sportify.entities.Voucher;
 import duan.sportify.service.OrderDetailService;
 import duan.sportify.service.OrderService;
@@ -55,8 +49,6 @@ public class OrderController {
 	UserService userService;
 
 	String userlogin = null;
-
-	
 
 	@GetMapping("/order/checkout")
 	public ResponseEntity<?> checkOutCart(HttpServletRequest request) {
@@ -123,10 +115,10 @@ public class OrderController {
 		Optional<Voucher> validVoucher = voucherList.stream()
 				.filter(v -> {
 					// Chuyển java.util.Date -> LocalDate
-					LocalDate startDate = v.getStartdate().toInstant()
+					LocalDate startDate = Instant.ofEpochMilli(v.getStartdate().getTime())
 							.atZone(ZoneId.systemDefault())
 							.toLocalDate();
-					LocalDate endDate = v.getEnddate().toInstant()
+					LocalDate endDate = Instant.ofEpochMilli(v.getEnddate().getTime())
 							.atZone(ZoneId.systemDefault())
 							.toLocalDate();
 					return (!startDate.isAfter(currentDate) && !endDate.isBefore(currentDate));

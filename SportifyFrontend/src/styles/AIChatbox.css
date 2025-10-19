@@ -77,7 +77,7 @@
 }
 
 .ai-msg { 
-  margin: 6px 0; 
+  margin: 12px 0; /* Increased from 6px to 12px for more spacing */
   padding: 8px 10px; 
   border-radius: 10px; 
   max-width: 90%; 
@@ -86,19 +86,31 @@
 
 .ai-user { 
   background: #dbeafe; 
-  margin-left: auto; 
+  margin-left: auto;
+  margin-bottom: 20px; /* Add extra bottom margin to user messages */
 }
 
 .ai-bot { 
   background: #e5e7eb; 
-  margin-right: auto; 
+  margin-right: auto;
+  margin-top: 20px; /* Add extra top margin to bot messages */
 }
 
 .ai-field-grid { 
   display: grid; 
-  grid-template-columns: 1fr; 
+  grid-template-columns: repeat(2, 1fr); /* Changed to 2 columns instead of 1 */
   gap: 12px; 
   margin: 10px 0; 
+}
+
+.ai-field-grid .custom-card {
+  max-width: 100%;
+  font-size: 0.95rem;
+}
+
+.ai-field-grid .custom-card img {
+  height: 140px; /* Smaller image height */
+  object-fit: cover;
 }
 
 .ai-shift-group { 
@@ -132,7 +144,7 @@
 }
 
 .ai-info-needed { 
-  color: #ff9800; 
+  color: #0ea5e9; 
   font-style: italic; 
 }
 
@@ -145,15 +157,15 @@
 
 .ai-shifts-list { 
   display: grid; 
-  grid-template-columns: repeat(3, 1fr); 
+  grid-template-columns: repeat(4, 1fr); /* Increased from 3 to 4 columns */
   gap: 6px; 
   margin-top: 8px; 
 }
 
-.ai-shift-card { 
-  background: white; 
+.ai-shift-card {
+  padding: 6px;
+  font-size: 0.9rem;
   border: 1px solid #e0e7ff; 
-  padding: 8px; 
   border-radius: 6px; 
   text-align: center; 
   cursor: pointer; 

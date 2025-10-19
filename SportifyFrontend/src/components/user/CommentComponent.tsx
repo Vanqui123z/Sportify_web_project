@@ -56,8 +56,17 @@ const Comment = ({ productId, fieldId, type }: CommentProps) => {
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // New states for modal and confirmation dialog
+  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState<boolean>(false);
+  const [editReviewId, setEditReviewId] = useState<number | null>(null);
+  const [editReviewRating, setEditReviewRating] = useState<number>(0);
+  const [editReviewComment, setEditReviewComment] = useState<string>('');
+  const [editReviewImages, setEditReviewImages] = useState<File[]>([]);
+  const [editImagePreviewUrls, setEditImagePreviewUrls] = useState<string[]>([]);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
+
   const username = localStorage.getItem('username') || undefined;
-  console.log('CommentComponent props:', { productId, fieldId, type, username });
   const entityId = type === 'product' ? productId : fieldId;
 
   // Fetch reviews for the product or field
@@ -265,6 +274,134 @@ const Comment = ({ productId, fieldId, type }: CommentProps) => {
     }
   };
 
+  // Open the edit modal with the current user review
+  const openEditModal = () => {
+    if (userReview) {
+      setEditReviewId(userReview.reviewId);
+      setEditReviewRating(userReview.rating);
+      setEditReviewComment(userReview.comment || '');
+      
+      // Load existing images
+      if (userReview.images) {
+        try {
+          const imageUrls = JSON.parse(userReview.images);
+          if (Array.isArray(imageUrls)) {
+            setEditImagePreviewUrls(imageUrls.map(url => getImageUrl(url)));
+          }
+        } catch (e) {
+          console.error("Error parsing image URLs:", e);
+        }
+      }
+      
+      setIsEditModalOpen(true);
+    }
+  };
+
+  // Close the edit modal
+  const closeEditModal = () => {
+    setIsEditModalOpen(false);
+    setEditReviewId(null);
+    setEditReviewRating(0);
+    setEditReviewComment('');
+    setEditReviewImages([]);
+    setEditImagePreviewUrls([]);
+  };
+
+  // Handle image upload in the edit modal
+  const handleEditImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    const newFiles = Array.from(files);
+    setEditReviewImages(prev => [...prev, ...newFiles]);
+
+    // Create preview URLs
+    const newImageUrls = newFiles.map(file => URL.createObjectURL(file));
+    setEditImagePreviewUrls(prev => [...prev, ...newImageUrls]);
+  };
+
+  // Remove image in the edit modal
+  const removeEditImage = (index: number) => {
+    setEditReviewImages(prev => prev.filter((_, i) => i !== index));
+
+    // Also remove the preview URL and revoke it to free memory
+    const urlToRemove = editImagePreviewUrls[index];
+    if (urlToRemove.startsWith('blob:')) {
+      URL.revokeObjectURL(urlToRemove);
+    }
+    setEditImagePreviewUrls(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Submit the edited review
+  const handleSubmitEditReview = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    if (!username || !entityId || !editReviewRating || !editReviewId) {
+      alert('Thiếu thông tin cần thiết để cập nhật đánh giá');
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      
+      if (type === 'product' && productId) {
+        formData.append('productId', productId.toString());
+      } else if (type === 'field' && fieldId) {
+        formData.append('fieldId', fieldId.toString());
+      } else {
+        alert('Thiếu thông tin ID sản phẩm hoặc sân');
+        return;
+      }
+      
+      formData.append('type', type);
+      formData.append('customerName', username);
+      formData.append('rating', editReviewRating.toString());
+      formData.append('comment', editReviewComment);
+
+      // Add images if any
+      editReviewImages.forEach(image => {
+        formData.append('images', image);
+      });
+
+      const response = await axios.put(
+        `http://localhost:8081/api/user/reviews/${editReviewId}?type=${type}`,
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+
+      if (response.data.success) {
+        setUserReview(response.data.review);
+        fetchReviews(); // Refresh reviews
+        alert('Đánh giá của bạn đã được cập nhật thành công!');
+        closeEditModal();
+      }
+    } catch (error) {
+      console.error("Error updating review:", error);
+      alert('Có lỗi xảy ra khi cập nhật đánh giá. Vui lòng thử lại sau.');
+    }
+  };
+
+  // Open delete confirmation dialog
+  const openDeleteConfirm = () => {
+    setIsDeleteConfirmOpen(true);
+  };
+
+  // Close delete confirmation dialog
+  const closeDeleteConfirm = () => {
+    setIsDeleteConfirmOpen(false);
+  };
+
+  // Confirm deletion of review
+  const confirmDeleteReview = async () => {
+    await handleDeleteReview();
+    closeDeleteConfirm();
+  };
+
   const handleDeleteReview = async () => {
     if (!userReview) return;
 
@@ -347,6 +484,7 @@ const Comment = ({ productId, fieldId, type }: CommentProps) => {
     return new Date(dateString).toLocaleString();
   };
 
+  console.log("userReview:", userReview);
   return (
     <div className="comment-container">
       {/* SECTION 1: RATING SUMMARY */}
@@ -410,9 +548,9 @@ const Comment = ({ productId, fieldId, type }: CommentProps) => {
       </div>
 
       {/* SECTION 3: REVIEW FORM (if user is logged in and hasn't reviewed yet) */}
-      {username && (
+      {username && !hasUserReview && (
         <div className="review-form-container">
-          <h3>{hasUserReview ? 'Chỉnh sửa đánh giá của bạn' : 'Viết đánh giá'}</h3>
+          <h3>Viết đánh giá</h3>
           <form onSubmit={handleSubmitReview} className="review-form">
             <div className="rating-selector">
               <p>Đánh giá của bạn:</p>
@@ -472,18 +610,8 @@ const Comment = ({ productId, fieldId, type }: CommentProps) => {
 
             <div className="form-actions">
               <button type="submit" className="submit-review-btn">
-                {hasUserReview ? 'Cập nhật đánh giá' : 'Gửi đánh giá'}
+                Gửi đánh giá
               </button>
-
-              {hasUserReview && (
-                <button
-                  type="button"
-                  className="delete-review-btn"
-                  onClick={handleDeleteReview}
-                >
-                  Xóa đánh giá
-                </button>
-              )}
             </div>
           </form>
         </div>
@@ -500,55 +628,167 @@ const Comment = ({ productId, fieldId, type }: CommentProps) => {
         ) : (
           reviews.map((review) => (
             <div key={review.reviewId} className="review-card">
-              <div className="review-header">
-                <div className="reviewer-avatar">
-                  <div className="avatar-placeholder">👤</div>
-                </div>
+              <div className="review-layout">
+                <div className="review-content-wrapper">
+                  <div className="review-header">
+                    <div className="reviewer-avatar">
+                      <div className="avatar-placeholder">👤</div>
+                    </div>
 
-                <div className="reviewer-info">
-                  <div className="reviewer-name">{review.customerName}</div>
-                  <div className="review-rating">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <span
-                        key={star}
-                        className={`star ${star <= review.rating ? 'active' : ''}`}
-                      >
-                        ★
-                      </span>
-                    ))}
+                    <div className="reviewer-info">
+                      <div className="reviewer-name">{review.customerName}</div>
+                      <div className="review-rating">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <span
+                            key={star}
+                            className={`star ${star <= review.rating ? 'active' : ''}`}
+                          >
+                            ★
+                          </span>
+                        ))}
+                      </div>
+                      <div className="review-date">{formatDate(review.createdAt || review.updatedAt)}</div>
+                    </div>
+                    {/* Action buttons shown only for the user's own review */}
+                {username && review.username.toLowerCase() === username.toLowerCase() && (
+                  <div className="review-actions">
+                    <button className="edit-review-btn small-btn" onClick={openEditModal}>
+                      <i className="fa fa-pencil"></i> Sửa
+                    </button>
+                    <button className="delete-review-btn small-btn" onClick={openDeleteConfirm}>
+                      <i className="fa fa-trash"></i> Xóa
+                    </button>
                   </div>
-                  <div className="review-date">{formatDate(review.createdAt || review.updatedAt)}</div>
+                )}
+                  </div>
+
+                  <div className="review-content">
+                    <div className="review-comment">{review.comment}</div>
+
+                    {review.images && (
+                      <div className="review-images">
+                        {parseImageUrls(review.images).map((imageUrl, index) => (
+                          <div key={index} className="review-image">
+                            <img src={getImageUrl(imageUrl)} alt={`Review image ${index + 1}`} />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {review.sellerReplyContent && (
+                    <div className="seller-reply">
+                      <div className="seller-reply-header">
+                        <strong>Phản hồi của Shop:</strong>
+                        {review.sellerReplyAdminName && <span> {review.sellerReplyAdminName}</span>}
+                        {review.sellerReplyDate && <span className="reply-date"> - {formatDate(review.sellerReplyDate)}</span>}
+                      </div>
+                      <div className="seller-reply-content">{review.sellerReplyContent}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Edit Review Modal */}
+      {isEditModalOpen && (
+        <div className="modal-overlay">
+          <div className="edit-modal">
+            <div className="modal-header">
+              <h3>Chỉnh sửa đánh giá</h3>
+              <button className="close-modal" onClick={closeEditModal}>✕</button>
+            </div>
+            
+            <form onSubmit={handleSubmitEditReview} className="edit-review-form">
+              <div className="rating-selector">
+                <p>Đánh giá của bạn:</p>
+                <div className="star-rating">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <span
+                      key={star}
+                      className={`star ${star <= editReviewRating ? 'active' : ''}`}
+                      onClick={() => setEditReviewRating(star)}
+                    >
+                      ★
+                    </span>
+                  ))}
                 </div>
               </div>
 
-              <div className="review-content">
-                <div className="review-comment">{review.comment}</div>
+              <div className="review-textarea">
+                <textarea
+                  value={editReviewComment}
+                  onChange={(e) => setEditReviewComment(e.target.value)}
+                  placeholder="Hãy chia sẻ cảm nhận của bạn về sản phẩm..."
+                  rows={4}
+                ></textarea>
+              </div>
 
-                {review.images && (
-                  <div className="review-images">
-                    {parseImageUrls(review.images).map((imageUrl, index) => (
-                      <div key={index} className="review-image">
-                        <img src={getImageUrl(imageUrl)} alt={`Review image ${index + 1}`} />
+              <div className="image-upload">
+                <div className="upload-btn" onClick={() => editFileInputRef.current?.click()}>
+                  <i className="upload-icon">📷</i>
+                  <span>Thêm ảnh</span>
+                </div>
+                <input
+                  type="file"
+                  ref={editFileInputRef}
+                  multiple
+                  accept="image/*"
+                  onChange={handleEditImageUpload}
+                  style={{ display: 'none' }}
+                />
+
+                {editImagePreviewUrls.length > 0 && (
+                  <div className="image-previews">
+                    {editImagePreviewUrls.map((url, index) => (
+                      <div key={index} className="image-preview-item">
+                        <img src={url} alt={`Preview ${index}`} />
+                        <button
+                          type="button"
+                          className="remove-image-btn"
+                          onClick={() => removeEditImage(index)}
+                        >
+                          ✕
+                        </button>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
 
-              {review.sellerReplyContent && (
-                <div className="seller-reply">
-                  <div className="seller-reply-header">
-                    <strong>Phản hồi của Shop:</strong>
-                    {review.sellerReplyAdminName && <span> {review.sellerReplyAdminName}</span>}
-                    {review.sellerReplyDate && <span className="reply-date"> - {formatDate(review.sellerReplyDate)}</span>}
-                  </div>
-                  <div className="seller-reply-content">{review.sellerReplyContent}</div>
-                </div>
-              )}
+              <div className="modal-actions">
+                <button type="submit" className="submit-edit-btn">
+                  Cập nhật đánh giá
+                </button>
+                <button type="button" className="cancel-btn" onClick={closeEditModal}>
+                  Hủy
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {isDeleteConfirmOpen && (
+        <div className="modal-overlay">
+          <div className="confirmation-dialog">
+            <h3>Xác nhận xóa</h3>
+            <p>Bạn có chắc chắn muốn xóa đánh giá này?</p>
+            <div className="dialog-actions">
+              <button className="confirm-btn" onClick={confirmDeleteReview}>
+                Xóa
+              </button>
+              <button className="cancel-btn" onClick={closeDeleteConfirm}>
+                Hủy
+              </button>
             </div>
-          ))
-        )}
-      </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

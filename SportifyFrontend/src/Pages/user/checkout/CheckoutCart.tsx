@@ -30,8 +30,23 @@ interface ApiResponse {
   success: boolean;
 }
 
+interface VoucherInfo {
+  voucherId: string;
+  discountPercent: number;
+  voucherMsg: string;
+  isValid: boolean;
+}
+
 const CheckoutCart: React.FC = () => {
   const [data, setData] = useState<ApiResponse | null>(null);
+  const [voucherInfo, setVoucherInfo] = useState<VoucherInfo>({
+    voucherId: "",
+    discountPercent: 0,
+    voucherMsg: "",
+    isValid: false
+  });
+  const [voucherInput, setVoucherInput] = useState("");
+  const [isApplyingVoucher, setIsApplyingVoucher] = useState(false);
 
   useEffect(() => {
     fetch("http://localhost:8081/api/user/cart/checkout", {
@@ -47,6 +62,39 @@ const CheckoutCart: React.FC = () => {
       });
   }, []);
 
+  const applyVoucher = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!voucherInput.trim()) return;
+
+    setIsApplyingVoucher(true);
+    try {
+      const response = await fetch(`http://localhost:8081/api/user/order/cart/voucher?voucherId=${voucherInput}`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const result = await response.json();
+      
+      setVoucherInfo({
+        voucherId: voucherInput,
+        discountPercent: result.discountPercent || 0,
+        voucherMsg: result.voucherMsg || "Không thể áp dụng voucher",
+        isValid: result.discountPercent > 0
+      });
+    } catch (error) {
+      setVoucherInfo({
+        ...voucherInfo,
+        voucherMsg: "Lỗi khi áp dụng voucher, vui lòng thử lại",
+        isValid: false
+      });
+    } finally {
+      setIsApplyingVoucher(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -54,10 +102,14 @@ const CheckoutCart: React.FC = () => {
 
     const formData = new FormData();
     formData.append('cartid', data.cartid.toString());
-    formData.append('totalPrice', totalPrice.toString());
+    formData.append('totalPrice', finalTotal.toString());
     formData.append('phone', data.user.phone.toString());
     formData.append('productid', data.items.map(item => item.cartItemId).join(','));
     formData.append('quantity', data.items.map(item => item.quantity).join(','));
+    if (voucherInfo.isValid) {
+      formData.append('voucherId', voucherInfo.voucherId);
+      formData.append('discountPercent', voucherInfo.discountPercent.toString());
+    }
 
     try {
       const res = await fetch('http://localhost:8081/api/user/cart/payment', {
@@ -87,10 +139,14 @@ const CheckoutCart: React.FC = () => {
   if (!data) return <div>Loading...</div>;
 
   const { user, items } = data;
-  const totalPrice = items.reduce(
+  const subtotal = items.reduce(
     (sum, item) => sum + item.quantity * (item.price - item.discountprice),
     0
   );
+  
+  const shippingFee = 30000;
+  const discountAmount = Math.round(subtotal * (voucherInfo.discountPercent / 100));
+  const finalTotal = subtotal - discountAmount + shippingFee;
 
   return (
     <>
@@ -202,18 +258,49 @@ const CheckoutCart: React.FC = () => {
                       ))}
                     </div>
 
+                    {/* Voucher section */}
+                    <div className="mb-3">
+                      <form onSubmit={applyVoucher} className="d-flex align-items-center mb-2">
+                        <input 
+                          type="text" 
+                          className="form-control mr-2" 
+                          placeholder="Nhập mã giảm giá" 
+                          value={voucherInput}
+                          onChange={(e) => setVoucherInput(e.target.value)}
+                        />
+                        <button 
+                          type="submit" 
+                          className="btn btn-primary" 
+                          disabled={isApplyingVoucher || !voucherInput.trim()}
+                        >
+                          {isApplyingVoucher ? 'Đang áp dụng...' : 'Áp dụng'}
+                        </button>
+                      </form>
+                      {voucherInfo.voucherMsg && (
+                        <div className={`alert ${voucherInfo.isValid ? 'alert-success' : 'alert-warning'} py-1 px-2 mb-2`}>
+                          {voucherInfo.voucherMsg}
+                        </div>
+                      )}
+                    </div>
+
                     <p className="d-flex">
                       <span>Tạm tính: </span> 
-                      <span>{totalPrice.toLocaleString("vi-VN")}đ</span>
+                      <span>{subtotal.toLocaleString("vi-VN")}đ</span>
                     </p>
+                    {voucherInfo.isValid && (
+                      <p className="d-flex text-success">
+                        <span>Giảm giá ({voucherInfo.discountPercent}%): </span> 
+                        <span>-{discountAmount.toLocaleString("vi-VN")}đ</span>
+                      </p>
+                    )}
                     <p className="d-flex">
                       <span>Phí vận chuyển: </span> 
-                      <span>0đ</span>
+                      <span>{shippingFee.toLocaleString("vi-VN")}đ</span>
                     </p>
                     <hr />
                     <p className="d-flex total-price">
                       <span>Thành tiền</span> 
-                      <span>{totalPrice.toLocaleString("vi-VN")}đ</span>
+                      <span>{finalTotal.toLocaleString("vi-VN")}đ</span>
                     </p>
                   </div>
                 </div>
