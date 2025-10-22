@@ -96,10 +96,10 @@ const NotificationDropdown: React.FC = () => {
               )}
             </div>
             <div className="notification-actions">
-              <button className="mark-all-read-btn" onClick={markAllAsRead}>
+              <button type="button" className="mark-all-read-btn" onClick={markAllAsRead}>
                 Đánh dấu đã đọc
               </button>
-              <button className="clear-all-btn" onClick={clearNotifications}>
+              <button type="button" className="clear-all-btn" onClick={clearNotifications}>
                 Xóa tất cả
               </button>
             </div>

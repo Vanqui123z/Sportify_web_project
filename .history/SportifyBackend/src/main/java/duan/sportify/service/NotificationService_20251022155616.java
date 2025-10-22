@@ -58,7 +58,6 @@ public class NotificationService {
         return notificationRepository.countByUsernameAndReadFalse(username);
     }
 
-    @Transactional
     public void clearNotifications(String username) {
         notificationRepository.deleteByUsername(username);
     }

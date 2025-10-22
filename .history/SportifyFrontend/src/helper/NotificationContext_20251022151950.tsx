@@ -147,26 +147,25 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     }
   };
 
-  const clearNotifications = async () => {
+  const clearNotifications = () => {
     if (!username) {
       setNotifications([]);
       return;
     }
 
-    try {
-      const res = await fetch(`${API_BASE}/clear?username=${encodeURIComponent(username)}`, {
-        method: "DELETE",
-        ...DEFAULT_FETCH_INIT,
+    fetch(`${API_BASE}/clear?username=${encodeURIComponent(username)}`, {
+      method: "DELETE",
+      ...DEFAULT_FETCH_INIT,
+    })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`Failed to clear notifications (${res.status})`);
+        }
+        setNotifications([]);
+      })
+      .catch(error => {
+        console.error("Error clearing notifications", error);
       });
-      
-      if (!res.ok) {
-        throw new Error(`Failed to clear notifications (${res.status})`);
-      }
-      
-      setNotifications([]);
-    } catch (error) {
-      console.error("Error clearing notifications", error);
-    }
   };
 
   return (
