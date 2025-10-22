@@ -152,11 +152,30 @@ const Sidebar: React.FC = () => {
                       </li>
                       <li className="nav-item">
                         <a
-                          href="/admin/order-products"
+                          href="/admin/manager-bookings"
+                          className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
+                        >
+                          <i className="fas fa-ticket-alt me-3 text-primary"></i>
+                          <span>Quản lí đặt sân </span>
+                        </a>
+                      </li>
+                     
+                      <li className="nav-item">
+                        <a
+                          href="/admin/manage-orders"
                           className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
                         >
                           <i className="fas fa-receipt me-3 text-success"></i>
                           <span>Đơn hàng</span>
+                        </a>
+                      </li>
+                       <li className="nav-item">
+                        <a
+                          href="/admin/count_bookings"
+                          className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
+                        >
+                          <i className="fas fa-ticket-alt me-3 text-primary"></i>
+                          <span>Quản lí đơn hàng  </span>
                         </a>
                       </li>
                     </ul>

@@ -171,7 +171,8 @@ public class BookingServiceImpl implements BookingService {
 
             result.add(new BookingEventDTO(
                     bookingId,
-                    fieldName + " - " + shiftName,
+                    fieldName ,
+                    shiftName,
                     start,
                     end,
                     null,
@@ -203,7 +204,8 @@ public class BookingServiceImpl implements BookingService {
 
             result.add(new BookingEventDTO(
                     bookingId,
-                    fieldName + " - " + shiftName,
+                    fieldName,
+                    shiftName,
                     start,
                     end,
                     dayOfWeek,

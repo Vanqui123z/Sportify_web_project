@@ -1,0 +1,110 @@
+# Product Sales API Documentation
+
+## Overview
+This document details the available API endpoints for product sales statistics in the Sportify application.
+All endpoints are prefixed with `/sportify/rest/sales`.
+
+## Endpoints
+
+### 1. Get Product Sales By Date
+**Endpoint:** GET `/sportify/rest/sales/by-date`
+**Description:** Retrieves product sales statistics for a specific date.
+**Parameters:**
+- `date` (required): Date in format `yyyy-MM-dd` or `dd/MM/yyyy` (example: `2023-10-20` or `20/10/2023`)
+
+**Example request:** `/sportify/rest/sales/by-date?date=2023-10-20`
+
+**Response Format:**
+```json
+{
+  "productSales": [
+    {
+      "productId": 1,
+      "productName": "Football",
+      "image": "football.jpg",
+      "price": 25.99,
+      "quantitySold": 10
+    },
+    {
+      "productId": 3,
+      "productName": "Sports Jersey",
+      "image": "jersey.jpg",
+      "price": 49.99,
+      "quantitySold": 5
+    }
+  ],
+  "totalQuantitySold": 15,
+  "period": "day",
+  "date": "2023-10-20"
+}
+```
+
+### 2. Get Product Sales By Month
+**Endpoint:** GET `/sportify/rest/sales/by-month`
+**Description:** Retrieves product sales statistics for a specific month.
+**Parameters:**
+- `month` (required): Month in format `yyyy-MM` or `MM/yyyy` (example: `2023-10` or `10/2023`)
+
+**Example request:** `/sportify/rest/sales/by-month?month=2023-10`
+
+**Response Format:**
+```json
+{
+  "productSales": [
+    {
+      "productId": 1,
+      "productName": "Football",
+      "image": "football.jpg",
+      "price": 25.99,
+      "quantitySold": 45
+    },
+    {
+      "productId": 2,
+      "productName": "Basketball",
+      "image": "basketball.jpg",
+      "price": 29.99,
+      "quantitySold": 32
+    },
+    {
+      "productId": 3,
+      "productName": "Sports Jersey",
+      "image": "jersey.jpg",
+      "price": 49.99,
+      "quantitySold": 28
+    }
+  ],
+  "totalQuantitySold": 105,
+  "period": "month",
+  "date": "2023-10"
+}
+```
+
+## Data Models
+
+### ProductSalesDTO
+```json
+{
+  "productId": "Integer - Unique identifier for the product",
+  "productName": "String - Name of the product",
+  "image": "String - Image URL or path",
+  "price": "Double - Price of the product",
+  "quantitySold": "Long - Quantity sold for this product"
+}
+```
+
+### SalesReportDTO
+```json
+{
+  "productSales": "Array of ProductSalesDTO - Individual product sales data",
+  "totalQuantitySold": "Long - Total quantity of all products sold",
+  "period": "String - Either 'day' or 'month'",
+  "date": "String - The date or month for which the report is generated"
+}
+```
+
+## Notes
+- All endpoints return HTTP 200 OK on success.
+- Date format supports both international (`yyyy-MM-dd`) and local (`dd/MM/yyyy`) formats.
+- Month format supports both international (`yyyy-MM`) and local (`MM/yyyy`) formats.
+- Results only include completed sales (paymentstatus = 1).
+- Products are sorted by quantity sold in descending order.

@@ -1,0 +1,171 @@
+# Field Usage API Documentation
+
+## Overview
+This document details the available API endpoints for field usage statistics in the Sportify application.
+All endpoints are prefixed with `/api/field-usage`.
+
+## Endpoints
+
+### 1. Get Usage By Day
+**Endpoint:** GET `/api/field-usage/by-day`
+**Description:** Retrieves all field usage statistics grouped by field and day.
+**Parameters:** None required
+**Response Format:**
+```json
+[
+  {
+    "fieldId": 1,
+    "date": "2023-10-20",
+    "total": 5
+  },
+  {
+    "fieldId": 2,
+    "date": "2023-10-20",
+    "total": 3
+  },
+  {
+    "fieldId": 1,
+    "date": "2023-10-21",
+    "total": 2
+  }
+]
+```
+
+### 2. Get Usage By Month
+**Endpoint:** GET `/api/field-usage/by-month`
+**Description:** Retrieves all field usage statistics grouped by field and month.
+**Parameters:** None required
+**Response Format:**
+```json
+[
+  {
+    "fieldId": 1,
+    "date": "2023-10",
+    "total": 42
+  },
+  {
+    "fieldId": 2,
+    "date": "2023-10",
+    "total": 36
+  },
+  {
+    "fieldId": 1,
+    "date": "2023-11",
+    "total": 28
+  }
+]
+```
+
+### 3. Get Daily Total Usage
+**Endpoint:** GET `/api/field-usage/daily-total`
+**Description:** Retrieves the total usage count across all fields for all days.
+**Parameters:** None required
+**Response Format:**
+```json
+258
+```
+
+### 4. Get Monthly Total Usage
+**Endpoint:** GET `/api/field-usage/monthly-total`
+**Description:** Retrieves the total usage count across all fields for all months.
+**Parameters:** None required
+**Response Format:**
+```json
+1240
+```
+
+### 5. Get Detailed Usage By Date
+**Endpoint:** GET `/api/field-usage/detail/by-date`
+**Description:** Retrieves detailed usage statistics for all fields on a specific date, including one-time and permanent bookings.
+**Parameters:**
+- `date` (required): Date in format `yyyy-MM-dd` or `dd/MM/yyyy` (example: `2023-10-20` or `20/10/2023`)
+
+**Example request:** `/api/field-usage/detail/by-date?date=2023-10-20`
+
+**Response Format:**
+```json
+[
+  {
+    "fieldId": 1,
+    "fieldName": "Field A",
+    "oneTimeBookings": 3,
+    "permanentBookings": 2,
+    "totalBookings": 5
+  },
+  {
+    "fieldId": 2,
+    "fieldName": "Field B",
+    "oneTimeBookings": 2,
+    "permanentBookings": 1,
+    "totalBookings": 3
+  }
+]
+```
+
+### 6. Get Detailed Usage By Month
+**Endpoint:** GET `/api/field-usage/detail/by-month`
+**Description:** Retrieves detailed usage statistics for all fields during a specific month, including one-time and permanent bookings.
+**Parameters:**
+- `yearMonth` (required): Month in format `yyyy-MM` or `MM/yyyy` (example: `2023-10` or `10/2023`)
+
+**Example request:** `/api/field-usage/detail/by-month?yearMonth=2023-10`
+
+**Response Format:**
+```json
+[
+  {
+    "fieldId": 1,
+    "fieldName": "Field A",
+    "oneTimeBookings": 32,
+    "permanentBookings": 10,
+    "totalBookings": 42
+  },
+  {
+    "fieldId": 2,
+    "fieldName": "Field B",
+    "oneTimeBookings": 28,
+    "permanentBookings": 8,
+    "totalBookings": 36
+  }
+]
+```
+
+## Data Models
+
+### FieldUsageDTO
+```json
+{
+  "fieldId": "Long - Unique identifier for the field",
+  "date": "String - Date or month in format 'yyyy-MM-dd' or 'yyyy-MM'",
+  "total": "Long - Total number of bookings for this field on this date/month"
+}
+```
+
+### FieldUsageDetailDTO
+```json
+{
+  "fieldId": "Integer - Unique identifier for the field",
+  "fieldName": "String - Name of the field",
+  "oneTimeBookings": "Long - Number of one-time bookings",
+  "permanentBookings": "Long - Number of permanent bookings",
+  "totalBookings": "Long - Total number of bookings (oneTime + permanent)"
+}
+```
+
+## Parameter Formats
+
+1. **Date parameter formats:**
+   - International format: `yyyy-MM-dd` (example: `2023-10-20`)
+   - Local format: `dd/MM/yyyy` (example: `20/10/2023`)
+
+2. **Month parameter formats:**
+   - International format: `yyyy-MM` (example: `2023-10`)
+   - Local format: `MM/yyyy` (example: `10/2023`)
+
+## Notes
+- All endpoints return HTTP 200 OK on success.
+- Date formats are flexible and support both international and local formats.
+- Month formats are flexible and support both international and local formats.
+- Permanent bookings are counted based on their start date, end date, and recurrence pattern.
+- For endpoints that don't require parameters, simply make a GET request to the endpoint URL.
+- For endpoints with required parameters, ensure all required parameters are included in the request.
