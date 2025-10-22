@@ -5,7 +5,6 @@ import duan.sportify.entities.Notification;
 import duan.sportify.entities.Users;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Date;
 
@@ -58,7 +57,6 @@ public class NotificationService {
         return notificationRepository.countByUsernameAndReadFalse(username);
     }
 
-    @Transactional
     public void clearNotifications(String username) {
         notificationRepository.deleteByUsername(username);
     }

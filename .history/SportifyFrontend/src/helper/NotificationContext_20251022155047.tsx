@@ -19,7 +19,7 @@ interface NotificationContextProps {
   addNotification: (message: string, type: NotificationType) => Promise<void>;
   markAsRead: (id: number) => Promise<void>;
   markAllAsRead: () => Promise<void>;
-  clearNotifications: () => void;
+  clearNotifications: () => Promise<void>;
   removeNotification: (id: number) => Promise<void>;
 }
 
@@ -158,11 +158,9 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         method: "DELETE",
         ...DEFAULT_FETCH_INIT,
       });
-      
       if (!res.ok) {
         throw new Error(`Failed to clear notifications (${res.status})`);
       }
-      
       setNotifications([]);
     } catch (error) {
       console.error("Error clearing notifications", error);
