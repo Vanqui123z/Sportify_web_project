@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-
 import duan.sportify.entities.Bookingdetails;
 import duan.sportify.entities.Field;
 import duan.sportify.entities.PermanentBooking;
@@ -77,62 +76,50 @@ public interface BookingDetailDAO extends JpaRepository<Bookingdetails, Integer>
 			+ "LIMIT 5;", nativeQuery = true)
 	List<Object[]> top5UserDatSan();
 
-   // BookingDetail theo ngay
-    @Query("SELECT b.fieldid AS fieldId, b.playdate AS date, COUNT(b) AS total " +
-           "FROM Bookingdetails b " +
-           "GROUP BY b.fieldid, b.playdate")
-    List<Map<String, Object>> countUsageByDay();
+	// Find active fields for a specific date with booking counts
+	@Query(value = """
+			SELECT f.fieldid, f.namefield,f.image,
+			       COUNT(DISTINCT bd.bookingdetailid) AS one_time_bookings,
+			       COUNT(DISTINCT pb.permanent_id) AS permanent_bookings,
+			       (COUNT(DISTINCT bd.bookingdetailid) + COUNT(DISTINCT pb.permanent_id)) AS total_bookings
+			FROM field f
+			LEFT JOIN bookingdetails bd
+			       ON f.fieldid = bd.fieldid
+			       AND DATE_FORMAT(bd.playdate, '%Y-%m-%d') = :date
+			LEFT JOIN permanent_booking pb
+			       ON f.fieldid = pb.field_id
+			       AND pb.start_date <= :date
+			       AND pb.end_date >= :date
+			       AND pb.day_of_week = DAYOFWEEK(STR_TO_DATE(:date, '%Y-%m-%d'))
+			       AND pb.active = 1
+			GROUP BY f.fieldid, f.namefield
+			""", nativeQuery = true)
+	List<Object[]> findActiveFieldsByDate(@Param("date") String date);
 
-    // BookingDetail theo thang
-    @Query("SELECT b.fieldid AS fieldId, FUNCTION('DATE_FORMAT', b.playdate, '%Y-%m') AS month, COUNT(b) AS total " +
-           "FROM Bookingdetails b " +
-           "GROUP BY b.fieldid, FUNCTION('DATE_FORMAT', b.playdate, '%Y-%m')")
-    List<Map<String, Object>> countUsageByMonth();
-
-	// booking Permanent
-	@Query("SELECT p FROM PermanentBooking p")
-	 List<PermanentBooking> findPermanentBookings();
-
-    // Find bookings for a specific date - updated to handle java.util.Date
-    @Query(value = "SELECT b.fieldid, f.namefield, COUNT(b.bookingdetailid) AS booking_count " +
-            "FROM bookingdetails b " +
-            "JOIN field f ON b.fieldid = f.fieldid " +
-            "WHERE DATE_FORMAT(b.playdate, '%Y-%m-%d') = :date " +
-            "GROUP BY b.fieldid, f.namefield", nativeQuery = true)
-    List<Object[]> countBookingsByDate(@Param("date") String date);
-
-    // Find bookings for a specific month - updated to handle java.util.Date
-    @Query(value = "SELECT b.fieldid, f.namefield, COUNT(b.bookingdetailid) AS booking_count " +
-            "FROM bookingdetails b " +
-            "JOIN field f ON b.fieldid = f.fieldid " +
-            "WHERE DATE_FORMAT(b.playdate, '%Y-%m') = :yearMonth " +
-            "GROUP BY b.fieldid, f.namefield", nativeQuery = true)
-    List<Object[]> countBookingsByMonth(@Param("yearMonth") String yearMonth);
-
-    // Find permanent bookings active on a specific date - updated to handle LocalDate
-    @Query(value = "SELECT p.field_id, f.namefield, COUNT(p.permanent_id) AS booking_count " +
-            "FROM permanent_booking p " +
-            "JOIN field f ON p.field_id = f.fieldid " +
-            "WHERE :date BETWEEN DATE_FORMAT(p.start_date, '%Y-%m-%d') AND DATE_FORMAT(p.end_date, '%Y-%m-%d') " +
-            "AND p.day_of_week = WEEKDAY(STR_TO_DATE(:date, '%Y-%m-%d')) + 1 " +
-            "AND p.active = 1 " +
-            "GROUP BY p.field_id, f.namefield", nativeQuery = true)
-    List<Object[]> countPermanentBookingsByDate(@Param("date") String date);
-
-    // Find permanent bookings active during a specific month - updated to handle LocalDate
-    @Query(value = "SELECT p.field_id, f.namefield, " +
-            "SUM(CASE WHEN LAST_DAY(STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d')) < p.end_date THEN " +
-            "    FLOOR(DATEDIFF(LAST_DAY(STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d')), " +
-            "           GREATEST(STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d'), p.start_date))/7) + 1 " +
-            "ELSE " +
-            "    FLOOR(DATEDIFF(p.end_date, " +
-            "           GREATEST(STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d'), p.start_date))/7) + 1 " +
-            "END) AS booking_count " +
-            "FROM permanent_booking p " +
-            "JOIN field f ON p.field_id = f.fieldid " +
-            "WHERE (p.start_date <= LAST_DAY(STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d'))) " +
-            "  AND (p.end_date >= STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d')) " +
-            "AND p.active = 1 " +
-            "GROUP BY p.field_id, f.namefield", nativeQuery = true)
-    List<Object[]> countPermanentBookingsByMonth(@Param("yearMonth") String yearMonth);
+	// Find active fields for a specific month with booking counts - updated to
+	// include boundary days
+	@Query(value = "SELECT f.fieldid, f.namefield,f.image, " +
+			"COUNT(DISTINCT bd.bookingdetailid) AS one_time_bookings, " +
+			"SUM(CASE WHEN pb.permanent_id IS NOT NULL THEN " +
+			"    FLOOR(LEAST(DATEDIFF(LAST_DAY(STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d')), " +
+			"           GREATEST(STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d'), pb.start_date)) / 7, " +
+			"           DATEDIFF(pb.end_date, GREATEST(STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d'), pb.start_date)) / 7) + 1) "
+			+
+			"ELSE 0 END) AS permanent_bookings, " +
+			"(COUNT(DISTINCT bd.bookingdetailid) + " +
+			"SUM(CASE WHEN pb.permanent_id IS NOT NULL THEN " +
+			"    FLOOR(LEAST(DATEDIFF(LAST_DAY(STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d')), " +
+			"           GREATEST(STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d'), pb.start_date)) / 7, " +
+			"           DATEDIFF(pb.end_date, GREATEST(STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d'), pb.start_date)) / 7) + 1) "
+			+
+			"ELSE 0 END)) AS total_bookings " +
+			"FROM field f " +
+			"LEFT JOIN bookingdetails bd ON f.fieldid = bd.fieldid AND DATE_FORMAT(bd.playdate, '%Y-%m') = :yearMonth "
+			+
+			"LEFT JOIN permanent_booking pb ON f.fieldid = pb.field_id " +
+			"AND (pb.start_date <= LAST_DAY(STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d'))) " +
+			"AND (pb.end_date >= STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d')) " +
+			"AND pb.active = 1 " +
+			"GROUP BY f.fieldid, f.namefield", nativeQuery = true)
+	List<Object[]> findActiveFieldsByMonth(@Param("yearMonth") String yearMonth);
 }

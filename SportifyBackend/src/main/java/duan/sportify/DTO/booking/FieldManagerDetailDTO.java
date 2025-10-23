@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 public class FieldManagerDetailDTO {
     private Integer fieldId;
     private String fieldName;
+    private String fieldImage;
     private Long oneTimeBookings;
     private Long permanentBookings;
     private Long totalBookings;

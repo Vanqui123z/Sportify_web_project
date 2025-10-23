@@ -162,7 +162,7 @@ const Sidebar: React.FC = () => {
                      
                       <li className="nav-item">
                         <a
-                          href="/admin/manage-orders"
+                          href="/admin/order-products"
                           className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
                         >
                           <i className="fas fa-receipt me-3 text-success"></i>
@@ -171,7 +171,7 @@ const Sidebar: React.FC = () => {
                       </li>
                        <li className="nav-item">
                         <a
-                          href="/admin/count_bookings"
+                          href="/admin/manager-orders"
                           className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
                         >
                           <i className="fas fa-ticket-alt me-3 text-primary"></i>

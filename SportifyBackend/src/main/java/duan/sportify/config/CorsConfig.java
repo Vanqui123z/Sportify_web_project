@@ -24,7 +24,7 @@ public class CorsConfig implements WebMvcConfigurer {
         // Endpoint public
         registry.addMapping("/api/sportify/**")
                 .allowedOrigins("*")
-                .allowedMethods("GET", "POST", "OPTIONS")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*");
       
     }

@@ -10,6 +10,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import getImageUrl from "../../helper/getImageUrl";
 
 // Register Chart.js components
 ChartJS.register(
@@ -48,10 +49,33 @@ const OrderManager: React.FC = () => {
   const [search, setSearch] = useState({
     productName: "",
     fromDate: "",
-    toDate: "",
   });
 
-  // Fetch sales data based on the active tab
+  // Helper functions for calculations
+  const calculateTotalRevenue = (): number => {
+    if (!salesData || !salesData.productSales) return 0;
+    return salesData.productSales.reduce((total, product) => 
+      total + (product.price * product.quantitySold), 0);
+  };
+  
+  const getAveragePrice = (): string => {
+    if (!salesData?.totalQuantitySold || salesData.totalQuantitySold === 0) return "0.00";
+    return (calculateTotalRevenue() / salesData.totalQuantitySold).toFixed(2);
+  };
+
+  // Format date for display
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("vi-VN");
+  };
+  
+  const formatMonthYear = (dateStr: string) => {
+    if (!dateStr) return "-";
+    return new Date(dateStr + '-01').toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' });
+  };
+
+  // Fetch data when date/month changes
   useEffect(() => {
     if (activeTab === 'daily') {
       fetchDailySales(selectedDate);
@@ -65,7 +89,8 @@ const OrderManager: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`http://localhost:8081/sportify/rest/sales/by-date?date=${date}`);
+      const response = await axios.get(`http://localhost:8081/sportify/rest/sales/by-date?date=${formatDate(date)}`);
+      console.log(formatDate(date));
       setSalesData(response.data);
       setLoading(false);
     } catch (err) {
@@ -96,19 +121,12 @@ const OrderManager: React.FC = () => {
 
   // Refresh handler
   const handleRefresh = () => {
-    setSearch({ productName: "", fromDate: "", toDate: "" });
+    setSearch({ productName: "", fromDate: "" });
     if (activeTab === 'daily') {
       fetchDailySales(selectedDate);
     } else {
       fetchMonthlySales(selectedMonth);
     }
-  };
-
-  // Calculate total revenue
-  const calculateTotalRevenue = (): number => {
-    if (!salesData || !salesData.productSales) return 0;
-    return salesData.productSales.reduce((total, product) => 
-      total + (product.price * product.quantitySold), 0);
   };
 
   // Prepare chart data
@@ -128,13 +146,13 @@ const OrderManager: React.FC = () => {
       labels,
       datasets: [
         {
-          label: 'Quantity Sold',
+          label: 'Số Lượng Đã Bán',
           data: quantities,
           backgroundColor: 'rgba(54, 162, 235, 0.6)',
           borderWidth: 1,
         },
         {
-          label: 'Revenue ($)',
+          label: 'Doanh Thu (VND)',
           data: revenues,
           backgroundColor: 'rgba(255, 99, 132, 0.6)',
           borderWidth: 1,
@@ -151,7 +169,7 @@ const OrderManager: React.FC = () => {
       },
       title: {
         display: true,
-        text: 'Product Sales Statistics',
+        text: 'Thống Kê Bán Hàng',
       },
     },
     scales: {
@@ -161,11 +179,39 @@ const OrderManager: React.FC = () => {
     }
   };
 
-  // Format date for display
-  const formatDate = (dateStr: string) => {
-    if (!dateStr) return "";
-    const d = new Date(dateStr);
-    return d.toLocaleDateString("vi-VN");
+  // Helper function to render loading spinner
+  const renderLoadingSpinner = () => (
+    <div className="text-center py-4">
+      <div className="spinner-border text-primary" role="status">
+        <span className="visually-hidden">Đang tải...</span>
+      </div>
+    </div>
+  );
+
+  // Helper function for rendering product rows in tables
+  const renderProductRow = (product: ProductSalesDTO, idx: number, showImage: boolean = true) => (
+    <tr key={product.productId}>
+      <td>{idx + 1}</td>
+      {showImage && (
+        <td>
+          <img 
+            src={getImageUrl(product.image)} 
+            alt={product.productName} 
+            style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+            className="rounded border"
+          />
+        </td>
+      )}
+      <td>{product.productName}</td>
+      <td>{product.price.toFixed(2)} VND</td>
+      <td>{product.quantitySold}</td>
+      <td>{(product.price * product.quantitySold).toFixed(2)} VND</td>
+    </tr>
+  );
+
+  // Helper function to check if data is available
+  const hasData = (): boolean => {
+    return Boolean(salesData?.productSales && salesData.productSales.length > 0);
   };
 
   return (
@@ -174,17 +220,17 @@ const OrderManager: React.FC = () => {
         {/* Page Header */}
         <div className="row align-items-center mb-4">
           <div className="col">
-            <h3 className="mb-0">Product Sales Management</h3>
+            <h3 className="mb-0">Quản Lý Bán Hàng</h3>
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb bg-transparent p-0">
-                <li className="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
-                <li className="breadcrumb-item active" aria-current="page">Product Sales</li>
+                <li className="breadcrumb-item"><a href="/admin/dashboard">Trang Chủ</a></li>
+                <li className="breadcrumb-item active" aria-current="page">Thống Kê Bán Hàng</li>
               </ol>
             </nav>
           </div>
           <div className="col-auto">
             <button className="btn btn-primary" onClick={() => window.print()}>
-              <i className="fa fa-print"></i> Print Report
+              <i className="fa fa-print"></i> In Báo Cáo
             </button>
           </div>
         </div>
@@ -197,7 +243,7 @@ const OrderManager: React.FC = () => {
           <div className="col-md-4 mb-3">
             <div className="card border-0 shadow-sm h-100">
               <div className="card-body text-center">
-                <h5 className="card-title">Total Products Sold</h5>
+                <h5 className="card-title">Tổng Sản Phẩm Đã Bán</h5>
                 <p className="display-4 mb-0 fw-bold text-primary">
                   {salesData?.totalQuantitySold || 0}
                 </p>
@@ -207,9 +253,9 @@ const OrderManager: React.FC = () => {
           <div className="col-md-4 mb-3">
             <div className="card border-0 shadow-sm h-100">
               <div className="card-body text-center">
-                <h5 className="card-title">Total Revenue</h5>
+                <h5 className="card-title">Tổng Doanh Thu</h5>
                 <p className="display-4 mb-0 fw-bold text-success">
-                  ${calculateTotalRevenue().toFixed(2)}
+                  {calculateTotalRevenue().toFixed(2)} VND
                 </p>
               </div>
             </div>
@@ -217,51 +263,24 @@ const OrderManager: React.FC = () => {
           <div className="col-md-4 mb-3">
             <div className="card border-0 shadow-sm h-100">
               <div className="card-body text-center">
-                <h5 className="card-title">Average Price</h5>
+                <h5 className="card-title">Giá Trung Bình</h5>
                 <p className="display-4 mb-0 fw-bold text-warning">
-                  ${salesData?.totalQuantitySold ? 
-                    (calculateTotalRevenue() / salesData.totalQuantitySold).toFixed(2) : 
-                    "0.00"}
+                  {getAveragePrice()} VND
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Search Filter */}
-        <form className="row g-2 mb-4">
-          <div className="col-sm-12 col-md-4">
-            <input type="text" className="form-control"
-              placeholder="Product name"
-              value={search.productName}
-              onChange={e => setSearch(s => ({ ...s, productName: e.target.value }))}
-            />
-          </div>
-          <div className="col-sm-6 col-md-2">
-            <input type="date" className="form-control"
-              placeholder="From Date"
-              value={search.fromDate}
-              onChange={e => setSearch(s => ({ ...s, fromDate: e.target.value }))}
-            />
-          </div>
-          <div className="col-sm-6 col-md-2">
-            <input type="date" className="form-control"
-              placeholder="To Date"
-              value={search.toDate}
-              onChange={e => setSearch(s => ({ ...s, toDate: e.target.value }))}
-            />
-          </div>
-          <div className="col-sm-6 col-md-2">
-            <button type="button" className="btn btn-success w-100" onClick={handleSearch}>
-              <i className="fa fa-search me-1"></i> Search
-            </button>
-          </div>
-          <div className="col-sm-6 col-md-2">
+   
+         
+        <div>
+            <div className="col-sm-6 col-md-2">
             <button type="button" className="btn btn-secondary w-100" onClick={handleRefresh}>
-              <i className="fa fa-refresh me-1"></i> Refresh
+              <i className="fa fa-refresh "></i> Làm Mới
             </button>
           </div>
-        </form>
+        </div>
         {/* /Search Filter */}
 
         {/* Tab Navigation */}
@@ -271,7 +290,7 @@ const OrderManager: React.FC = () => {
               className={`nav-link ${activeTab === 'daily' ? 'active' : ''}`}
               onClick={() => setActiveTab('daily')}
             >
-              Daily Sales
+              Doanh Thu Theo Ngày
             </button>
           </li>
           <li className="nav-item">
@@ -279,7 +298,7 @@ const OrderManager: React.FC = () => {
               className={`nav-link ${activeTab === 'monthly' ? 'active' : ''}`}
               onClick={() => setActiveTab('monthly')}
             >
-              Monthly Sales
+              Doanh Thu Theo Tháng
             </button>
           </li>
         </ul>
@@ -289,7 +308,9 @@ const OrderManager: React.FC = () => {
           <div className="col-12">
             <div className="card border-0 shadow-sm">
               <div className="card-header bg-white d-flex justify-content-between align-items-center">
-                <h5 className="mb-0">{activeTab === 'daily' ? 'Daily' : 'Monthly'} Sales Chart</h5>
+                <h5 className="mb-0">
+                  {activeTab === 'daily' ? 'Biểu Đồ Doanh Thu Theo Ngày' : 'Biểu Đồ Doanh Thu Theo Tháng'}
+                </h5>
                 {activeTab === 'daily' ? (
                   <input
                     type="date"
@@ -307,16 +328,12 @@ const OrderManager: React.FC = () => {
                 )}
               </div>
               <div className="card-body">
-                {loading ? (
-                  <div className="text-center py-5">
-                    <div className="spinner-border text-primary" role="status">
-                      <span className="visually-hidden">Loading...</span>
-                    </div>
-                  </div>
-                ) : salesData?.productSales && salesData.productSales.length > 0 ? (
-                  <Bar data={prepareChartData()} options={chartOptions} />
-                ) : (
-                  <p className="text-center py-5">No sales data available for the selected period.</p>
+                {loading ? renderLoadingSpinner() : (
+                  hasData() ? (
+                    <Bar data={prepareChartData()} options={chartOptions} />
+                  ) : (
+                    <p className="text-center py-5">Không có dữ liệu doanh thu cho khoảng thời gian đã chọn.</p>
+                  )
                 )}
               </div>
             </div>
@@ -328,7 +345,7 @@ const OrderManager: React.FC = () => {
           <div className="col-12">
             <div className="card border-0 shadow-sm">
               <div className="card-header bg-white">
-                <h5 className="mb-0">Product Sales Details</h5>
+                <h5 className="mb-0">Chi Tiết Doanh Thu Sản Phẩm</h5>
               </div>
               <div className="card-body">
                 <div className="table-responsive">
@@ -336,51 +353,37 @@ const OrderManager: React.FC = () => {
                     <thead className="table-light">
                       <tr>
                         <th>#</th>
-                        <th>Image</th>
-                        <th>Product Name</th>
-                        <th>Price</th>
-                        <th>Quantity Sold</th>
-                        <th>Revenue</th>
+                        <th>Hình Ảnh</th>
+                        <th>Tên Sản Phẩm</th>
+                        <th>Giá</th>
+                        <th>Số Lượng Bán</th>
+                        <th>Doanh Thu</th>
                       </tr>
                     </thead>
                     <tbody>
                       {loading ? (
                         <tr>
                           <td colSpan={6} className="text-center py-4">
-                            <div className="spinner-border text-primary" role="status">
-                              <span className="visually-hidden">Loading...</span>
-                            </div>
+                            {renderLoadingSpinner()}
                           </td>
                         </tr>
-                      ) : salesData?.productSales && salesData.productSales.length > 0 ? (
-                        salesData.productSales.map((product, idx) => (
-                          <tr key={product.productId}>
-                            <td>{idx + 1}</td>
-                            <td>
-                              <img 
-                                src={`/user/images/${product.image}`} 
-                                alt={product.productName} 
-                                style={{ width: '50px', height: '50px', objectFit: 'cover' }}
-                                className="rounded border"
-                              />
-                            </td>
-                            <td>{product.productName}</td>
-                            <td>${product.price.toFixed(2)}</td>
-                            <td>{product.quantitySold}</td>
-                            <td>${(product.price * product.quantitySold).toFixed(2)}</td>
-                          </tr>
-                        ))
+                      ) : hasData() ? (
+                        salesData!.productSales.map((product, idx) => 
+                          renderProductRow(product, idx)
+                        )
                       ) : (
                         <tr>
-                          <td colSpan={6} className="text-center">No sales data available for the selected period.</td>
+                          <td colSpan={6} className="text-center">
+                            Không có dữ liệu doanh thu cho khoảng thời gian đã chọn.
+                          </td>
                         </tr>
                       )}
                     </tbody>
                     <tfoot>
                       <tr className="table-secondary">
-                        <td colSpan={4}><strong>Total</strong></td>
+                        <td colSpan={4}><strong>Tổng Cộng</strong></td>
                         <td><strong>{salesData?.totalQuantitySold || 0}</strong></td>
-                        <td><strong>${calculateTotalRevenue().toFixed(2)}</strong></td>
+                        <td><strong>{calculateTotalRevenue().toFixed(2)} VND</strong></td>
                       </tr>
                     </tfoot>
                   </table>
@@ -395,7 +398,7 @@ const OrderManager: React.FC = () => {
           <div className="col-md-6 mb-3">
             <div className="card border-0 shadow-sm h-100">
               <div className="card-header bg-white">
-                <h5 className="mb-0">Top Selling Products</h5>
+                <h5 className="mb-0">Sản Phẩm Bán Chạy Nhất</h5>
               </div>
               <div className="card-body">
                 <div className="table-responsive">
@@ -403,26 +406,26 @@ const OrderManager: React.FC = () => {
                     <thead className="table-light">
                       <tr>
                         <th>#</th>
-                        <th>Product</th>
-                        <th>Quantity</th>
-                        <th>Revenue</th>
+                        <th>Sản Phẩm</th>
+                        <th>Số Lượng</th>
+                        <th>Doanh Thu</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {salesData?.productSales && salesData.productSales.length > 0 ? (
-                        salesData.productSales
+                      {hasData() ? (
+                        salesData!.productSales
                           .slice(0, 5)
                           .map((product, idx) => (
                             <tr key={product.productId}>
                               <td>{idx + 1}</td>
                               <td>{product.productName}</td>
                               <td>{product.quantitySold}</td>
-                              <td>${(product.price * product.quantitySold).toFixed(2)}</td>
+                              <td>{(product.price * product.quantitySold).toFixed(2)} VND</td>
                             </tr>
                           ))
                       ) : (
                         <tr>
-                          <td colSpan={4} className="text-center">No data available</td>
+                          <td colSpan={4} className="text-center">Không có dữ liệu</td>
                         </tr>
                       )}
                     </tbody>
@@ -434,27 +437,26 @@ const OrderManager: React.FC = () => {
           <div className="col-md-6 mb-3">
             <div className="card border-0 shadow-sm h-100">
               <div className="card-header bg-white">
-                <h5 className="mb-0">Sales Period Summary</h5>
+                <h5 className="mb-0">Tổng Kết Doanh Thu</h5>
               </div>
               <div className="card-body">
                 <div className="p-4 text-center">
                   <h4>
-                    {activeTab === 'daily' ? 'Daily Sales Report' : 'Monthly Sales Report'}
+                    {activeTab === 'daily' ? 'Báo Cáo Doanh Thu Theo Ngày' : 'Báo Cáo Doanh Thu Theo Tháng'}
                   </h4>
                   <p className="text-muted">
-                    Period: {salesData?.date ? 
-                      (activeTab === 'daily' ? formatDate(salesData.date) : 
-                        new Date(salesData.date + '-01').toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })
-                      ) : '-'}
+                    Thời Gian: {salesData?.date ? 
+                      (activeTab === 'daily' ? formatDate(salesData.date) : formatMonthYear(salesData.date)) 
+                      : '-'}
                   </p>
                   <div className="row mt-4">
                     <div className="col-6">
-                      <h5>Total Quantity</h5>
+                      <h5>Tổng Số Lượng</h5>
                       <p className="display-6 text-primary">{salesData?.totalQuantitySold || 0}</p>
                     </div>
                     <div className="col-6">
-                      <h5>Total Revenue</h5>
-                      <p className="display-6 text-success">${calculateTotalRevenue().toFixed(2)}</p>
+                      <h5>Tổng Doanh Thu</h5>
+                      <p className="display-6 text-success">{calculateTotalRevenue().toFixed(2)} VND</p>
                     </div>
                   </div>
                 </div>

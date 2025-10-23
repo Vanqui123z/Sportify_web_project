@@ -14,6 +14,6 @@ public class GoogleCalendarController {
 
     @GetMapping("/vietnam")
     public String getHolidays() {
-        return service.getVietnamHolidays();
+        return googleCalanderEvent.getVietnamHolidays();
     }
 }

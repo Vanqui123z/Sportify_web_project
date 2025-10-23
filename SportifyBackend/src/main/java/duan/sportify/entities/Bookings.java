@@ -82,10 +82,10 @@ public class Bookings implements Serializable {
     // --- ENTITY LINKS ( RELATIONSHIP )
     
     @JsonIgnore
-    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "booking")
     private List<Bookingdetails> listOfBookingdetails;
     @JsonIgnore
-    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "booking")
     private List<PermanentBooking> listOfPermanentBookings;
 
     @ManyToOne

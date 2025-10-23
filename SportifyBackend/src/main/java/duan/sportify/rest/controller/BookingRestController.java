@@ -59,12 +59,16 @@ public class BookingRestController {
 		return ResponseEntity.ok(bookingDAO.findById(id).get());
 	}
 
+	@Transactional
 	@PutMapping("update/{id}")
 	public ResponseEntity<Bookings> update(@PathVariable("id") Integer id, @Valid @RequestBody Bookings booking) {
 		if (!bookingDAO.existsById(id)) {
 			return ResponseEntity.notFound().build();
 		}
+
+		booking.setBookingid(id); // đảm bảo Hibernate biết đây là update
 		bookingDAO.save(booking);
+
 		return ResponseEntity.ok(booking);
 	}
 
@@ -94,6 +98,5 @@ public class BookingRestController {
 		bookingDAO.deleteAllByIdInBatch(bookingIds);
 		return ResponseEntity.ok().build();
 	}
-
 
 }

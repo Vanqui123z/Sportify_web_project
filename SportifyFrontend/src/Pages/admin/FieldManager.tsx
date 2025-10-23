@@ -11,6 +11,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import getImageUrl from '../../helper/getImageUrl';
 
 // Register Chart.js components
 ChartJS.register(
@@ -32,6 +33,7 @@ interface FieldUsageDTO {
 interface FieldUsageDetailDTO {
   fieldId: number;
   fieldName: string;
+  fieldImage: string;
   oneTimeBookings: number;
   permanentBookings: number;
   totalBookings: number;
@@ -39,10 +41,6 @@ interface FieldUsageDetailDTO {
 
 const FieldManager: React.FC = () => {
   // State variables
-  const [dailyUsageData, setDailyUsageData] = useState<FieldUsageDTO[]>([]);
-  const [monthlyUsageData, setMonthlyUsageData] = useState<FieldUsageDTO[]>([]);
-  const [dailyTotal, setDailyTotal] = useState<number>(0);
-  const [monthlyTotal, setMonthlyTotal] = useState<number>(0);
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7));
   const [dailyDetailData, setDailyDetailData] = useState<FieldUsageDetailDTO[]>([]);
@@ -58,9 +56,6 @@ const FieldManager: React.FC = () => {
 
   // Fetch initial data
   useEffect(() => {
-    fetchDailyData();
-    fetchMonthlyData();
-    fetchTotalData();
     fetchDailyDetailData(selectedDate);
     fetchMonthlyDetailData(selectedMonth);
   }, []);
@@ -74,50 +69,20 @@ const FieldManager: React.FC = () => {
     fetchMonthlyDetailData(selectedMonth);
   }, [selectedMonth]);
 
-  // Data fetching functions
-  const fetchDailyData = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get('http://localhost:8081/api/field-usage/by-day');
-      setDailyUsageData(response.data);
-      setLoading(false);
-    } catch (err) {
-      setError('Failed to fetch daily usage data');
-      setLoading(false);
-    }
+  // Helper functions for calculations
+  const calculateTotal = (data: FieldUsageDetailDTO[], property: keyof Pick<FieldUsageDetailDTO, 'oneTimeBookings' | 'permanentBookings' | 'totalBookings'>) => {
+    return data.reduce((sum, item) => sum + item[property], 0);
+  };
+  
+  const calculatePercentage = (part: number, total: number) => {
+    return Math.round((part / (total || 1)) * 100);
   };
 
-  const fetchMonthlyData = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get('http://localhost:8081/api/field-usage/by-month');
-      setMonthlyUsageData(response.data);
-      setLoading(false);
-    } catch (err) {
-      setError('Failed to fetch monthly usage data');
-      setLoading(false);
-    }
-  };
-
-  const fetchTotalData = async () => {
-    try {
-      setLoading(true);
-      const dailyTotalResponse = await axios.get('http://localhost:8081/api/field-usage/daily-total');
-      setDailyTotal(dailyTotalResponse.data);
-      
-      const monthlyTotalResponse = await axios.get('http://localhost:8081/api/field-usage/monthly-total');
-      setMonthlyTotal(monthlyTotalResponse.data);
-      setLoading(false);
-    } catch (err) {
-      setError('Failed to fetch total usage data');
-      setLoading(false);
-    }
-  };
-
+  // Data fetching functions - keeping only the two specified API calls
   const fetchDailyDetailData = async (date: string) => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:8081/api/field-usage/detail/by-date?date=${date}`);
+      const response = await axios.get(`http://localhost:8081/api/field-usage/active-fields/by-date?date=${date}`);
       setDailyDetailData(response.data);
       setLoading(false);
     } catch (err) {
@@ -129,7 +94,7 @@ const FieldManager: React.FC = () => {
   const fetchMonthlyDetailData = async (yearMonth: string) => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:8081/api/field-usage/detail/by-month?yearMonth=${yearMonth}`);
+      const response = await axios.get(`http://localhost:8081/api/field-usage/active-fields/by-month?yearMonth=${yearMonth}`);
       setMonthlyDetailData(response.data);
       setLoading(false);
     } catch (err) {
@@ -138,69 +103,55 @@ const FieldManager: React.FC = () => {
     }
   };
 
-  // Search handler
-  const handleSearch = () => {
-    // Here would be the implementation for searching based on field name and date range
-    // This would require additional API endpoints not specified in the documentation
-    console.log("Search with params:", search);
-  };
-
   // Refresh handler
   const handleRefresh = () => {
     setSearch({ fieldName: "", fromDate: "", toDate: "" });
-    fetchDailyData();
-    fetchMonthlyData();
-    fetchTotalData();
     fetchDailyDetailData(selectedDate);
     fetchMonthlyDetailData(selectedMonth);
   };
 
-  // Prepare chart data
+  // Prepare chart data based on detail data
   const prepareDailyChartData = () => {
-    // Group by date
-    const dates = Array.from(new Set(dailyUsageData.map(item => item.date))).sort();
-    const fieldIds = Array.from(new Set(dailyUsageData.map(item => item.fieldId)));
+    const fieldNames = dailyDetailData.map(item => item.fieldName);
+    const oneTimeData = dailyDetailData.map(item => item.oneTimeBookings);
+    const permanentData = dailyDetailData.map(item => item.permanentBookings);
     
-    const datasets = fieldIds.map(fieldId => {
-      const color = `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.6)`;
-      
-      return {
-        label: `Field ${fieldId}`,
-        data: dates.map(date => {
-          const usage = dailyUsageData.find(item => item.fieldId === fieldId && item.date === date);
-          return usage ? usage.total : 0;
-        }),
-        backgroundColor: color,
-      };
-    });
-
     return {
-      labels: dates,
-      datasets,
+      labels: fieldNames,
+      datasets: [
+        {
+          label: 'Đặt Một Lần',
+          data: oneTimeData,
+          backgroundColor: 'rgba(54, 162, 235, 0.6)',
+        },
+        {
+          label: 'Đặt Cố Định',
+          data: permanentData,
+          backgroundColor: 'rgba(255, 206, 86, 0.6)',
+        }
+      ],
     };
   };
-
+  
   const prepareMonthlyChartData = () => {
-    // Group by month
-    const months = Array.from(new Set(monthlyUsageData.map(item => item.date))).sort();
-    const fieldIds = Array.from(new Set(monthlyUsageData.map(item => item.fieldId)));
+    const fieldNames = monthlyDetailData.map(item => item.fieldName);
+    const oneTimeData = monthlyDetailData.map(item => item.oneTimeBookings);
+    const permanentData = monthlyDetailData.map(item => item.permanentBookings);
     
-    const datasets = fieldIds.map(fieldId => {
-      const color = `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.6)`;
-      
-      return {
-        label: `Field ${fieldId}`,
-        data: months.map(month => {
-          const usage = monthlyUsageData.find(item => item.fieldId === fieldId && item.date === month);
-          return usage ? usage.total : 0;
-        }),
-        backgroundColor: color,
-      };
-    });
-
     return {
-      labels: months,
-      datasets,
+      labels: fieldNames,
+      datasets: [
+        {
+          label: 'Đặt Một Lần',
+          data: oneTimeData,
+          backgroundColor: 'rgba(54, 162, 235, 0.6)',
+        },
+        {
+          label: 'Đặt Cố Định',
+          data: permanentData,
+          backgroundColor: 'rgba(255, 206, 86, 0.6)',
+        }
+      ],
     };
   };
 
@@ -212,9 +163,17 @@ const FieldManager: React.FC = () => {
       },
       title: {
         display: true,
-        text: 'Field Usage Statistics',
+        text: 'Thống Kê Sử Dụng Sân',
       },
     },
+    scales: {
+      x: {
+        stacked: false,
+      },
+      y: {
+        stacked: false
+      }
+    }
   };
 
   // Format date for display
@@ -224,23 +183,51 @@ const FieldManager: React.FC = () => {
     return d.toLocaleDateString("vi-VN");
   };
 
+  // Helper function for rendering table rows
+  const renderTableRows = (data: FieldUsageDetailDTO[]) => {
+    if (data.length === 0) {
+      return (
+        <tr>
+          <td colSpan={6} className="text-center">
+            {activeTab === 'daily' ? 'Không có dữ liệu cho ngày đã chọn' : 'Không có dữ liệu cho tháng đã chọn'}
+          </td>
+        </tr>
+      );
+    }
+    
+    return data.map((item, idx) => (
+      <tr key={item.fieldId}>
+        <td>{idx + 1}</td>
+        <td>{item.fieldId}</td>
+        <td><img src={ getImageUrl(item.fieldImage)} alt={item.fieldName} style={{ width: '80px', height: '50px', objectFit: 'cover' }} /></td>
+        <td>{item.fieldName}</td>
+        <td>{item.oneTimeBookings}</td>
+        <td>{item.permanentBookings}</td>
+        <td>{item.totalBookings}</td>
+      </tr>
+    ));
+  };
+
+  // Get current data based on active tab
+  const getCurrentData = () => activeTab === 'daily' ? dailyDetailData : monthlyDetailData;
+
   return (
     <div className="page-wrapper py-4">
       <div className="container bg-white rounded shadow-sm p-4">
         {/* Page Header */}
         <div className="row align-items-center mb-4">
           <div className="col">
-            <h3 className="mb-0">Field Usage Management</h3>
+            <h3 className="mb-0">Quản Lý Sử Dụng Sân</h3>
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb bg-transparent p-0">
-                <li className="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
-                <li className="breadcrumb-item active" aria-current="page">Field Usage</li>
+                <li className="breadcrumb-item"><a href="/admin/dashboard">Trang Chủ</a></li>
+                <li className="breadcrumb-item active" aria-current="page">Thống Kê Sân</li>
               </ol>
             </nav>
           </div>
           <div className="col-auto">
             <button className="btn btn-primary" onClick={() => window.print()}>
-              <i className="fa fa-print"></i> Print Report
+              <i className="fa fa-print"></i> In Báo Cáo
             </button>
           </div>
         </div>
@@ -248,30 +235,14 @@ const FieldManager: React.FC = () => {
 
         {error && <Alert variant="danger">{error}</Alert>}
 
-        {/* Dashboard Cards */}
+        {/* Dashboard Cards - Updated to use available data */}
         <div className="row mb-4">
           <div className="col-md-6 col-lg-3 mb-3">
             <div className="card border-0 shadow-sm h-100">
               <div className="card-body text-center">
-                <h5 className="card-title">Total Daily Bookings</h5>
-                <p className="display-4 mb-0 fw-bold text-primary">{dailyTotal}</p>
-              </div>
-            </div>
-          </div>
-          <div className="col-md-6 col-lg-3 mb-3">
-            <div className="card border-0 shadow-sm h-100">
-              <div className="card-body text-center">
-                <h5 className="card-title">Total Monthly Bookings</h5>
-                <p className="display-4 mb-0 fw-bold text-success">{monthlyTotal}</p>
-              </div>
-            </div>
-          </div>
-          <div className="col-md-6 col-lg-3 mb-3">
-            <div className="card border-0 shadow-sm h-100">
-              <div className="card-body text-center">
-                <h5 className="card-title">One-Time Bookings</h5>
-                <p className="display-4 mb-0 fw-bold text-info">
-                  {dailyDetailData.reduce((sum, item) => sum + item.oneTimeBookings, 0)}
+                <h5 className="card-title">Tổng Lượt Đặt Sân</h5>
+                <p className="display-4 mb-0 fw-bold text-primary">
+                  {calculateTotal(getCurrentData(), 'totalBookings')}
                 </p>
               </div>
             </div>
@@ -279,9 +250,29 @@ const FieldManager: React.FC = () => {
           <div className="col-md-6 col-lg-3 mb-3">
             <div className="card border-0 shadow-sm h-100">
               <div className="card-body text-center">
-                <h5 className="card-title">Permanent Bookings</h5>
+                <h5 className="card-title">Số Sân Đang Hoạt Động</h5>
+                <p className="display-4 mb-0 fw-bold text-success">
+                  {getCurrentData().length}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="col-md-6 col-lg-3 mb-3">
+            <div className="card border-0 shadow-sm h-100">
+              <div className="card-body text-center">
+                <h5 className="card-title">Đặt Sân Một Lần</h5>
+                <p className="display-4 mb-0 fw-bold text-info">
+                  {calculateTotal(getCurrentData(), 'oneTimeBookings')}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="col-md-6 col-lg-3 mb-3">
+            <div className="card border-0 shadow-sm h-100">
+              <div className="card-body text-center">
+                <h5 className="card-title">Đặt Sân Cố Định</h5>
                 <p className="display-4 mb-0 fw-bold text-warning">
-                  {dailyDetailData.reduce((sum, item) => sum + item.permanentBookings, 0)}
+                  {calculateTotal(getCurrentData(), 'permanentBookings')}
                 </p>
               </div>
             </div>
@@ -289,36 +280,10 @@ const FieldManager: React.FC = () => {
         </div>
 
         {/* Search Filter */}
-        <form className="row g-2 mb-4">
-          <div className="col-sm-12 col-md-4">
-            <input type="text" className="form-control"
-              placeholder="Field name"
-              value={search.fieldName}
-              onChange={e => setSearch(s => ({ ...s, fieldName: e.target.value }))}
-            />
-          </div>
-          <div className="col-sm-6 col-md-2">
-            <input type="date" className="form-control"
-              placeholder="From Date"
-              value={search.fromDate}
-              onChange={e => setSearch(s => ({ ...s, fromDate: e.target.value }))}
-            />
-          </div>
-          <div className="col-sm-6 col-md-2">
-            <input type="date" className="form-control"
-              placeholder="To Date"
-              value={search.toDate}
-              onChange={e => setSearch(s => ({ ...s, toDate: e.target.value }))}
-            />
-          </div>
-          <div className="col-sm-6 col-md-2">
-            <button type="button" className="btn btn-success w-100" onClick={handleSearch}>
-              <i className="fa fa-search me-1"></i> Search
-            </button>
-          </div>
+        <form className="row g-3 mb-4">
           <div className="col-sm-6 col-md-2">
             <button type="button" className="btn btn-secondary w-100" onClick={handleRefresh}>
-              <i className="fa fa-refresh me-1"></i> Refresh
+              <i className="fa fa-refresh me-1"></i> Làm Mới
             </button>
           </div>
         </form>
@@ -331,7 +296,7 @@ const FieldManager: React.FC = () => {
               className={`nav-link ${activeTab === 'daily' ? 'active' : ''}`}
               onClick={() => setActiveTab('daily')}
             >
-              Daily Usage
+              Thống Kê Theo Ngày
             </button>
           </li>
           <li className="nav-item">
@@ -339,7 +304,7 @@ const FieldManager: React.FC = () => {
               className={`nav-link ${activeTab === 'monthly' ? 'active' : ''}`}
               onClick={() => setActiveTab('monthly')}
             >
-              Monthly Usage
+              Thống Kê Theo Tháng
             </button>
           </li>
         </ul>
@@ -349,7 +314,9 @@ const FieldManager: React.FC = () => {
           <div className="col-12">
             <div className="card border-0 shadow-sm">
               <div className="card-header bg-white d-flex justify-content-between align-items-center">
-                <h5 className="mb-0">{activeTab === 'daily' ? 'Daily' : 'Monthly'} Field Usage Chart</h5>
+                <h5 className="mb-0">
+                  {activeTab === 'daily' ? 'Biểu Đồ Sử Dụng Theo Ngày' : 'Biểu Đồ Sử Dụng Theo Tháng'}
+                </h5>
                 {activeTab === 'daily' ? (
                   <Form.Control
                     type="date"
@@ -368,16 +335,16 @@ const FieldManager: React.FC = () => {
               </div>
               <div className="card-body">
                 {activeTab === 'daily' ? (
-                  dailyUsageData.length > 0 ? (
+                  dailyDetailData.length > 0 ? (
                     <Bar data={prepareDailyChartData()} options={chartOptions} />
                   ) : (
-                    <p className="text-center">No daily usage data available</p>
+                    <p className="text-center">Không có dữ liệu sử dụng theo ngày</p>
                   )
                 ) : (
-                  monthlyUsageData.length > 0 ? (
+                  monthlyDetailData.length > 0 ? (
                     <Bar data={prepareMonthlyChartData()} options={chartOptions} />
                   ) : (
-                    <p className="text-center">No monthly usage data available</p>
+                    <p className="text-center">Không có dữ liệu sử dụng theo tháng</p>
                   )
                 )}
               </div>
@@ -390,7 +357,9 @@ const FieldManager: React.FC = () => {
           <div className="col-12">
             <div className="card border-0 shadow-sm">
               <div className="card-header bg-white">
-                <h5 className="mb-0">{activeTab === 'daily' ? 'Daily' : 'Monthly'} Field Usage Details</h5>
+                <h5 className="mb-0">
+                  {activeTab === 'daily' ? 'Chi Tiết Sử Dụng Theo Ngày' : 'Chi Tiết Sử Dụng Theo Tháng'}
+                </h5>
               </div>
               <div className="card-body">
                 <div className="table-responsive">
@@ -398,73 +367,28 @@ const FieldManager: React.FC = () => {
                     <thead className="table-light">
                       <tr>
                         <th>#</th>
-                        <th>Field ID</th>
-                        <th>Field Name</th>
-                        <th>One-Time Bookings</th>
-                        <th>Permanent Bookings</th>
-                        <th>Total Bookings</th>
+                        <th>ID Sân</th>
+                        <th>Hình Ảnh</th>
+                        <th>Tên Sân</th>
+                        <th>Đặt Một Lần</th>
+                        <th>Đặt Cố Định</th>
+                        <th>Tổng Đặt Sân</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {activeTab === 'daily' ? (
-                        dailyDetailData.length > 0 ? (
-                          dailyDetailData.map((item, idx) => (
-                            <tr key={item.fieldId}>
-                              <td>{idx + 1}</td>
-                              <td>{item.fieldId}</td>
-                              <td>{item.fieldName}</td>
-                              <td>{item.oneTimeBookings}</td>
-                              <td>{item.permanentBookings}</td>
-                              <td>{item.totalBookings}</td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan={6} className="text-center">No data available for selected date</td>
-                          </tr>
-                        )
-                      ) : (
-                        monthlyDetailData.length > 0 ? (
-                          monthlyDetailData.map((item, idx) => (
-                            <tr key={item.fieldId}>
-                              <td>{idx + 1}</td>
-                              <td>{item.fieldId}</td>
-                              <td>{item.fieldName}</td>
-                              <td>{item.oneTimeBookings}</td>
-                              <td>{item.permanentBookings}</td>
-                              <td>{item.totalBookings}</td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan={6} className="text-center">No data available for selected month</td>
-                          </tr>
-                        )
-                      )}
+                      {renderTableRows(getCurrentData())}
                     </tbody>
                     <tfoot>
                       <tr className="table-secondary">
-                        <td colSpan={3}><strong>Total</strong></td>
+                        <td colSpan={4}><strong>Tổng Cộng</strong></td>
                         <td>
-                          <strong>
-                            {activeTab === 'daily' 
-                              ? dailyDetailData.reduce((sum, item) => sum + item.oneTimeBookings, 0)
-                              : monthlyDetailData.reduce((sum, item) => sum + item.oneTimeBookings, 0)}
-                          </strong>
+                          <strong>{calculateTotal(getCurrentData(), 'oneTimeBookings')}</strong>
                         </td>
                         <td>
-                          <strong>
-                            {activeTab === 'daily'
-                              ? dailyDetailData.reduce((sum, item) => sum + item.permanentBookings, 0)
-                              : monthlyDetailData.reduce((sum, item) => sum + item.permanentBookings, 0)}
-                          </strong>
+                          <strong>{calculateTotal(getCurrentData(), 'permanentBookings')}</strong>
                         </td>
                         <td>
-                          <strong>
-                            {activeTab === 'daily'
-                              ? dailyDetailData.reduce((sum, item) => sum + item.totalBookings, 0)
-                              : monthlyDetailData.reduce((sum, item) => sum + item.totalBookings, 0)}
-                          </strong>
+                          <strong>{calculateTotal(getCurrentData(), 'totalBookings')}</strong>
                         </td>
                       </tr>
                     </tfoot>
@@ -480,19 +404,19 @@ const FieldManager: React.FC = () => {
           <div className="col-md-6 mb-3">
             <div className="card border-0 shadow-sm h-100">
               <div className="card-header bg-white">
-                <h5 className="mb-0">Most Booked Fields</h5>
+                <h5 className="mb-0">Sân Được Đặt Nhiều Nhất</h5>
               </div>
               <div className="card-body">
                 <table className="table table-bordered table-sm">
                   <thead className="table-light">
                     <tr>
                       <th>#</th>
-                      <th>Field Name</th>
-                      <th>Total Bookings</th>
+                      <th>Tên Sân</th>
+                      <th>Tổng Lượt Đặt</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {(activeTab === 'daily' ? dailyDetailData : monthlyDetailData)
+                    {getCurrentData()
                       .sort((a, b) => b.totalBookings - a.totalBookings)
                       .slice(0, 5)
                       .map((item, idx) => (
@@ -510,28 +434,27 @@ const FieldManager: React.FC = () => {
           <div className="col-md-6 mb-3">
             <div className="card border-0 shadow-sm h-100">
               <div className="card-header bg-white">
-                <h5 className="mb-0">Booking Type Ratio</h5>
+                <h5 className="mb-0">Tỷ Lệ Loại Đặt Sân</h5>
               </div>
               <div className="card-body">
                 <div className="text-center p-4">
                   <div className="d-flex justify-content-center">
                     <div className="px-3">
-                      <h6>One-Time</h6>
+                      <h6>Đặt Một Lần</h6>
                       <div className="display-6 text-primary">
-                        {activeTab === 'daily'&& Math.round((dailyDetailData.reduce((sum, item) => sum + item.oneTimeBookings, 0) / 
-                              (dailyDetailData.reduce((sum, item) => sum + item.totalBookings, 0) || 1)) * 100)
-                          
-                        }%
+                        {calculatePercentage(
+                          calculateTotal(getCurrentData(), 'oneTimeBookings'), 
+                          calculateTotal(getCurrentData(), 'totalBookings')
+                        )}%
                       </div>
                     </div>
                     <div className="px-3">
-                      <h6>Permanent</h6>
+                      <h6>Đặt Cố Định</h6>
                       <div className="display-6 text-warning">
-                        {activeTab === 'daily'&&
-                          Math.round((dailyDetailData.reduce((sum, item) => sum + item.permanentBookings, 0) / 
-                              (dailyDetailData.reduce((sum, item) => sum + item.totalBookings, 0) || 1)) * 100)
-                          
-                        }%
+                        {calculatePercentage(
+                          calculateTotal(getCurrentData(), 'permanentBookings'), 
+                          calculateTotal(getCurrentData(), 'totalBookings')
+                        )}%
                       </div>
                     </div>
                   </div>
@@ -546,3 +469,4 @@ const FieldManager: React.FC = () => {
 };
 
 export default FieldManager;
+                  

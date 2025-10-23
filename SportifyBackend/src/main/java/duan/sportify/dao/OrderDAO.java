@@ -185,7 +185,7 @@ public interface OrderDAO extends JpaRepository<Orders, Integer> {
 			"FROM orderdetails od " +
 			"JOIN products p ON od.productid = p.productid " +
 			"JOIN orders o ON od.orderid = o.orderid " +
-			"WHERE DATE_FORMAT(o.createdate, '%Y-%m') = :yearMonth " +
+			"WHERE DATE_FORMAT(o.createdate, '%Y-%m') = :yearMonth " +	
 			"AND o.paymentstatus = 1 " +
 			"GROUP BY p.productid, p.productname, p.image, p.price " +
 			"ORDER BY total_quantity DESC", nativeQuery = true)
