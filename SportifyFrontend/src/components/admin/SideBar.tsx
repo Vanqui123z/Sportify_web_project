@@ -278,6 +278,15 @@ const Sidebar: React.FC = () => {
               </div>
             </div>
           </li>
+          <li className="nav-item mb-1">
+            <a
+              href="/admin/ai-support"
+              className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
+            >
+              <i className="fas fa-cogs me-3 text-secondary"></i>
+              <span>AI hỗ trợ</span>
+            </a>
+          </li>
         </ul>
       </div>
     </aside>

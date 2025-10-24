@@ -16,6 +16,7 @@ import ReportOrderPage from "../../Pages/admin/ReportOrder";
 import CommentPage from "../../Pages/admin/Comment";
 import FieldManager from "../../Pages/admin/FieldManager";
 import OrderManager from "../../Pages/admin/OrderManager";
+import AiSupportPage from "../../Pages/admin/AiSupport";
 
 const AdminRoutes: React.FC = () => (
   <Routes>
@@ -35,6 +36,7 @@ const AdminRoutes: React.FC = () => (
     <Route path="category-sport" element={<CategorySportPage />} />
     <Route path="reportBooking" element={<ReportBookingPage />} />
     <Route path="reportOrder" element={<ReportOrderPage />} />
+    <Route path="ai-support" element={<AiSupportPage />} />
   </Routes>
 );
 
