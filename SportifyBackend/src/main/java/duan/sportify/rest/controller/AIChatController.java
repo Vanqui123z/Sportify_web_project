@@ -29,7 +29,6 @@ import duan.sportify.utils.AI.AIActionHandler;
 import duan.sportify.utils.AI.AIServiceFactory;
 import duan.sportify.utils.AI.ChatContextManager;
 import duan.sportify.utils.AI.DataCache;
-import duan.sportify.utils.PromptManager;
 import duan.sportify.DTO.FieldRequestAI;
 import duan.sportify.entities.Users;
 
@@ -46,8 +45,6 @@ public class AIChatController {
     BookingServiceImpl bookingServiceImpl;
     @Autowired
     AIServiceFactory aiServiceFactory;
-    @Autowired
-    PromptManager promptManager;
     @Autowired
     AIActionHandler aiActionHandler;
     @Autowired
