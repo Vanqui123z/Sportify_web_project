@@ -16,7 +16,7 @@ import ReportOrderPage from "../../Pages/admin/ReportOrder";
 import CommentPage from "../../Pages/admin/Comment";
 import FieldManager from "../../Pages/admin/FieldManager";
 import OrderManager from "../../Pages/admin/OrderManager";
-import AiSupportPage from "../../Pages/admin/AiSupport";
+import AiSupportPage from "../../Pages/admin/AISupport";
 
 const AdminRoutes: React.FC = () => (
   <Routes>
