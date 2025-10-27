@@ -17,13 +17,14 @@ export default function PaymentResult() {
   const amount = query.get("amount");
   const isField = query.get("field") === "true";
   const isCart = query.get("cart") === "true";
+  const refundId = query.get("refundId"); 
 
   const isSuccess = status === "success";
   const transactionStatus = isSuccess ? "Thành công" : "Thất bại";
 
   // Xác định mô tả giao dịch
   let description = "Thanh toán";
-  if (isField) description = "Thanh toán đặt sân";
+  if (isField) description = refundId ? "Hoàn tiền đặt sân" : "Thanh toán đặt sân";
   else if (isCart) description = "Thanh toán đơn hàng";
 
   return (
@@ -93,11 +94,13 @@ export default function PaymentResult() {
                       <h6 className="mb-1 fw-bold">{transactionStatus}</h6>
                       <small className="mb-0">
                         {isSuccess 
-                          ? (isField
-                              ? "Thanh toán đặt sân thành công!"
-                              : isCart
-                                ? "Thanh toán đơn hàng thành công!"
-                                : "Giao dịch của bạn đã được xử lý thành công"
+                          ? (refundId
+                              ? "Hoàn tiền thành công!"
+                              : isField
+                                ? "Thanh toán đặt sân thành công!"
+                                : isCart
+                                  ? "Thanh toán đơn hàng thành công!"
+                                  : "Giao dịch của bạn đã được xử lý thành công"
                             )
                           : "Giao dịch không thành công, vui lòng thử lại"
                         }
@@ -108,20 +111,29 @@ export default function PaymentResult() {
 
                 {/* Buttons */}
                 <div className="d-flex flex-column flex-sm-row gap-3 justify-content-center">
-                  <a href="/sportify" className="btn btn-primary btn-lg px-4 text-decoration-none">
-                    <i className="fa fa-home me-2"></i>
-                    Về Trang Chủ
-                  </a>
-                  {isCart ? (
-                    <a href="/sportify/order/historyList" className="btn btn-outline-primary btn-lg px-4 text-decoration-none">
-                      <i className="fa fa-history me-2"></i>
-                      Lịch Sử Đơn Hàng
+                  {refundId ? (
+                    <a href="/admin/bookings" className="btn btn-primary btn-lg px-4 text-decoration-none">
+                      <i className="fa fa-arrow-left me-2"></i>
+                      Trở về Quản lý đặt sân
                     </a>
                   ) : (
-                    <a href="/sportify/field/profile/historybooking" className="btn btn-outline-primary btn-lg px-4 text-decoration-none">
-                      <i className="fa fa-history me-2"></i>
-                      Lịch Sử Đặt Sân
-                    </a>
+                    <>
+                      <a href="/sportify" className="btn btn-primary btn-lg px-4 text-decoration-none">
+                        <i className="fa fa-home me-2"></i>
+                        Về Trang Chủ
+                      </a>
+                      {isCart ? (
+                        <a href="/sportify/order/historyList" className="btn btn-outline-primary btn-lg px-4 text-decoration-none">
+                          <i className="fa fa-history me-2"></i>
+                          Lịch Sử Đơn Hàng
+                        </a>
+                      ) : (
+                        <a href="/sportify/field/profile/historybooking" className="btn btn-outline-primary btn-lg px-4 text-decoration-none">
+                          <i className="fa fa-history me-2"></i>
+                          Lịch Sử Đặt Sân
+                        </a>
+                      )}
+                    </>
                   )}
                 </div>
               </div>

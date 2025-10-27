@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import ListCardBank from "../../components/user/ListCardBank";
 
 interface User {
   username: string;
@@ -40,6 +41,7 @@ interface Booking {
   phone: string;
   note: string;
   bookingstatus: string;
+  refund: boolean; // Add this new property
   users?: User;
   // ...other fields
 }
@@ -57,6 +59,7 @@ interface BookingDetail {
 }
 
 const BookingPage: React.FC = () => {
+  const username = localStorage.getItem("username") || "";
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [bookingPermanent, setBookingPermanent] = useState<Permanent[]>([]);
   const [form, setForm] = useState<Partial<Booking>>({});
@@ -69,6 +72,11 @@ const BookingPage: React.FC = () => {
   });
   const [selectedBookings, setSelectedBookings] = useState<number[]>([]);
   const [selectAll, setSelectAll] = useState(false);
+  const [showRefundConfirm, setShowRefundConfirm] = useState(false);
+  const [showCardSelection, setShowCardSelection] = useState(false);
+  const [selectedCard, setSelectedCard] = useState<string>("");
+  const [showCardConfirm, setShowCardConfirm] = useState(false);
+  const [selectedCardData, setSelectedCardData] = useState<{cardId: string, amount: number} | null>(null);
 
   // Fetch all bookings
   useEffect(() => {
@@ -77,6 +85,7 @@ const BookingPage: React.FC = () => {
     });
   }, []);
 
+  
   // Search handler
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -172,6 +181,74 @@ const BookingPage: React.FC = () => {
           console.error("Error deleting bookings:", error);
           alert("Có lỗi xảy ra khi xóa phiếu đặt sân");
         });
+    }
+  };
+
+  const handleRefundClick = () => {
+    if (form.bookingstatus === "Hủy Đặt") {
+      alert("Không thể hoàn tiền cho đơn đã hủy!");
+      return;
+    }
+    setShowRefundConfirm(true);
+  };
+
+  const getRefundAmount = () => {
+    if (!form.bookingprice) return 0;
+    
+    switch (form.bookingstatus) {
+      case "Đã Cọc":
+        return form.bookingprice * 0.3; // 30% deposit amount
+      case "Hoàn Thành":
+        return form.bookingprice; // Full amount
+      default:
+        return 0;
+    }
+  };
+
+  const handleRefundConfirm = () => {
+    setShowRefundConfirm(false);
+    setShowCardSelection(true);
+  };
+
+  const handleCardSelect = async (cardId: string) => {
+    setSelectedCard(cardId);
+    setSelectedCardData({
+      cardId: cardId,
+      amount: getRefundAmount()
+    });
+    setShowCardSelection(false);
+    setShowCardConfirm(true);
+  };
+
+  const handleFinalConfirm = async () => {
+    if (!selectedCardData) return;
+    
+    try {
+    const res = await axios.post(
+    "http://localhost:8081/api/user/payment/refund",
+    {
+      amount: selectedCardData.amount,
+      cardId: selectedCardData.cardId,
+      bookingId: form.bookingid
+    },
+    {
+      withCredentials: true 
+    }
+  );
+
+         if (!res.data) {
+        throw new Error(`API trả về lỗi ${res.status}`);
+      }
+      const data = res.data;
+      if (data && data.url) {
+        window.location.href = data.url;
+        setShowCardConfirm(false);
+        setShowEdit(false);
+        // Refresh booking list
+        await axios.get("http://localhost:8081/rest/bookings/getAll").then(res => setBookings(res.data));
+      }
+    } catch (error) {
+      alert("Có lỗi xảy ra khi hoàn tiền!");
     }
   };
 
@@ -411,7 +488,19 @@ const BookingPage: React.FC = () => {
                       </div>
                     </div>
                     <div className="mt-4 text-end">
-                      <button type="button" className="btn btn-primary" onClick={handleUpdateBooking}>
+                     <button 
+                        type="button" 
+                        className={`btn ${form.refund === true ? 'btn-secondary' : 'btn-warning'} me-2`}
+                        onClick={handleRefundClick}
+                        disabled={form.refund === true}
+                      >
+                        {form.refund === true ? 'Đã hoàn tiền' : 'Hoàn tiền'}
+                      </button>
+                      <button 
+                        type="button" 
+                        className="btn btn-primary" 
+                        onClick={handleUpdateBooking}
+                      >
                         Chỉnh sửa phiếu đặt sân
                       </button>
                     </div>
@@ -421,6 +510,98 @@ const BookingPage: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* Refund Confirmation Modal */}
+        {showRefundConfirm && (
+          <div className="modal fade show" style={{ display: "block" }}>
+            <div className="modal-dialog">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Xác nhận hoàn tiền</h5>
+                  <button type="button" className="btn-close" onClick={() => setShowRefundConfirm(false)}></button>
+                </div>
+                <div className="modal-body">
+                  <p>Bạn muốn hoàn {formatCurrency(getRefundAmount())} cho đơn {form.bookingid}?</p>
+                  <small className="text-muted">
+                    {form.bookingstatus === "Đã Cọc" 
+                      ? "(Hoàn lại tiền cọc 30%)" 
+                      : "(Hoàn lại toàn bộ số tiền)"}
+                  </small>
+                </div>
+                <div className="modal-footer">
+                  <button type="button" className="btn btn-secondary" onClick={() => setShowRefundConfirm(false)}>Không</button>
+                  <button type="button" className="btn btn-primary" onClick={handleRefundConfirm}>Có</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Card Selection Modal */}
+        {showCardSelection && (
+          <div className="modal fade show" style={{ display: "block" }}>
+            <div className="modal-dialog">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Chọn thẻ hoàn tiền</h5>
+                  <button type="button" className="btn-close" onClick={() => setShowCardSelection(false)}></button>
+                </div>
+                <div className="modal-body">
+                  <ListCardBank
+                    username={username}
+                    selectedCardId={selectedCard}
+                    onCardSelect={handleCardSelect}
+                    showDeleteButton={false}
+                    showDefaultButton={false}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* New Confirmation Modal for Final Refund Confirmation */}
+        {showCardConfirm && (
+          <div className="modal fade show" style={{ display: "block" }}>
+            <div className="modal-dialog">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Xác nhận cuối cùng</h5>
+                  <button 
+                    type="button" 
+                    className="btn-close" 
+                    onClick={() => setShowCardConfirm(false)}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <p>Xác nhận hoàn tiền với thông tin:</p>
+                  <ul className="list-unstyled">
+                    <li>Số tiền: {formatCurrency(selectedCardData?.amount || 0)}</li>
+                    <li>Mã đơn: {form.bookingid}</li>
+                    <li>Mã thẻ: {selectedCardData?.cardId}</li>
+                  </ul>
+                </div>
+                <div className="modal-footer">
+                  <button 
+                    type="button" 
+                    className="btn btn-secondary" 
+                    onClick={() => setShowCardConfirm(false)}
+                  >
+                    Hủy
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn btn-primary" 
+                    onClick={handleFinalConfirm}
+                  >
+                    Xác nhận hoàn tiền
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Toast/Notification */}
         <div id="toast"></div>
       </div>

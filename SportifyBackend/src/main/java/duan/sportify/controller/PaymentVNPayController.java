@@ -131,7 +131,8 @@ public class PaymentVNPayController {
 
 	Orders saveOrder;
 
-	// Gọi API VNPay cung cấp
+	// Gọi API VNPay đặt sân hoặc thanh toán giỏ hàng
+	// Field 
 	@PostMapping("api/user/getIp/create")
 	public ResponseEntity<?> createPayment(@RequestBody PermanentPaymentRequest body, HttpServletRequest request)
 			throws Exception {
@@ -166,7 +167,6 @@ public class PaymentVNPayController {
 			String paymentUrl = vnPayService.generatePaymentUrl(body.getAmount().toString(), ipAddress);
 			return ResponseEntity.ok(new PaymentResDTO("Ok", "Successfully", paymentUrl));
 		} else {
-
 			Long cardId = Long.parseLong(body.getCardId());
 			String token = paymentMethodService.getPaymentMethod(cardId).getToken();
 			System.out.println("body: " + token);
@@ -289,12 +289,36 @@ public class PaymentVNPayController {
 		return ResponseEntity.ok(paymentResDTO);
 	}
 
+
+	// Refund
+
+	@PostMapping("/api/user/payment/refund")
+	public ResponseEntity<PaymentResDTO> PaymentRefund(@RequestBody PermanentPaymentRequest body, HttpServletRequest request ) {
+		ipAddress = getIpAddress().get("ip");
+				String username = (String) request.getSession().getAttribute("username");
+				System.out.println("username controller: " + username);
+		try {
+			Long cardId = Long.parseLong(body.getCardId());
+			String token = paymentMethodService.getPaymentMethod(cardId).getToken();
+			System.out.println("body: " + token);
+			// chuyển sang trang thanh toán
+			String paymentUrl = vnPayService.generateRefundUrl(body.getAmount().toString(), ipAddress,
+					username, token, body.getBookingId());
+			return ResponseEntity.ok(new PaymentResDTO("Ok", "Successfully", paymentUrl));
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(new PaymentResDTO("Error", "Error generating refund URL", null));}
+		
+	}
+	
 	// Xử lý kết quả thanh toán duy nhất một endpoint
 	@GetMapping("api/user/payment/checkoutResult")
 	public RedirectView paymentCheckoutResult(HttpServletRequest request) {
 		System.out.println("VNPAY RETURN: " + request.getQueryString());
 		// user
 		String txnRef = request.getParameter("vnp_TxnRef");
+		String vnp_txn_desc = request.getParameter("vnp_txn_desc");
 		txnRef = txnRef != null ? txnRef : request.getParameter("vnp_txn_ref");
 		Map<String, String> fields = new HashMap<>();
 		for (Enumeration<String> params = request.getParameterNames(); params.hasMoreElements();) {
@@ -356,7 +380,26 @@ public class PaymentVNPayController {
 			redirectUrl += "/payment-result?cart=true&orderId=" + txnRef
 					+ "&status=" + transactionStatus
 					+ "&amount=" + amountInVND;
-		} else {
+		}else if (txnRef != null && txnRef.startsWith("REFUND_")) {
+			// Xử lý hoàn tiền
+			if ("00".equals(request.getParameter("vnp_TransactionStatus"))
+					|| "00".equals(request.getParameter("vnp_transaction_status"))) {
+				transactionStatus = "success";
+				// Xử lý hoàn tiền
+				Integer bookingId = Integer.parseInt(vnp_txn_desc.split("Hoan tien cho san ")[1]);
+				if (bookingId != null) {
+					Bookings booking = bookingservice.findByBookingid(bookingId);
+					booking.setRefund(true);
+					bookingservice.update(booking);
+				}
+			} else {
+				transactionStatus = "fail";
+			}
+			redirectUrl += "/payment-result?refund=true&refundId=" + (txnRef != null ? txnRef : "")
+					+ "&status=" + transactionStatus
+					+ "&amount=" + amountInVND;
+		} 
+		else {
 			// fallback nếu không xác định được loại đơn
 			redirectUrl += "/payment-result?orderId=" + (txnRef != null ? txnRef : "")
 					+ "&status=fail"
@@ -365,6 +408,8 @@ public class PaymentVNPayController {
 		return new RedirectView(redirectUrl);
 	}
 
+
+	// Tạo token thanh toán lưu thẻ
 	@PostMapping("api/user/generate-token")
 	public ResponseEntity<?> generateToken(
 			HttpServletRequest request,

@@ -293,7 +293,6 @@ const ManagerCardBank: React.FC = () => {
     const [username, setUsername] = useState(''); // Would typically come from auth context
     const [banks, setBanks] = useState<Array<BankData>>([]); // Danh sách ngân hàng
     const [loadingBanks, setLoadingBanks] = useState(true); // Trạng thái tải danh sách ngân hàng
-    const [cardsUpdated, setCardsUpdated] = useState(false); // Track card updates
 
     // Initial load
     useEffect(() => {

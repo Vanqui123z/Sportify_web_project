@@ -283,4 +283,12 @@ public interface BookingDAO extends JpaRepository<Bookings, Integer> {
 	@Query("DELETE FROM PermanentBooking p WHERE p.booking.bookingid IN :ids")
 	void deletePermanentBookingByBookingIds(@Param("ids") List<Integer> ids);
 
+	@Modifying
+	@Query("DELETE FROM Bookingdetails d WHERE d.booking.bookingid = :id")
+	void deleteBookingDetailsByBookingId(@Param("id") Integer id);
+
+	@Modifying
+	@Query("DELETE FROM PermanentBooking p WHERE p.booking.bookingid = :id")
+	void deletePermanentBookingByBookingId(@Param("id") Integer id);
+
 }

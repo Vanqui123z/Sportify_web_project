@@ -78,17 +78,6 @@ public class FieldManagerService {
                 e.printStackTrace();
             }
         }
-        if (result.isEmpty()) {
-        result.add(new FieldManagerDetailDTO(
-                0,                    // fieldId mặc định
-                "No Active Field",    // fieldName mặc định
-                "",                   // fieldImage mặc định
-                0L,                   // oneTimeBookings
-                0L,                   // permanentBookings
-                0L                    // totalBookings
-        ));
-    }
-
         return result;
     }
 
@@ -126,17 +115,6 @@ public class FieldManagerService {
                     new FieldManagerDetailDTO(fieldId, fieldName, fieldImage, oneTimeBookings, permanentBookings, totalBookings));
                 }
         }
-        if (result.isEmpty()) {
-        result.add(new FieldManagerDetailDTO(
-                0,                    // fieldId mặc định
-                "No Active Field",    // fieldName mặc định
-                "",                   // fieldImage mặc định
-                0L,                   // oneTimeBookings
-                0L,                   // permanentBookings
-                0L                    // totalBookings
-        ));
-    }
-
         return result;
     }
 }

@@ -161,7 +161,9 @@ const AiSupportPage: React.FC = () => {
                 <h5 className="card-title mb-0">Ngày Lễ Sắp Tới</h5>
               </div>
               <div className="card-body">
-                <div className="timeline">
+               {holidays.length === 0 ? (
+                  <p>Không có ngày lễ nào trong tuần sắp tới.</p>
+                ) : ( <div className="timeline">
                   {holidays.map((holiday, index) => (
                     <div key={index} className="alert alert-info">
                       <h6 className="mb-1">{translateHolidayName(holiday.summary)}</h6>
@@ -170,7 +172,7 @@ const AiSupportPage: React.FC = () => {
                       </p>
                     </div>
                   ))}
-                </div>
+                </div>)}
               </div>
             </div>
           </div>

@@ -72,6 +72,9 @@ public class Bookings implements Serializable {
     @Column(name = "bookingstatus", nullable = false, length = 16)
     private String bookingstatus;
 
+    @Column(name = "refund", nullable = false, length = 16)
+    private Boolean refund;
+
     @Column(name = "booking_type", nullable = false, length = 16)
     private String bookingType ="ONCE";
 

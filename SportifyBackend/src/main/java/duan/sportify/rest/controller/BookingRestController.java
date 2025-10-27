@@ -98,5 +98,6 @@ public class BookingRestController {
 		bookingDAO.deleteAllByIdInBatch(bookingIds);
 		return ResponseEntity.ok().build();
 	}
+	
 
 }

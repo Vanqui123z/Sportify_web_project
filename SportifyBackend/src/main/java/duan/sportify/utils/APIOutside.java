@@ -51,8 +51,10 @@ public class APIOutside {
         try {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(response.getBody());
-            String day = "2024-09-01"  ;
-            LocalDate today = LocalDate.parse(day);
+
+            //  String day = "2024-09-01"  ;
+            // LocalDate today = LocalDate.parse(day);
+            LocalDate today = LocalDate.now();
             LocalDate oneWeekLater = today.plusDays(7);
             for (JsonNode item : root.path("items")) {
                 LocalDate startDate = LocalDate.parse(item.path("start").path("date").asText());

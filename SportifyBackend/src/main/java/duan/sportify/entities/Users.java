@@ -7,6 +7,7 @@ package duan.sportify.entities;
 import java.io.Serializable;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -104,4 +105,7 @@ public class Users implements Serializable {
     @JsonIgnore
     @OneToMany(mappedBy="username")
     private List<Contacts> listOfContact;  
+
+     @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<VoucherOfUser> vouchersOfUser;
 }
