@@ -62,21 +62,16 @@ public class AIChatHistoryController {
      * Lấy lịch sử chat
      */
     @GetMapping("/get-history")
-    public ResponseEntity<?> getChatHistory(
-            @RequestParam(required = false) String userId,
-            HttpServletRequest request) {
+    public ResponseEntity<?> getChatHistory(HttpServletRequest request) {
         try {
-            String queryUserId = userId;
-            if (queryUserId == null || queryUserId.isEmpty()) {
-                queryUserId = (String) request.getSession().getAttribute("username");
-            }
-            if (queryUserId == null || queryUserId.isEmpty()) {
-                queryUserId = request.getSession().getId();
+            String userId = (String) request.getSession().getAttribute("username");
+            if (userId == null) {
+                userId = request.getSession().getId();
             }
             
-            System.out.println("DEBUG: getChatHistory - userId: " + queryUserId);
+            System.out.println("DEBUG: getChatHistory - userId: " + userId);
             
-            List<AIChatHistory> history = chatHistoryService.getChatHistory(queryUserId);
+            List<AIChatHistory> history = chatHistoryService.getChatHistory(userId);
             System.out.println("DEBUG: getChatHistory - found " + history.size() + " messages");
             
             return ResponseEntity.ok(Map.of(

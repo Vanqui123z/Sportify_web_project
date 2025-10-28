@@ -262,10 +262,8 @@ const AIChatbox: React.FC = () => {
 
   // Load chat history from database
   const loadChatHistoryFromDatabase = async () => {
-    if (!userId) return; // Wait until userId is set
-    
     try {
-      const res = await fetch(`http://localhost:8081/sportify/rest/ai/history/get-history?userId=${encodeURIComponent(userId)}`);
+      const res = await fetch("http://localhost:8081/sportify/rest/ai/history/get-history");
       const data = await res.json();
       
       if (data.status === "success" && data.data && data.data.length > 0) {
@@ -358,12 +356,6 @@ const AIChatbox: React.FC = () => {
   };
 
   const ask = async (msg: string, attachments: File[] = []) => {
-    // Validate message is not empty
-    if (!msg || !msg.trim()) {
-      console.warn("Message is empty, not sending");
-      return;
-    }
-
     appendUserMessage(msg);
     // Save user message to database
     await saveMessageToDatabase(msg, null, "user");
@@ -374,7 +366,7 @@ const AIChatbox: React.FC = () => {
     try {
       // Prepare FormData if there are attachments
       const formData = new FormData();
-      formData.append("message", msg.trim());
+      formData.append("message", msg);
       
       // Add files to FormData
       attachments.forEach((file) => {
