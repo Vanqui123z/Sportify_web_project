@@ -4,7 +4,7 @@ package duan.sportify.entities;
 import javax.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
-
+import com.fasterxml.jackson.annotation.*;
 
 @Entity
 @Table(name = "voucher_of_user")
@@ -18,18 +18,14 @@ public class VoucherOfUser {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 👉 Liên kết tới bảng user (nhiều - một)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
-    private Users user;
+    @Column(name = "username")
+    private String username;
 
-    // 👉 Liên kết tới bảng voucher
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "voucherid", referencedColumnName = "id", nullable = false)
-    private Voucher voucher;
+    @JoinColumn(name = "voucherid", referencedColumnName = "voucherid", nullable = false)
+    private Voucher voucherid;
 
-    @Column(name = "discount_percent", nullable = false)
-    private Double discountPercent;
 
     @Column(nullable = false)
     private Integer quantity;

@@ -19,7 +19,7 @@ public interface VoucherService {
 	
 	Optional<Voucher> findById(String id);
 
-	List<Voucher> findByVoucherId(String voucherid);
+	Voucher findByVoucherId(String voucherid);
 
 	void deleteByVoucherId(String voucherid); // thêm phương thức xóa theo voucherid
 }

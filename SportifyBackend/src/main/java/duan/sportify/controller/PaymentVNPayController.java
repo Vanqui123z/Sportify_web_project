@@ -22,12 +22,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
+import javax.persistence.criteria.CriteriaBuilder.In;
 import javax.servlet.http.HttpServletRequest;
-
-import org.hibernate.mapping.ForeignKey;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -39,7 +35,6 @@ import duan.sportify.config.VNPayConfig;
 import duan.sportify.config.appConfig;
 import duan.sportify.entities.Bookingdetails;
 import duan.sportify.entities.Bookings;
-import duan.sportify.entities.CartItem;
 import duan.sportify.entities.Orderdetails;
 import duan.sportify.entities.Orders;
 import duan.sportify.entities.PaymentMethod;
@@ -50,8 +45,8 @@ import duan.sportify.service.BookingService;
 import duan.sportify.service.OrderDetailService;
 import duan.sportify.service.UserService;
 import duan.sportify.service.VNPayService;
+import duan.sportify.service.VoucherOfUserService;
 import duan.sportify.service.OrderService;
-import duan.sportify.service.PaymentMethodService;
 import duan.sportify.service.ProductService;
 
 @Controller
@@ -75,6 +70,9 @@ public class PaymentVNPayController {
 
 	@Autowired
 	appConfig appConfig;
+
+	@Autowired
+	private VoucherOfUserService voucherOfUserService;
 
 	@Autowired
 	private BookingService bookingService;
@@ -138,6 +136,9 @@ public class PaymentVNPayController {
 			throws Exception {
 		ipAddress = getIpAddress().get("ip");
 		String username = (String) request.getSession().getAttribute("username");
+		Integer voucherOfUserId = Integer.parseInt(body.getVoucherOfUserId() != null ? body.getVoucherOfUserId() : "0");
+		System.out.println("voucherOfUserId: " + voucherOfUserId);
+
 		if (body.getShifts() != null && !body.getShifts().isEmpty()) {
 			bookingService.createBookingPermanent(
 					username,
@@ -164,7 +165,7 @@ public class PaymentVNPayController {
 		System.out.println("ip address: " + ipAddress);
 		if (body.getCardId() == null || body.getCardId().isEmpty()) {
 			// chuyển sang trang thanh toán
-			String paymentUrl = vnPayService.generatePaymentUrl(body.getAmount().toString(), ipAddress);
+			String paymentUrl = vnPayService.generatePaymentUrl(body.getAmount().toString(), ipAddress, voucherOfUserId,username);
 			return ResponseEntity.ok(new PaymentResDTO("Ok", "Successfully", paymentUrl));
 		} else {
 			Long cardId = Long.parseLong(body.getCardId());
@@ -172,7 +173,7 @@ public class PaymentVNPayController {
 			System.out.println("body: " + token);
 			// chuyển sang trang thanh toán
 			String paymentUrl = vnPayService.generatePaymentUrlByToken(body.getAmount().toString(), ipAddress,
-					username, token);
+					username, token, 	voucherOfUserId);
 			return ResponseEntity.ok(new PaymentResDTO("Ok", "Successfully", paymentUrl));
 		}
 	}
@@ -185,7 +186,10 @@ public class PaymentVNPayController {
 			@RequestParam("phone") String phone,
 			@RequestParam("productid") String productIds,
 			@RequestParam("quantity") String quantities,
+			@RequestParam(value = "voucherOfUserId", required = false, defaultValue = "0") Integer voucherOfUserId,
 			HttpServletRequest request) throws Throwable {
+
+				System.out.println("voucherOfUserId: " + voucherOfUserId);
 		// Lấy thông tin user
 		String userlogin = (String) request.getSession().getAttribute("username");
 		Users user = userservice.findByUsername(userlogin);
@@ -224,7 +228,6 @@ public class PaymentVNPayController {
 
 			orderDetailService.create(detail);
 		}
-		System.out.println("Username: " + saveOrder.getUsername());
 		// Lấy IP
 		getIpAddress();
 
@@ -241,7 +244,7 @@ public class PaymentVNPayController {
 		vnp_Params.put("vnp_Command", "pay");
 		vnp_Params.put("vnp_CurrCode", "VND");
 		vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
-		vnp_Params.put("vnp_OrderInfo", "Thanh toán giỏ hàng #" + cartid);
+		vnp_Params.put("vnp_OrderInfo", "Thanh toán giỏ hàng #" + cartid +" cho user "+ userlogin + "voi voucher " + voucherOfUserId);
 		vnp_Params.put("vnp_Locale", "vn");
 		vnp_Params.put("vnp_ReturnUrl", VNPayConfig.vnp_Returnurl);
 		vnp_Params.put("vnp_IpAddr", ipAddress);
@@ -318,7 +321,11 @@ public class PaymentVNPayController {
 		System.out.println("VNPAY RETURN: " + request.getQueryString());
 		// user
 		String txnRef = request.getParameter("vnp_TxnRef");
-		String vnp_txn_desc = request.getParameter("vnp_txn_desc");
+		String messeage = request.getParameter("vnp_txn_desc") != null ? request.getParameter("vnp_txn_desc") : request.getParameter("vnp_OrderInfo");
+
+		// username and voucher
+		String voucherOfUserId =  messeage.split("voi voucher ")[1] != null ? messeage.split("voi voucher ")[1] : null;
+		Long voucherOfUserIdInt = voucherOfUserId != null && !voucherOfUserId.isEmpty() ? Long.parseLong(voucherOfUserId) : null;
 		txnRef = txnRef != null ? txnRef : request.getParameter("vnp_txn_ref");
 		Map<String, String> fields = new HashMap<>();
 		for (Enumeration<String> params = request.getParameterNames(); params.hasMoreElements();) {
@@ -352,6 +359,9 @@ public class PaymentVNPayController {
 					if (savebookingdetail != null) {
 						bookingdetailservice.create(savebookingdetail);
 					}
+					if (voucherOfUserIdInt != 0) {
+						voucherOfUserService.usedVoucher(voucherOfUserIdInt);
+					}
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -368,10 +378,13 @@ public class PaymentVNPayController {
 				if (saveOrder != null) {
 					saveOrder.setOrderstatus("Đã Thanh Toán");
 					saveOrder.setPaymentstatus(true);
+					if (voucherOfUserIdInt != null) {
+						voucherOfUserService.usedVoucher(voucherOfUserIdInt);
+					}
 					ordersService.update(saveOrder);
-					String username = saveOrder.getUsername();
-					if (username != null && !username.isEmpty()) {
-						cartService.removeAllFromCart(username);
+					String usernameOrder = saveOrder.getUsername();
+					if (usernameOrder != null && !usernameOrder.isEmpty()) {
+						cartService.removeAllFromCart(usernameOrder);
 					}
 				}
 			} else {
@@ -386,7 +399,7 @@ public class PaymentVNPayController {
 					|| "00".equals(request.getParameter("vnp_transaction_status"))) {
 				transactionStatus = "success";
 				// Xử lý hoàn tiền
-				Integer bookingId = Integer.parseInt(vnp_txn_desc.split("Hoan tien cho san ")[1]);
+				Integer bookingId = Integer.parseInt(messeage.split("Hoan tien cho san ")[1]);
 				if (bookingId != null) {
 					Bookings booking = bookingservice.findByBookingid(bookingId);
 					booking.setRefund(true);

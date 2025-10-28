@@ -22,6 +22,7 @@ public class PermanentPaymentRequest  {
     private LocalDate endDate;
     private Integer shiftId;
     private Integer bookingId;
+    private String voucherOfUserId;
     private String cardId; 
     private List<ShiftDTO> shifts; // <-- list các cặp (dayOfWeek, shiftId)
 }

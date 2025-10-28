@@ -98,47 +98,46 @@ public class OrderController {
 		return ResponseEntity.ok(Map.of("success", true, "message", "Order canceled"));
 	}
 
-	// tìm kiếm voucher
 	@PostMapping("/order/cart/voucher")
-	public ResponseEntity<?> cartVoucher(@RequestParam String voucherId) {
-		if (voucherId == null || voucherId.isBlank()) {
-			return ResponseEntity.badRequest()
-					.body(Map.of("success", false, "message", "voucherId is required"));
-		}
+public ResponseEntity<?> cartVoucher(@RequestParam String voucherId) {
+    if (voucherId == null || voucherId.isBlank()) {
+        return ResponseEntity.badRequest()
+                .body(Map.of("success", false, "message", "voucherId is required"));
+    }
 
-		List<Voucher> voucherList = voucherDAO.findByVoucherId(voucherId);
-		int discountPercent = 0;
-		String voucherMsg;
+    Voucher voucher = voucherDAO.findByVoucherId(voucherId);
 
-		LocalDate currentDate = LocalDate.now();
+    if (voucher == null) {
+        return ResponseEntity.ok(Map.of(
+                "success", false,
+                "message", "Không tìm thấy voucher '" + voucherId + "'"
+        ));
+    }
 
-		Optional<Voucher> validVoucher = voucherList.stream()
-				.filter(v -> {
-					// Chuyển java.util.Date -> LocalDate
-					LocalDate startDate = Instant.ofEpochMilli(v.getStartdate().getTime())
-							.atZone(ZoneId.systemDefault())
-							.toLocalDate();
-					LocalDate endDate = Instant.ofEpochMilli(v.getEnddate().getTime())
-							.atZone(ZoneId.systemDefault())
-							.toLocalDate();
-					return (!startDate.isAfter(currentDate) && !endDate.isBefore(currentDate));
-				})
-				.findFirst();
+    // Lấy ngày hiện tại và ngày hiệu lực của voucher
+    LocalDate currentDate = LocalDate.now();
+    LocalDate startDate = Instant.ofEpochMilli(voucher.getStartdate().getTime())
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate();
+    LocalDate endDate = Instant.ofEpochMilli(voucher.getEnddate().getTime())
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate();
 
-		if (validVoucher.isPresent()) {
-			discountPercent = validVoucher.get().getDiscountpercent();
-			voucherMsg = "Đã áp dụng thành công voucher '" + voucherId + "'. Giảm " + discountPercent + "%";
-		} else {
-			voucherMsg = voucherList.isEmpty() ? "Không tìm thấy voucher '" + voucherId + "'."
-					: "Voucher '" + voucherId + "' đã hết hạn sử dụng";
-		}
+    boolean isValid = !startDate.isAfter(currentDate) && !endDate.isBefore(currentDate);
 
-		Map<String, Object> response = new HashMap<>();
-		response.put("voucherList", voucherList);
-		response.put("discountPercent", discountPercent);
-		response.put("voucherMsg", voucherMsg);
+    if (!isValid) {
+        return ResponseEntity.ok(Map.of(
+                "success", false,
+                "message", "Voucher '" + voucherId + "' đã hết hạn sử dụng"
+        ));
+    }
 
-		return ResponseEntity.ok(response);
-	}
-
+    // Nếu hợp lệ
+    return ResponseEntity.ok(Map.of(
+            "success", true,
+            "voucherId", voucherId,
+            "discountPercent", voucher.getDiscountpercent(),
+            "message", "Voucher hợp lệ!"
+    ));
+}
 }

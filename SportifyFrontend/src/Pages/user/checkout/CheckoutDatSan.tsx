@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { fetchBookingData } from '../../../service/user/checkout/checkBookingFields';
 import PaymentExpression from '../../../components/user/PaymentExpression';
+import VoucherSelect from '../../../components/user/VoucherSelect';
 
 interface SportType {
   sporttypeid: string;
@@ -33,6 +34,22 @@ interface User {
   status: boolean;
 }
 
+interface Voucher {
+  voucherid: string;
+  discountpercent: number;
+  startdate: string;
+  enddate: string;
+}
+
+interface UserVoucher {
+  id: number;
+  username: string;
+  voucherid: Voucher;
+  quantity: number;
+  startDate: string;
+  endDate: string;
+}
+
 const CheckoutDatSan: React.FC = () => {
 
   const fieldid = useParams().idField || '';
@@ -62,6 +79,8 @@ const CheckoutDatSan: React.FC = () => {
   const [discountCode, setDiscountCode] = useState('');
   const [showCardList, setShowCardList] = useState(false);
   const [selectedCardId, setSelectedCardId] = useState<string | undefined>(undefined);
+  const [userVouchers, setUserVouchers] = useState<UserVoucher[]>([]);
+  const [voucherOfUserId, setVoucherOfUserId] = useState<number | null>(null);
 
   useEffect(() => {
     if (!fieldid) return;
@@ -92,6 +111,20 @@ const CheckoutDatSan: React.FC = () => {
         console.error("Lỗi khi gọi API booking:", err);
       });
   }, [fieldid, shiftid, dateselect, parmanent]);
+
+  useEffect(() => {
+    if (user?.username) {
+      fetch(`http://localhost:8081/api/user/voucher-of-user?username=${user.username}`, {
+        credentials: 'include'
+      })
+        .then(res => res.json())
+        .then(data => {
+          setUserVouchers(data);
+        })
+        .catch(err => console.error('Error fetching vouchers:', err));
+    }
+  }, [user?.username]);
+
   const handleNoteChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = e.target.value;
     const allowedCharactersRegex = /^[,.\p{L}0-9\s]*$/u;
@@ -103,6 +136,55 @@ const CheckoutDatSan: React.FC = () => {
     } else {
       setError('');
       setNote(val);
+    }
+  };
+
+  const handleApplyDiscount = async (e: React.MouseEvent) => {
+    e.preventDefault();
+
+    if (!discountCode) {
+      alert('Vui lòng chọn voucher!');
+      return;
+    }
+
+    if (appliedCode === discountCode) {
+      alert(`Mã "${discountCode}" đã được áp dụng rồi!`);
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `http://localhost:8081/api/user/order/cart/voucher?voucherId=${encodeURIComponent(discountCode)}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ discountPercent: 0 }),
+        }
+      );
+
+      if (!res.ok) throw new Error(`API trả về lỗi ${res.status}`);
+
+      const data = await res.json();
+      const discountPercent = data?.discountPercent ?? 0;
+      const voucherMsg = data?.voucherMsg || "";
+
+      if (discountPercent > 0) {
+        setAppliedCode(discountCode);
+        const newThanhtien = tamtinh * (1 - discountPercent / 100);
+        setThanhtien(newThanhtien);
+        setAmount(Math.round(newThanhtien * 0.3));
+        alert(voucherMsg || `Mã giảm giá "${discountCode}" đã được áp dụng! Bạn được giảm ${discountPercent}%`);
+      } else {
+        setAppliedCode(null);
+        setThanhtien(tamtinh);
+        setAmount(Math.round(tamtinh * 0.3));
+        alert(voucherMsg || `Mã giảm giá "${discountCode}" không hợp lệ hoặc đã hết hạn.`);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Có lỗi xảy ra khi áp dụng mã giảm giá!");
+      setAppliedCode(null);
     }
   };
 
@@ -118,12 +200,13 @@ const CheckoutDatSan: React.FC = () => {
       fieldid: field?.fieldid || null,
       pricefield,
       phone: user?.phone || '',
-      discountCode: '',
+      discountCode: appliedCode || '', // Add applied voucher code
       shiftId: (shiftid) || null,
       shifts: shifts.map(s => ({ dayOfWeek: s.dayOfWeek, shiftId: s.shiftId })),
       playdate: dateselect,       // định dạng 'yyyy-MM-dd'
       startDate,                  // định dạng 'yyyy-MM-dd'
-      endDate,                    // định dạng 'yyyy-MM-dd'
+      endDate,                    // định dạng 'yyyy-MM-dd' 
+      voucherOfUserId: voucherOfUserId || undefined,            // định dạng 'yyyy-MM-dd'
       cardId: showCardList ? selectedCardId : undefined // Thêm cardId nếu chọn thẻ đã lưu
     };
 
@@ -163,51 +246,10 @@ const CheckoutDatSan: React.FC = () => {
     }
   }, [tamtinh]);
 
-  const handleApplyDiscount = async (e: React.MouseEvent) => {
-    e.preventDefault();
-
-    // Nếu đã áp dụng cùng mã rồi thì không gọi lại
-    if (appliedCode === discountCode) {
-      alert(`Mã "${discountCode}" đã được áp dụng rồi!`);
-      return;
-    }
-
-    try {
-      // Gọi API mới với phương thức POST
-      const res = await fetch(
-        `http://localhost:8081/api/user/order/cart/voucher?voucherId=${encodeURIComponent(discountCode)}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ discountPercent: 0 }), // discountPercent có thể bỏ qua hoặc để 0, backend sẽ tự lấy
-        }
-      );
-
-      if (!res.ok) throw new Error(`API trả về lỗi ${res.status}`);
-
-      const data = await res.json();
-      const discountPercent = data?.discountPercent ?? 0;
-      const voucherMsg = data?.voucherMsg || "";
-
-      if (discountPercent > 0) {
-        const newThanhtien = tamtinh * (1 - discountPercent / 100);
-        setThanhtien(newThanhtien);
-        setAmount(Math.round(newThanhtien * 0.3));
-        setAppliedCode(discountCode);
-        alert(voucherMsg || `Mã giảm giá "${discountCode}" đã được áp dụng! Bạn được giảm ${discountPercent}%`);
-      } else {
-        // Reset về giá gốc khi mã không hợp lệ
-        setThanhtien(tamtinh);
-        setAmount(Math.round(tamtinh * 0.3));
-        setAppliedCode(null);
-        alert(voucherMsg || `Mã giảm giá "${discountCode}" không hợp lệ hoặc đã hết hạn.`);
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Có lỗi xảy ra khi áp dụng mã giảm giá!");
-      setAppliedCode(null);
-    }
+  const handleVoucherApplied = (discountPercent: number) => {
+    const newThanhtien = tamtinh * (1 - discountPercent / 100);
+    setThanhtien(newThanhtien);
+    setAmount(Math.round(newThanhtien * 0.3));
   };
 
   if (!field) return <div>Loading...</div>;
@@ -424,10 +466,18 @@ const CheckoutDatSan: React.FC = () => {
                         </div>
                         <div>
                           <label> Mã giảm giá:</label>
-                          <input type="text" value={discountCode} onChange={(e) => setDiscountCode(e.target.value)} className="form-control" placeholder="Nhập mã giảm giá (nếu có)" />
-                        </div>
-                        <div>
-                          <button className="btn btn-primary py-3 px-4 mt-3" onClick={handleApplyDiscount}>Áp dụng</button>
+                          <div>
+                            <VoucherSelect 
+                              username={user?.username}
+                              tamtinh={tamtinh}
+                              onApply={(discountCode, newThanhtien, voucherOfUserId) => {
+                                setAppliedCode(discountCode);
+                                setThanhtien(newThanhtien);
+                                setAmount(Math.round(newThanhtien * 0.3));
+                                setVoucherOfUserId(voucherOfUserId);
+                              }}
+                            />
+                          </div>
                         </div>
                         <hr />
                         <div style={{ height: "40px", display: "flex", alignItems: "center" }}>
@@ -480,5 +530,6 @@ const CheckoutDatSan: React.FC = () => {
     </div>
   );
 };
+
 
 export default CheckoutDatSan;

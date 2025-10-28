@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import VoucherSelect from '../../../components/user/VoucherSelect';
 
 interface User {
   username: string;
@@ -47,6 +48,7 @@ const CheckoutCart: React.FC = () => {
   });
   const [voucherInput, setVoucherInput] = useState("");
   const [isApplyingVoucher, setIsApplyingVoucher] = useState(false);
+  const [voucherOfUserId, setVoucherOfUserId] = useState<number | null>(null);
 
   useEffect(() => {
     fetch("http://localhost:8081/api/user/cart/checkout", {
@@ -97,7 +99,6 @@ const CheckoutCart: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!data) return;
 
     const formData = new FormData();
@@ -106,9 +107,10 @@ const CheckoutCart: React.FC = () => {
     formData.append('phone', data.user.phone.toString());
     formData.append('productid', data.items.map(item => item.cartItemId).join(','));
     formData.append('quantity', data.items.map(item => item.quantity).join(','));
-    if (voucherInfo.isValid) {
-      formData.append('voucherId', voucherInfo.voucherId);
-      formData.append('discountPercent', voucherInfo.discountPercent.toString());
+    
+    if (voucherInfo.isValid && voucherOfUserId !== null) {
+      formData.append('voucherOfUserId', voucherOfUserId.toString());
+      console.log("Adding voucherOfUserId to formData:", voucherOfUserId);
     }
 
     try {
@@ -134,6 +136,14 @@ const CheckoutCart: React.FC = () => {
     } catch (err: any) {
       alert('Có lỗi khi thanh toán, vui lòng thử lại!');
     }
+  };
+
+  const handleVoucherApplied = (discountPercent: number) => {
+    setVoucherInfo({
+      ...voucherInfo,
+      discountPercent: discountPercent,
+      isValid: discountPercent > 0
+    });
   };
 
   if (!data) return <div>Loading...</div>;
@@ -260,27 +270,18 @@ const CheckoutCart: React.FC = () => {
 
                     {/* Voucher section */}
                     <div className="mb-3">
-                      <form onSubmit={applyVoucher} className="d-flex align-items-center mb-2">
-                        <input 
-                          type="text" 
-                          className="form-control mr-2" 
-                          placeholder="Nhập mã giảm giá" 
-                          value={voucherInput}
-                          onChange={(e) => setVoucherInput(e.target.value)}
-                        />
-                        <button 
-                          type="submit" 
-                          className="btn btn-primary" 
-                          disabled={isApplyingVoucher || !voucherInput.trim()}
-                        >
-                          {isApplyingVoucher ? 'Đang áp dụng...' : 'Áp dụng'}
-                        </button>
-                      </form>
-                      {voucherInfo.voucherMsg && (
-                        <div className={`alert ${voucherInfo.isValid ? 'alert-success' : 'alert-warning'} py-1 px-2 mb-2`}>
-                          {voucherInfo.voucherMsg}
-                        </div>
-                      )}
+                      <VoucherSelect 
+                        username={user?.username}
+                        onVoucherApplied={(discountPercent, voucherId) => {
+                          console.log("Received voucherId:", voucherId);
+                          setVoucherInfo({
+                            ...voucherInfo,
+                            discountPercent: discountPercent,
+                            isValid: discountPercent > 0
+                          });
+                          setVoucherOfUserId(voucherId);
+                        }}
+                      />
                     </div>
 
                     <p className="d-flex">

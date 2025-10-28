@@ -7,10 +7,11 @@ import java.util.*;
 import org.springframework.stereotype.Service;
 import duan.sportify.config.VNPayConfig;
 
+
 @Service
 public class VNPayService {
     // Tạo Url Thanh toán VNPAY
-    public String generatePaymentUrl(String inputMoney, String ipAddress) throws Exception {
+    public String generatePaymentUrl(String inputMoney, String ipAddress, Integer voucherOfUserId, String username) throws Exception {
         int amount = (int) Double.parseDouble(inputMoney) * 100;
         String vnp_TxnRef = "FIELD_" + VNPayConfig.getRandomNumber(8);
 
@@ -21,7 +22,7 @@ public class VNPayService {
         vnp_Params.put("vnp_Amount", String.valueOf(amount));
         vnp_Params.put("vnp_CurrCode", "VND");
         vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
-        vnp_Params.put("vnp_OrderInfo", "Thanh toan don hang:" + vnp_TxnRef);
+        vnp_Params.put("vnp_OrderInfo", "Thanh toan don hang:" + vnp_TxnRef +" cho username " + username + " voi voucher " + voucherOfUserId);
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_ReturnUrl", VNPayConfig.vnp_Returnurl);
         vnp_Params.put("vnp_IpAddr", ipAddress);
@@ -114,7 +115,7 @@ public class VNPayService {
     }
 
     // Thanh toan bằng token
-    public String generatePaymentUrlByToken(String inputMoney, String ipAddress, String appUserId, String token)
+    public String generatePaymentUrlByToken(String inputMoney, String ipAddress, String appUserId, String token, Integer voucherOfUserId)
             throws Exception {
 
         // Nhân 100 theo quy định của VNPAY
@@ -130,7 +131,7 @@ public class VNPayService {
         vnp_Params.put("vnp_token", token);
         vnp_Params.put("vnp_amount", String.valueOf(amount));
         vnp_Params.put("vnp_curr_code", "VND");
-        vnp_Params.put("vnp_txn_desc", "Thanh toan don hang " + vnp_TxnRef);
+        vnp_Params.put("vnp_txn_desc", "Thanh toan don hang " + vnp_TxnRef + " cho username " + appUserId + " voi voucher " + voucherOfUserId);
         vnp_Params.put("vnp_create_date", new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
         vnp_Params.put("vnp_ip_addr", ipAddress);
         vnp_Params.put("vnp_return_url", VNPayConfig.vnp_Returnurl);

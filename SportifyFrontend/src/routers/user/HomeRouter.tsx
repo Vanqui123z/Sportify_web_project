@@ -24,6 +24,8 @@ import OrderHistoryList from "../../Pages/user/history/OrderHistoryList";
 import OrderHistoryListDetail from "../../Pages/user/history/OrderHistoryListDetail";
 import ListFavorite from "../../Pages/user/home/ListFavorite";
 import ListCardBank from "../../Pages/user/home/ManagerCardBank";
+import ListVoucher from "../../Pages/user/home/ListVoucher";
+
 
 
 const UserRoutes: React.FC = () => (
@@ -34,6 +36,7 @@ const UserRoutes: React.FC = () => (
     {/* <Route path="about" element={<HomeAbout />} /> */}
     <Route path="profile" element={<Profile />} />
     <Route path="profile/listcard" element={<ListCardBank />} />
+    <Route path="profile/listvoucher" element={<ListVoucher />} />
 
 
 

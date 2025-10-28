@@ -72,18 +72,14 @@ public class Bookings implements Serializable {
     @Column(name = "bookingstatus", nullable = false, length = 16)
     private String bookingstatus;
 
-    @Column(name = "refund", nullable = false, length = 16)
-    private Boolean refund;
+    @Column(name = "refund", nullable = false)
+    private Boolean refund = false;
 
     @Column(name = "booking_type", nullable = false, length = 16)
-    private String bookingType ="ONCE";
-
-   
-
-
+    private String bookingType = "ONCE";
 
     // --- ENTITY LINKS ( RELATIONSHIP )
-    
+
     @JsonIgnore
     @OneToMany(mappedBy = "booking")
     private List<Bookingdetails> listOfBookingdetails;
@@ -94,7 +90,5 @@ public class Bookings implements Serializable {
     @ManyToOne
     @JoinColumn(name = "username", referencedColumnName = "username", insertable = false, updatable = false)
     private Users users;
-
-
 
 }
