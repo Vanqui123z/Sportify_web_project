@@ -392,7 +392,7 @@ public class AdminGeminiServiceImpl implements AIService {
             .mapToDouble(b -> b.getBookingprice() != null ? b.getBookingprice() : 0)
             .sum();
         
-            // Tính doanh thu từ order
+        // Tính doanh thu từ order
         Double orderRevenue = 0.0;
         long successOrders = 0;
         if (orders != null) {
@@ -401,7 +401,7 @@ public class AdminGeminiServiceImpl implements AIService {
                 .count();
             orderRevenue = orders.stream()
                 .filter(o -> o.getPaymentstatus() != null && o.getPaymentstatus())
-                .mapToDouble(o -> o.getTotalprice() != null ? o.getTotalprice() : 0)
+                .mapToDouble(o -> o.getTotalamount() != null ? o.getTotalamount() : 0)
                 .sum();
         }
         

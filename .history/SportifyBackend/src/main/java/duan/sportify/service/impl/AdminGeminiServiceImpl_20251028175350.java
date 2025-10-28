@@ -328,9 +328,26 @@ public class AdminGeminiServiceImpl implements AIService {
                bookingHTML + "\n\n" +
                revenueHTML + "\n\n" +
                "YÊU CẦU CỦA ADMIN:\n" + userMessage + "\n\n" +
-               "Hãy trả lời bằng tiếng Việt, thân thiện, chuyên nghiệp.\n" +
-               "Nếu là HTML, hãy format đẹp mắt để hiển thị tốt trên web.\n" +
-               "Cung cấp thông tin hữu ích, đề xuất và hướng dẫn chi tiết cho admin.";
+               "HƯỚNG DẪN TRẢ LỜI:\n" +
+               "1. Hãy trả lời bằng tiếng Việt, thân thiện, chuyên nghiệp.\n" +
+               "2. KHI TẠO BẢNG: Sử dụng HTML <table> với các cột rõ ràng, style như sau:\n" +
+               "   - <table border='1' cellpadding='10' cellspacing='0' style='width:100%; border-collapse:collapse; background-color:#fff;'>\n" +
+               "   - <thead style='background-color:#4CAF50; color:white; font-weight:bold;'>\n" +
+               "   - <tr> với các <th> cho header\n" +
+               "   - <tbody> với các <tr> và <td>\n" +
+               "   - Các dòng xen kẽ có background: #f5f5f5 và #ffffff\n" +
+               "3. VÍ DỤ CẤU TRÚC BẢNG:\n" +
+               "   <table border='1' cellpadding='10' cellspacing='0' style='width:100%; border-collapse:collapse;'>\n" +
+               "   <thead style='background-color:#4CAF50; color:white;'>\n" +
+               "     <tr><th>Cột 1</th><th>Cột 2</th><th>Cột 3</th></tr>\n" +
+               "   </thead>\n" +
+               "   <tbody>\n" +
+               "     <tr style='background-color:#ffffff;'><td>Dữ liệu 1</td><td>Dữ liệu 2</td><td>Dữ liệu 3</td></tr>\n" +
+               "     <tr style='background-color:#f5f5f5;'><td>Dữ liệu 4</td><td>Dữ liệu 5</td><td>Dữ liệu 6</td></tr>\n" +
+               "   </tbody>\n" +
+               "   </table>\n" +
+               "4. Tất cả bảng phải ĐỒNG BỘ với cấu trúc HTML table này.\n" +
+               "5. Cung cấp thông tin hữu ích, đề xuất và hướng dẫn chi tiết cho admin.";
     }
 
     /**

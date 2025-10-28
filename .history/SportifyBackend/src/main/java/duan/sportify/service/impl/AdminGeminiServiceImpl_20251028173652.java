@@ -85,8 +85,7 @@ public class AdminGeminiServiceImpl implements AIService {
             System.out.println("🔵 Gọi Gemini API (Admin) với câu hỏi: " + message);
             System.out.println("📦 Dữ liệu: " + products.size() + " sản phẩm, " + 
                              fields.size() + " sân, " + events.size() + " sự kiện, " +
-                             users.size() + " người dùng, " + categories.size() + " danh mục, " +
-                             bookings.size() + " booking, " + orders.size() + " đơn hàng");
+                             users.size() + " người dùng, " + categories.size() + " danh mục");
 
             // Retry logic - thử lại 3 lần nếu lỗi
             int maxRetries = 3;
@@ -331,103 +330,6 @@ public class AdminGeminiServiceImpl implements AIService {
                "Hãy trả lời bằng tiếng Việt, thân thiện, chuyên nghiệp.\n" +
                "Nếu là HTML, hãy format đẹp mắt để hiển thị tốt trên web.\n" +
                "Cung cấp thông tin hữu ích, đề xuất và hướng dẫn chi tiết cho admin.";
-    }
-
-    /**
-     * Xây dựng danh sách booking dưới dạng HTML
-     */
-    private String buildBookingHTML(List<Bookings> bookings) {
-        if (bookings == null || bookings.isEmpty()) return "Chưa có booking nào.";
-        
-        // Thống kê theo trạng thái
-        long pending = bookings.stream().filter(b -> "PENDING".equalsIgnoreCase(b.getBookingstatus())).count();
-        long confirmed = bookings.stream().filter(b -> "CONFIRMED".equalsIgnoreCase(b.getBookingstatus())).count();
-        long completed = bookings.stream().filter(b -> "COMPLETED".equalsIgnoreCase(b.getBookingstatus())).count();
-        long cancelled = bookings.stream().filter(b -> "CANCELLED".equalsIgnoreCase(b.getBookingstatus())).count();
-        
-        // Tính tổng doanh thu booking
-        Double totalBookingRevenue = bookings.stream()
-            .filter(b -> !"CANCELLED".equalsIgnoreCase(b.getBookingstatus()))
-            .mapToDouble(b -> b.getBookingprice() != null ? b.getBookingprice() : 0)
-            .sum();
-        
-        return "<h3>📋 Quản Lý Đặt Sân (Booking)</h3>" +
-            String.format(
-                "<div style=\"border: 1px solid #e0e0e0; padding: 10px; margin: 5px 0; border-radius: 4px; background: #f5f5f5;\">" +
-                "<strong>📊 Thống Kê Booking:</strong><br>" +
-                "Tổng booking: %d | Chờ xác nhận: %d | Đã xác nhận: %d | Hoàn thành: %d | Hủy: %d<br>" +
-                "<strong>💰 Tổng doanh thu booking:</strong> %.0f VND" +
-                "</div>",
-                bookings.size(), pending, confirmed, completed, cancelled, totalBookingRevenue
-            ) +
-            "<div style=\"margin-top: 10px; font-size: 0.9em;\"><strong>Chi tiết booking mới nhất:</strong></div>" +
-            bookings.stream()
-                .sorted((b1, b2) -> {
-                    Date d1 = b1.getBookingdate() != null ? b1.getBookingdate() : new Date();
-                    Date d2 = b2.getBookingdate() != null ? b2.getBookingdate() : new Date();
-                    return d2.compareTo(d1);
-                })
-                .limit(10)
-                .map(booking -> String.format(
-                    "<div style=\"border: 1px solid #ddd; padding: 8px; margin: 3px 0; background: #fff;\">" +
-                    "<strong>%s</strong> - %.0f VND<br>" +
-                    "Trạng thái: %s | SĐT: %s | Ngày: %s" +
-                    "</div>",
-                    booking.getUsername(),
-                    booking.getBookingprice(),
-                    booking.getBookingstatus(),
-                    booking.getPhone(),
-                    booking.getBookingdate()
-                ))
-                .collect(Collectors.joining());
-    }
-
-    /**
-     * Xây dựng thống kê doanh thu dưới dạng HTML
-     */
-    private String buildRevenueHTML(List<Bookings> bookings, List<Orders> orders) {
-        // Tính doanh thu từ booking
-        Double bookingRevenue = bookings.stream()
-            .filter(b -> !"CANCELLED".equalsIgnoreCase(b.getBookingstatus()))
-            .mapToDouble(b -> b.getBookingprice() != null ? b.getBookingprice() : 0)
-            .sum();
-        
-            // Tính doanh thu từ order
-        Double orderRevenue = 0.0;
-        long successOrders = 0;
-        if (orders != null) {
-            successOrders = orders.stream()
-                .filter(o -> o.getPaymentstatus() != null && o.getPaymentstatus())
-                .count();
-            orderRevenue = orders.stream()
-                .filter(o -> o.getPaymentstatus() != null && o.getPaymentstatus())
-                .mapToDouble(o -> o.getTotalprice() != null ? o.getTotalprice() : 0)
-                .sum();
-        }
-        
-        // Tính tổng doanh thu
-        Double totalRevenue = bookingRevenue + orderRevenue;
-        
-        // Đếm booking thành công
-        long successBookings = bookings.stream()
-            .filter(b -> "COMPLETED".equalsIgnoreCase(b.getBookingstatus()))
-            .count();
-        
-        return "<h3>💰 Thống Kê Doanh Thu</h3>" +
-            String.format(
-                "<div style=\"border: 2px solid #4CAF50; padding: 10px; margin: 5px 0; border-radius: 4px; background: #f1f8f4;\">" +
-                "<strong>💵 Tổng Doanh Thu:</strong> %.0f VND<br>" +
-                "<strong>📊 Chi tiết:</strong><br>" +
-                "  • Doanh thu từ booking: %.0f VND (%d booking hoàn thành)<br>" +
-                "  • Doanh thu từ đơn hàng: %.0f VND (%d đơn thành công)<br>" +
-                "<strong>📈 Tỷ lệ:</strong> Booking %.1f%% | Hàng hóa %.1f%%" +
-                "</div>",
-                totalRevenue,
-                bookingRevenue, successBookings,
-                orderRevenue, successOrders,
-                totalRevenue > 0 ? (bookingRevenue / totalRevenue * 100) : 0,
-                totalRevenue > 0 ? (orderRevenue / totalRevenue * 100) : 0
-            );
     }
 
     /**
