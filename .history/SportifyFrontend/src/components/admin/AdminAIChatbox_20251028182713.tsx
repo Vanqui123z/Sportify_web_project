@@ -340,7 +340,7 @@ const AdminAIChatbox: React.FC = () => {
       const cleanedText = cleanMarkdownFormatting(message.text);
       return (
         <div key={index} className="ai-msg ai-bot">
-          <div className="ai-msg-content ai-text-plain">{cleanedText}</div>
+          <div className="ai-msg-content" style={{ whiteSpace: 'pre-wrap' }}>{cleanedText}</div>
         </div>
       );
     }
@@ -349,7 +349,7 @@ const AdminAIChatbox: React.FC = () => {
       const cleanedMessage = cleanMarkdownFormatting(message.unknownData.message);
       return (
         <div key={index} className="ai-msg ai-bot ai-unknown">
-          <div className="ai-msg-content ai-text-plain">
+          <div className="ai-msg-content" style={{ whiteSpace: 'pre-wrap' }}>
             {cleanedMessage}
           </div>
         </div>
@@ -360,7 +360,7 @@ const AdminAIChatbox: React.FC = () => {
       const cleanedMessage = cleanMarkdownFormatting(message.infoNeededData.message);
       return (
         <div key={index} className="ai-msg ai-bot ai-info-needed">
-          <div className="ai-msg-content ai-text-plain">
+          <div className="ai-msg-content" style={{ whiteSpace: 'pre-wrap' }}>
             {cleanedMessage}
           </div>
         </div>

@@ -153,8 +153,6 @@ public class AdminGeminiServiceImpl implements AIService {
         System.out.println("📥 Response Status: " + res.getStatusCode());
 
         String result = extractGeminiText(res.getBody());
-        // Làm sạch markdown formatting từ response
-        result = cleanMarkdownFormatting(result);
         return result;
     }
 
@@ -312,14 +310,14 @@ public class AdminGeminiServiceImpl implements AIService {
                                    String categoryHTML, String bookingHTML, String revenueHTML) {
         return "Bạn là một trợ lý AI thông minh cho hệ thống quản lý Sportify dành cho Admin.\n" +
                "Bạn sẽ trợ giúp admin quản lý:\n" +
-               "1. Sản phẩm (xem, thêm, xóa, cập nhật)\n" +
-               "2. Sân thể thao (xem, thêm, xóa, cập nhật)\n" +
-               "3. Tài khoản người dùng (quản lý, khóa, mở khóa)\n" +
-               "4. Sự kiện / Đội (tạo, sửa, xóa)\n" +
-               "5. Đơn đặt sân (xem chi tiết, hủy, xác nhận)\n" +
-               "6. Danh mục (quản lý)\n" +
-               "7. Doanh thu (xem thống kê, báo cáo)\n" +
-               "8. Ca sân (quản lý giờ mở cửa)\n\n" +
+               "- Sản phẩm (xem, thêm, xóa, cập nhật)\n" +
+               "- Sân thể thao (xem, thêm, xóa, cập nhật)\n" +
+               "- Tài khoản người dùng (quản lý, khóa, mở khóa)\n" +
+               "- Sự kiện / Đội (tạo, sửa, xóa)\n" +
+               "- Đơn đặt sân (xem chi tiết, hủy, xác nhận)\n" +
+               "- Danh mục (quản lý)\n" +
+               "- Doanh thu (xem thống kê, báo cáo)\n" +
+               "- Ca sân (quản lý giờ mở cửa)\n\n" +
                "DỮ LIỆU HIỆN TẠI HỆ THỐNG:\n" +
                productHTML + "\n\n" +
                fieldHTML + "\n\n" +
@@ -330,21 +328,15 @@ public class AdminGeminiServiceImpl implements AIService {
                bookingHTML + "\n\n" +
                revenueHTML + "\n\n" +
                "YÊU CẦU CỦA ADMIN:\n" + userMessage + "\n\n" +
-               "HƯỚNG DẪN ĐỊNH DẠNG TRẢ LỜI:\n" +
-               "- Hãy trả lời bằng tiếng Việt, thân thiện, chuyên nghiệp\n" +
-               "- TUYỆT ĐỐI KHÔNG sử dụng ký tự Markdown như: ---, ###, **, *, __, ==, etc.\n" +
-               "- Sử dụng HTML để tạo định dạng đẹp với màu sắc và link:\n" +
-               "  + Phần tiêu đề: <span style=\"color: #2e7d32; font-weight: bold; font-size: 16px;\">TIÊU ĐỀ</span>\n" +
-               "  + Chữ quan trọng: <span style=\"color: #c62828; font-weight: bold;\">TEXT</span> (đỏ)\n" +
-               "  + Chữ bình thường: <span style=\"color: #558b2f;\">TEXT</span> (xanh nhạt)\n" +
-               "  + Link nội bộ: <a href=\"#products\" style=\"color: #1976d2; text-decoration: underline;\">Xem sản phẩm</a>\n" +
-               "  + Link có thể dùng: #products, #fields, #bookings, #users, #categories, #revenue, #events\n" +
-               "- Sử dụng định dạng số: 1. ..., 2. ..., 3. ... cho danh sách\n" +
-               "- Tách các phần bằng dòng trống (Enter) hoặc <br/>\n" +
-               "- Nếu cần bảng, sử dụng HTML table với border và styling\n" +
-               "- Nếu là HTML, hãy format đẹp mắt để hiển thị tốt trên web\n" +
-               "- Cung cấp thông tin hữu ích, đề xuất và hướng dẫn chi tiết cho admin\n" +
-               "- Đảm bảo nội dung dễ đọc và không có ký tự kỳ lạ";
+               "Hướng dẫn trả lời:\n" +
+               "1. Trả lời bằng tiếng Việt, thân thiện, chuyên nghiệp, dễ hiểu\n" +
+               "2. KHÔNG DÙNG định dạng Markdown (###, **, --, #, [, etc)\n" +
+               "3. KHÔNG DÙNG các ký tự đặc biệt như ###, **, --, **, etc\n" +
+               "4. Dùng văn bản bình thường, dễ đọc, ngắn gọn, cô đọng\n" +
+               "5. Nếu cần liệt kê, dùng format: \"1. ..., 2. ..., 3. ...\"\n" +
+               "6. Nếu cần title, viết bình thường: \"TIÊU ĐỀ:\" hoặc \"Tiêu đề:\"\n" +
+               "7. Cung cấp thông tin hữu ích, đề xuất và hướng dẫn chi tiết cho admin\n" +
+               "8. Trả lời ngắn gọn nhưng đầy đủ thông tin, dễ đọc trên web";
     }
 
     /**
@@ -468,44 +460,5 @@ public class AdminGeminiServiceImpl implements AIService {
             System.out.println("Error extracting text from Gemini response: " + e.getMessage());
         }
         return "";
-    }
-
-    /**
-     * Làm sạch markdown formatting từ response của AI
-     */
-    private String cleanMarkdownFormatting(String text) {
-        if (text == null) return "";
-        
-        // Loại bỏ các dòng ngang Markdown (---, ___, ***)
-        text = text.replaceAll("^(---|___?|\\*\\*\\*)(\\s|$)", "\n");
-        text = text.replaceAll("\\n(---|___?|\\*\\*\\*)(\\s|$)", "\n");
-        
-        // Loại bỏ các header Markdown (###, ##, #)
-        text = text.replaceAll("^#+\\s+", "");
-        text = text.replaceAll("\\n#+\\s+", "\n");
-        
-        // Loại bỏ bold formatting (**text** hoặc __text__)
-        text = text.replaceAll("\\*\\*(.+?)\\*\\*", "$1");
-        text = text.replaceAll("__(.+?)__", "$1");
-        
-        // Loại bỏ italic formatting (*text* hoặc _text_)
-        text = text.replaceAll("\\*(.+?)\\*", "$1");
-        text = text.replaceAll("_(.+?)_", "$1");
-        
-        // Loại bỏ backticks (code formatting)
-        text = text.replaceAll("`(.+?)`", "$1");
-        
-        // Loại bỏ highlight/emphasis (~~text~~)
-        text = text.replaceAll("~~(.+?)~~", "$1");
-        
-        // Loại bỏ các bullet points Markdown (-, *, +) nhưng giữ lại content
-        text = text.replaceAll("^\\s*[\\-\\*\\+]\\s+", "• ");
-        text = text.replaceAll("\\n\\s*[\\-\\*\\+]\\s+", "\n• ");
-        
-        // Dọn sạch khoảng trắng thừa
-        text = text.replaceAll("\\n\\n\\n+", "\n\n");
-        text = text.trim();
-        
-        return text;
     }
 }

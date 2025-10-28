@@ -336,32 +336,28 @@ const AdminAIChatbox: React.FC = () => {
           </div>
         );
       }
-      // Plain text - apply markdown cleanup
-      const cleanedText = cleanMarkdownFormatting(message.text);
       return (
         <div key={index} className="ai-msg ai-bot">
-          <div className="ai-msg-content ai-text-plain">{cleanedText}</div>
+          <div className="ai-msg-content">{message.text}</div>
         </div>
       );
     }
     
     if (message.unknownData) {
-      const cleanedMessage = cleanMarkdownFormatting(message.unknownData.message);
       return (
         <div key={index} className="ai-msg ai-bot ai-unknown">
-          <div className="ai-msg-content ai-text-plain">
-            {cleanedMessage}
+          <div className="ai-msg-content">
+            {message.unknownData.message}
           </div>
         </div>
       );
     }
     
     if (message.infoNeededData) {
-      const cleanedMessage = cleanMarkdownFormatting(message.infoNeededData.message);
       return (
         <div key={index} className="ai-msg ai-bot ai-info-needed">
-          <div className="ai-msg-content ai-text-plain">
-            {cleanedMessage}
+          <div className="ai-msg-content">
+            {message.infoNeededData.message}
           </div>
         </div>
       );

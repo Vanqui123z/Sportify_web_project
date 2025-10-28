@@ -35,42 +35,6 @@ const TypingIndicator: React.FC = () => {
   );
 };
 
-/**
- * Làm sạch markdown formatting từ text
- */
-const cleanMarkdownFormatting = (text: string): string => {
-  if (!text) return "";
-  
-  // Loại bỏ các dòng ngang Markdown (---, ___, ***)
-  text = text.replace(/^(---|__|___|\*\*\*)(\s|$)/gm, "\n");
-  
-  // Loại bỏ các header Markdown (###, ##, #)
-  text = text.replace(/^#+\s+/gm, "");
-  
-  // Loại bỏ bold formatting (**text** hoặc __text__)
-  text = text.replace(/\*\*(.+?)\*\*/g, "$1");
-  text = text.replace(/__(.+?)__/g, "$1");
-  
-  // Loại bỏ italic formatting (*text* hoặc _text_)
-  text = text.replace(/\*(.+?)\*/g, "$1");
-  text = text.replace(/_(.+?)_/g, "$1");
-  
-  // Loại bỏ backticks (code formatting)
-  text = text.replace(/`(.+?)`/g, "$1");
-  
-  // Loại bỏ highlight/emphasis (~~text~~)
-  text = text.replace(/~~(.+?)~~/g, "$1");
-  
-  // Loại bỏ các bullet points Markdown (-, *, +) nhưng giữ lại content
-  text = text.replace(/^\s*[\-\*\+]\s+/gm, "• ");
-  
-  // Dọn sạch khoảng trắng thừa
-  text = text.replace(/\n\n\n+/g, "\n\n");
-  text = text.trim();
-  
-  return text;
-};
-
 const AdminAIChatbox: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
@@ -336,32 +300,28 @@ const AdminAIChatbox: React.FC = () => {
           </div>
         );
       }
-      // Plain text - apply markdown cleanup
-      const cleanedText = cleanMarkdownFormatting(message.text);
       return (
         <div key={index} className="ai-msg ai-bot">
-          <div className="ai-msg-content ai-text-plain">{cleanedText}</div>
+          <div className="ai-msg-content">{message.text}</div>
         </div>
       );
     }
     
     if (message.unknownData) {
-      const cleanedMessage = cleanMarkdownFormatting(message.unknownData.message);
       return (
         <div key={index} className="ai-msg ai-bot ai-unknown">
-          <div className="ai-msg-content ai-text-plain">
-            {cleanedMessage}
+          <div className="ai-msg-content">
+            {message.unknownData.message}
           </div>
         </div>
       );
     }
     
     if (message.infoNeededData) {
-      const cleanedMessage = cleanMarkdownFormatting(message.infoNeededData.message);
       return (
         <div key={index} className="ai-msg ai-bot ai-info-needed">
-          <div className="ai-msg-content ai-text-plain">
-            {cleanedMessage}
+          <div className="ai-msg-content">
+            {message.infoNeededData.message}
           </div>
         </div>
       );
@@ -432,7 +392,7 @@ const AdminAIChatbox: React.FC = () => {
             </button>
           </div>
         </div>
-        <div className="ai-chat-body" ref={bodyRef}>
+        <div className="ai-chat-body" ref={bodyRef} style={{ display: isMinimized ? "none" : "flex" }}>
           {messages.length === 0 ? (
             <div className="ai-welcome-container">
               <div className="ai-welcome-emoji">🤖</div>
@@ -461,12 +421,14 @@ const AdminAIChatbox: React.FC = () => {
             </>
           )}
         </div>
-        <AIChatInputWithMedia
-          onSendMessage={ask}
-          onStartRecording={() => console.log("Recording started")}
-          onStopRecording={() => console.log("Recording stopped")}
-          isLoading={isLoading}
-        />
+        {!isMinimized && (
+          <AIChatInputWithMedia
+            onSendMessage={ask}
+            onStartRecording={() => console.log("Recording started")}
+            onStopRecording={() => console.log("Recording stopped")}
+            isLoading={isLoading}
+          />
+        )}
       </div>
     </>
   );
