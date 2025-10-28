@@ -96,7 +96,6 @@ const LayoutAdmin: React.FC = () => {
       <div className="admin-layout">
         <Header username={user.username} />
         <Sidebar />
-        <AdminAIChatbox />
         <main className="main-content mt-5">
           <Outlet />
         </main>
