@@ -70,47 +70,6 @@ interface CardFormProps {
     isLoadingBanks: boolean;
 }
 
-// Hàm dùng chung để lấy danh sách ngân hàng từ VNPAY API
-async function fetchBanksFromVNPay(): Promise<BankData[]> {
-    try {
-        const response = await fetch(API_BANK_LIST, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: new URLSearchParams({
-                tmn_code: '2QXUI4J4', // mã demo của VNPAY Sandbox
-            }),
-        });
-        const responseData = await response.json();
-
-        if (Array.isArray(responseData)) {
-            return responseData.map((bank: any) => ({
-                code: bank.bank_code,
-                name: bank.bank_name,
-                logo: bank.logo_link,
-                cardType: bank.card_type
-            }));
-        } else if (responseData.data && Array.isArray(responseData.data)) {
-            return responseData.data.map((bank: any) => ({
-                code: bank.bank_code || bank.bankCode || bank.code,
-                name: bank.bank_name || bank.bankName || bank.name,
-                logo: bank.logo_link || bank.logoLink || bank.logo
-            }));
-        }
-        return [];
-    } catch (err) {
-        console.error('Failed to load bank list:', err);
-        return [
-            { code: 'NCB', name: 'Ngân hàng NCB' },
-            { code: 'VNPAYQR', name: 'VNPAYQR' },
-            { code: 'VNBANK', name: 'LOCAL BANK' },
-            { code: 'INTCARD', name: 'INTERNATIONAL CARD' },
-            { code: 'VISA', name: 'VISA/MASTER' }
-        ];
-    }
-}
-
 interface CardFormProps {
     username: string;
     banks: BankData[];
@@ -293,7 +252,7 @@ const ManagerCardBank: React.FC = () => {
     const [username, setUsername] = useState(''); // Would typically come from auth context
     const [banks, setBanks] = useState<Array<BankData>>([]); // Danh sách ngân hàng
     const [loadingBanks, setLoadingBanks] = useState(true); // Trạng thái tải danh sách ngân hàng
-    const [cardsUpdated, setCardsUpdated] = useState(false); // Track card updates
+    const [] = useState(false); // Track card updates
 
     // Initial load
     useEffect(() => {

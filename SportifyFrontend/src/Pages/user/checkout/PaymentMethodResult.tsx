@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import '../../../styles/PaymentMethodResult.css';
 
 interface PaymentDetails {
@@ -12,7 +12,6 @@ interface PaymentDetails {
 
 const PaymentMethodResult: React.FC = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const [paymentDetails, setPaymentDetails] = useState<PaymentDetails | null>(null);
   
   useEffect(() => {

@@ -14,15 +14,9 @@ interface Contact {
   };
 }
 
-interface ErrorField {
-  field?: string;
-  message: string;
-}
-
 const ContactPage: React.FC = () => {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [form, setForm] = useState<Partial<Contact>>({});
-  const [errors, setErrors] = useState<ErrorField[]>([]);
   const [showEdit, setShowEdit] = useState(false);
   const [search, setSearch] = useState({
     searchDate: "",
@@ -58,7 +52,7 @@ const ContactPage: React.FC = () => {
   const openEditModal = (contact: Contact) => {
     setForm(contact);
     setShowEdit(true);
-    setErrors([]);
+    // setErrors([]);  // Not currently implemented
   };
 
   // Delete contact handler

@@ -90,7 +90,7 @@ const DetailFields: React.FC = () => {
         const weekdayToNumber = (w: string) => w === "CN" ? 8 : Number(w);
 
         // Tạo mảng details
-        const details = fixedWeekdays.map((w, idx) => ({
+        const details = fixedWeekdays.map((w) => ({
             dayOfWeek: weekdayToNumber(w),
             shiftId: Number(fixedShifts[w])
         }));

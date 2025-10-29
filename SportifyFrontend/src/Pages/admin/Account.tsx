@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import BootstrapModal from "../../components/admin/BootstrapModal";
 import getImageUrl from "../../helper/getImageUrl";
@@ -29,7 +29,6 @@ const AccountPage: React.FC = () => {
   const [errors, setErrors] = useState<ErrorField[]>([]);
   const [showAdd, setShowAdd] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
-  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [search, setSearch] = useState({
     keyword: "",
     searchUser: "",
@@ -37,13 +36,6 @@ const AccountPage: React.FC = () => {
     searchRole: "",
   });
   const [passwordFieldType, setPasswordFieldType] = useState<"password" | "text">("password");
-  // Fetch all accounts
-  useEffect(() => {
-    axios.get("http://localhost:8081/api/rest/accounts/getAll").then(res => {
-      setAccounts(res.data);
-    });
-  }, []);
-
   // Search handler
   const handleSearch = () => {
     axios.get("http://localhost:8081/api/rest/accounts/search", {
@@ -123,7 +115,6 @@ const AccountPage: React.FC = () => {
 
   // Open edit modal
   const openEditModal = (account: Account) => {
-    setSelectedAccount(account);
     setForm(account);
     setShowEdit(true);
     setErrors([]);
@@ -131,7 +122,7 @@ const AccountPage: React.FC = () => {
 
   const handleDeleteAccount = (username: String) => {
     axios.delete(`http://localhost:8081/api/rest/accounts/delete/${username}`)
-      .then(res => {
+      .then(() => {
         alert("Xóa tài khoản thành công");
         setAccounts(prev => prev.filter(acc => acc.username !== username));
       })

@@ -3,10 +3,6 @@ import axios from 'axios';
 import '../../styles/Comment.css';
 import getImageUrl from '../../helper/getImageUrl';
 
-interface ReviewImage {
-  url: string;
-}
-
 interface Review {
   reviewId: number;
   productId?: number;

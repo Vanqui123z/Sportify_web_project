@@ -11,15 +11,6 @@ type Message = {
   infoNeededData?: any;
 };
 
-interface UnknownResponse {
-  action: string;
-  message: string;
-}
-
-interface InfoNeededResponse {
-  message: string;
-}
-
 // Typing indicator component that matches GroupChat styling
 const TypingIndicator: React.FC = () => {
   return (
@@ -74,7 +65,7 @@ const cleanMarkdownFormatting = (text: string): string => {
 const AdminAIChatbox: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
-  const [input, setInput] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -230,7 +221,7 @@ const AdminAIChatbox: React.FC = () => {
     // Save user message to database
     await saveMessageToDatabase(msg, null, "user");
     
-    setInput("");
+    // setInput("");  // input state not currently used in this component
     setIsLoading(true);
     
     try {
@@ -280,15 +271,6 @@ const AdminAIChatbox: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleSend = () => {
-    const v = input.trim();
-    if (v) ask(v);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") handleSend();
   };
 
   // Render a message based on its type

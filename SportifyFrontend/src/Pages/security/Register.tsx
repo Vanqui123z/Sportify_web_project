@@ -14,7 +14,7 @@ export default function Register() {
 
 	// UI state
 	const [signupResult, setSignupResult] = useState<string | null>(null);
-	const [notification, setNotification] = useState<string | null>(null);
+	// const [notification, setNotification] = useState<string | null>(null); // Not currently used
 
 	const handleSignupChange = (field: string, value: any) => {
 		switch (field) {
@@ -66,7 +66,6 @@ export default function Register() {
 		if (error) {
 
 			setSignupResult(error);
-			setNotification(error);
 			return;
 		}
 
@@ -90,10 +89,8 @@ export default function Register() {
 			});
 			if (!res.ok) throw new Error(`HTTP ${res.status}`);
 			setSignupResult('Signup successful');
-			setNotification('Đăng ký thành công');
 		} catch (err: any) {
 			setSignupResult(`Signup failed: ${err.message}`);
-			setNotification('Đăng ký thất bại');
 		}
 	};
 

@@ -3,7 +3,6 @@ import { useSearchParams } from "react-router-dom";
 import { fetchFieldList } from '../../../service/user/home/fieldApi';
 import Loader from "../../../components/user/Loader";
 import getImageUrl from "../../../helper/getImageUrl";
-import { useFtcoAnimation } from "../../../helper/useFtcoAnimation";
 import HeroSection from "../../../components/user/Hero";
 import NearestFieldFinder from "../../../components/user/NearestFieldFinder";
 import "../../../styles/NearestFieldFinder.css";
@@ -29,7 +28,6 @@ export default function FieldPage() {
   const [cates, setCates] = useState<Category[]>([]);
   const [fieldList, setFieldList] = useState<FieldItem[]>([]);
   const [fieldDistances, setFieldDistances] = useState<Record<number, string>>({});
-  const [isNearestSearch, setIsNearestSearch] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [selectedCategory, setSelectedCategory] = useState<string>("tatca");
@@ -45,7 +43,7 @@ export default function FieldPage() {
     
     if (latitude && longitude) {
       // This is a nearest fields search
-      setIsNearestSearch(true);
+      // setIsNearestSearch(true);  // Not currently used
       setSelectedCategory(categoryParam);
       
       // Fetch nearest fields data

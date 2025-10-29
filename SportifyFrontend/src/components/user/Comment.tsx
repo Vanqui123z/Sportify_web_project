@@ -2,10 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import '../../styles/Comment.css';
 
-interface ReviewImage {
-  url: string;
-}
-
 interface Review {
   reviewId: number;
   productId: number;

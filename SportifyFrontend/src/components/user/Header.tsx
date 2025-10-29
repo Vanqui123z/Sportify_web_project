@@ -8,7 +8,7 @@ import NotificationDropdown from "./NotificationDropdown";
 
 export default function Header() {
 
-  const { user, setUser, loading } = useContext(AuthContext);
+  const { user, loading } = useContext(AuthContext);
   const [showModal, setShowModal] = useState(false);
   const { cartCount, updateCartCount, resetCartCount } = useCart();
 

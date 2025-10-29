@@ -16,7 +16,6 @@ interface CustomCardProps {
 }
 
 export default function CustomCard({
-  id,
   title,
   link,
   image,

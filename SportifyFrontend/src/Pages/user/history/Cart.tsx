@@ -216,15 +216,6 @@ const Cart: React.FC = () => {
     });
   };
 
-  const cartCount = cart ? cart.items.reduce((sum, item) => sum + item.quantity, 0) : 0;
-  
-  // Tính tổng tiền của TẤT CẢ sản phẩm
-  const totalPrice = cart
-    ? cart.items.reduce(
-        (sum, item) => sum + item.quantity * (item.price - item.discountprice),
-        0
-      )
-    : 0;
   
   // Tính tổng tiền của các sản phẩm ĐƯỢC CHỌN
   const selectedTotalPrice = cart

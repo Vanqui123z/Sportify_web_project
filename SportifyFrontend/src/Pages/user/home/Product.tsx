@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { fetchProductList } from '../../../service/user/home/productApi';
-import CustomCard from '../../../components/user/CustomCard';
 import getImageUrl from '../../../helper/getImageUrl';
 import HeroSection from "../../../components/user/Hero"; // Thêm import
 

@@ -25,12 +25,6 @@ const statusColors = {
   "Trả Hàng": "rgba(108, 117, 125, 0.7)",
 };
 
-// Booking type colors for charts
-const typeColors = {
-  "ONCE": "rgba(13, 110, 253, 0.7)",
-  "REPEAT": "rgba(111, 66, 193, 0.7)",
-};
-
 // Define types for props
 type BookingData = {
   bookingstatus: string;

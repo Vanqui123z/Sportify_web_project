@@ -1,5 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
-import { AuthContext } from "../../helper/AuthContext";
+import React, { useEffect, useState } from "react";
 import BookingCalendar from "../../components/admin/BookingCalendar";
 
 interface DashboardStats {
@@ -52,7 +51,6 @@ interface TopProduct {
 }
 
 const Dashboard: React.FC = () => {
-  const { user } = useContext(AuthContext);
   const [stats, setStats] = useState<DashboardStats>({
     countOrderInDate: 0,
     countBookingInDate: 0,

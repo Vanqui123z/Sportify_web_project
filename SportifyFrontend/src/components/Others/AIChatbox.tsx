@@ -48,10 +48,6 @@ interface AvailableShiftsResponse {
   availableShifts: Shift[];
 }
 
-interface FieldResponse {
-  fields: Field[];
-}
-
 interface BookingResponse {
   fieldName: string;
   date: string;
@@ -59,33 +55,6 @@ interface BookingResponse {
   redirectUrl: string;
   message: string;
 }
-
-interface UnknownResponse {
-  action: string;
-  message: string;
-}
-
-interface InfoNeededResponse {
-  message: string;
-}
-
-// Image error handler component
-const SafeImage: React.FC<{ src?: string; alt: string; className?: string }> = ({ src, alt, className }) => {
-  const [imgSrc, setImgSrc] = useState(src);
-
-  const handleImageError = () => {
-    setImgSrc("/user/images/default.png");
-  };
-
-  return (
-    <img
-      src={imgSrc || "/user/images/default.png"}
-      alt={alt}
-      className={className}
-      onError={handleImageError}
-    />
-  );
-};
 
 // Field list component
 const FieldList: React.FC<{ fields: Field[] }> = ({ fields }) => {
@@ -205,7 +174,7 @@ const TypingIndicator: React.FC = () => {
 
 const AIChatbox: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const [input, setInput] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -368,7 +337,7 @@ const AIChatbox: React.FC = () => {
     // Save user message to database
     await saveMessageToDatabase(msg, null, "user");
     
-    setInput("");
+    // setInput("");  // input state not currently used in this component
     setIsLoading(true);
     
     try {
@@ -418,15 +387,6 @@ const AIChatbox: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleSend = () => {
-    const v = input.trim();
-    if (v) ask(v);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") handleSend();
   };
 
   // Render a message based on its type
