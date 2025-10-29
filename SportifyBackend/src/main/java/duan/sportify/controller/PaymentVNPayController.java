@@ -378,7 +378,7 @@ public class PaymentVNPayController {
 				if (saveOrder != null) {
 					saveOrder.setOrderstatus("Đã Thanh Toán");
 					saveOrder.setPaymentstatus(true);
-					if (voucherOfUserIdInt != null) {
+					if (voucherOfUserIdInt != null)   {
 						voucherOfUserService.usedVoucher(voucherOfUserIdInt);
 					}
 					ordersService.update(saveOrder);

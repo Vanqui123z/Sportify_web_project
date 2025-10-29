@@ -93,6 +93,7 @@ public class BookingRestController {
 	@PostMapping("/deleteMultiple")
 	@Transactional
 	public ResponseEntity<Void> deleteBookings(@RequestBody List<Integer> bookingIds) {
+		System.out.println("Deleting bookings with IDs: " + bookingIds);
 		bookingDAO.deleteBookingDetailsByBookingIds(bookingIds);
 		bookingDAO.deletePermanentBookingByBookingIds(bookingIds);
 		bookingDAO.deleteAllByIdInBatch(bookingIds);

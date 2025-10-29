@@ -80,6 +80,21 @@ const VoucherOfUser: React.FC<VoucherOfUserProps> = ({ username, ButtonAdd }) =>
         }
     };
 
+    const handleRevokeVoucher = async (id: number) => {
+        if (window.confirm('Are you sure you want to revoke this voucher?')) {
+            try {
+                await axios.delete(`http://localhost:8081/api/user/voucher-of-user/delete/${id}`, {
+                    withCredentials: true
+                });
+                setUserVouchers(prevVouchers => prevVouchers.filter(voucher => voucher.id !== id));
+                alert('Voucher đã được thu hồi thành công!');
+            } catch (error) {
+                console.error('Error revoking voucher:', error);
+                alert('Thu hồi voucher thất bại');
+            }
+        }
+    };
+
     return (
         <div>
             <div className="d-flex justify-content-between align-items-center mb-3">
@@ -104,6 +119,7 @@ const VoucherOfUser: React.FC<VoucherOfUserProps> = ({ username, ButtonAdd }) =>
                             <th className='text-dark'>Quantity</th>
                             <th className='text-dark'>Start Date</th>
                             <th className='text-dark'>End Date</th>
+                            {ButtonAdd && <th className='text-dark'>Actions</th>}
                         </tr>
                     </thead>
                     <tbody>
@@ -114,6 +130,16 @@ const VoucherOfUser: React.FC<VoucherOfUserProps> = ({ username, ButtonAdd }) =>
                                 <td>{item.quantity}</td>
                                 <td>{new Date(item.startDate).toLocaleDateString()}</td>
                                 <td>{new Date(item.endDate).toLocaleDateString()}</td>
+                                {ButtonAdd && (
+                                    <td>
+                                        <button 
+                                            className="btn btn-danger btn-sm"
+                                            onClick={() => handleRevokeVoucher(item.id)}
+                                        >
+                                            <i className="fa fa-trash"></i> Revoke
+                                        </button>
+                                    </td>
+                                )}
                             </tr>
                         ))}
                     </tbody>
