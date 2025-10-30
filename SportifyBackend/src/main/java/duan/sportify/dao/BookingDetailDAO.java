@@ -122,4 +122,14 @@ public interface BookingDetailDAO extends JpaRepository<Bookingdetails, Integer>
 			"AND pb.active = 1 " +
 			"GROUP BY f.fieldid, f.namefield", nativeQuery = true)
 	List<Object[]> findActiveFieldsByMonth(@Param("yearMonth") String yearMonth);
+	// Lấy danh sách sân mà user đã đặt nhiều nhất
+	@Query(value = "SELECT DISTINCT f.* FROM field f " +
+			"INNER JOIN bookingdetails bd ON f.fieldid = bd.fieldid " +
+			"INNER JOIN bookings b ON bd.bookingid = b.bookingid " +
+			"WHERE b.username = :username AND b.bookingstatus <> 'Hủy Đặt' " +
+			"AND f.status = 1 " +
+			"GROUP BY f.fieldid " +
+			"ORDER BY COUNT(*) DESC " +
+			"LIMIT 4", nativeQuery = true)
+	List<Object[]> findUserMostBookedFields(@Param("username") String username);
 }

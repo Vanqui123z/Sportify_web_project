@@ -1,7 +1,9 @@
 import React, { useRef, useState } from "react";
 import CustomCard from "../user/CustomCard";
+import AIChatInputWithMedia from "./AIChatInputWithMedia";
 import "../../styles/GroupChat.css";
 import "../../styles/AIChatbox.css";
+import "../../styles/AIChatInputWithMedia.css";
 import getImageUrl from "../../helper/getImageUrl";
 
 type Message = { 
@@ -47,10 +49,6 @@ interface AvailableShiftsResponse {
   date: string;
   message: string;
   availableShifts: Shift[];
-}
-
-interface FieldResponse {
-  fields: Field[];
 }
 
 interface BookingResponse {
@@ -112,24 +110,25 @@ const FieldList: React.FC<{ fields: Field[] }> = ({ fields }) => {
   return (
     <div className="ai-field-grid">
       {fields.map((field) => (
-        <CustomCard
-          key={field.fieldid}
-          id={field.fieldid}
-          title={field.namefield}
-          image={getImageUrl(field.image)}
-          link={`/sportify/field/detail/${field.fieldid}`}
-          badgeText={field.sporttype.categoryname}
-          badgeColor="bg-success"
-          extraInfo={
-            <div>
-              <div><i className="fas fa-map-marker-alt me-1"></i>{field.address}</div>
-              <div className="mt-1 fw-bold text-primary">
-                <i className="fas fa-tag me-1"></i>{field.price.toLocaleString('vi-VN')}đ/giờ
+        <div key={field.fieldid} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <CustomCard
+            id={field.fieldid}
+            title={field.namefield}
+            image={getImageUrl(field.image)}
+            link={`/sportify/field/detail/${field.fieldid}`}
+            badgeText={field.sporttype.categoryname}
+            badgeColor="bg-success"
+            extraInfo={
+              <div>
+                <div><i className="fas fa-map-marker-alt me-1"></i>{field.address}</div>
+                <div className="mt-1 fw-bold text-primary">
+                  <i className="fas fa-tag me-1"></i>{field.price.toLocaleString('vi-VN')}đ/giờ
+                </div>
               </div>
-            </div>
-          }
-          buttonText="Xem chi tiết"
-        />
+            }
+            buttonText="Xem chi tiết"
+          />
+        </div>
       ))}
     </div>
   );
@@ -350,10 +349,115 @@ const TypingIndicator: React.FC = () => {
 
 const AIChatbox: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const [input, setInput] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
+  const [userId, setUserId] = useState<string>("");
+
+  // Quick replies suggestions
+  const quickReplies = [
+    "🛍️ Sản phẩm nào tốt?",
+    "🏟️ Cho thuê sân",
+    "⚽ Sự kiện gần đây",
+    "📞 Liên hệ với tôi"
+  ];
+
+  // Initialize userId from localStorage
+  React.useEffect(() => {
+    let storedUserId = localStorage.getItem("aichatbox_userId");
+    if (!storedUserId) {
+      // Generate a unique userId if not exists
+      storedUserId = "user_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem("aichatbox_userId", storedUserId);
+    }
+    setUserId(storedUserId);
+  }, []);
+
+  // Load messages from localStorage on mount
+  // Track if we've loaded from database
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  React.useEffect(() => {
+    const loadInitialMessages = async () => {
+      const savedMessages = localStorage.getItem("aichatbox_messages");
+      if (savedMessages) {
+        try {
+          setMessages(JSON.parse(savedMessages));
+        } catch (error) {
+          console.error("Error loading messages from localStorage:", error);
+        }
+      } else {
+        // Only load from database if localStorage is empty
+        await loadChatHistoryFromDatabase();
+      }
+      setIsLoaded(true);
+    };
+    
+    loadInitialMessages();
+  }, []);
+
+  // Save messages to localStorage whenever they change (but only after initial load)
+  React.useEffect(() => {
+    if (isLoaded) {
+      localStorage.setItem("aichatbox_messages", JSON.stringify(messages));
+    }
+  }, [messages, isLoaded]);
+
+  // Load chat history from database
+  const loadChatHistoryFromDatabase = async () => {
+    if (!userId) return; // Wait until userId is set
+    
+    try {
+      const res = await fetch(`http://localhost:8081/sportify/rest/ai/history/get-history?userId=${encodeURIComponent(userId)}`);
+      const data = await res.json();
+      
+      if (data.status === "success" && data.data && data.data.length > 0) {
+        // Convert database format to frontend format
+        const dbMessages = data.data.map((item: any) => {
+          try {
+            const parsedData = item.messageData ? JSON.parse(item.messageData) : {};
+            return {
+              role: item.role,
+              text: item.message || item.response,
+              ...parsedData
+            };
+          } catch {
+            return {
+              role: item.role,
+              text: item.message || item.response
+            };
+          }
+        });
+        
+        // Load from database only if localStorage is empty
+        setMessages(dbMessages);
+      }
+    } catch (error) {
+      console.error("Error loading chat history from database:", error);
+    }
+  };
+
+  // Save message to database
+  const saveMessageToDatabase = async (msg: string, response: any, role: string) => {
+    if (!userId) return; // Wait until userId is set
+    
+    try {
+      await fetch("http://localhost:8081/sportify/rest/ai/history/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: userId,
+          message: msg,
+          response: typeof response === 'string' ? response : JSON.stringify(response),
+          role: role,
+          messageData: JSON.stringify(response)
+        })
+      });
+    } catch (error) {
+      console.error("Error saving message to database:", error);
+    }
+  };
 
   React.useEffect(() => {
     if (open && bodyRef.current) {
@@ -406,44 +510,77 @@ const AIChatbox: React.FC = () => {
     }
   };
 
-  const ask = async (msg: string) => {
+  const ask = async (msg: string, attachments: File[] = []) => {
+    // Validate message is not empty
+    if (!msg || !msg.trim()) {
+      console.warn("Message is empty, not sending");
+      return;
+    }
+
     appendUserMessage(msg);
-    setInput("");
+    // Save user message to database
+    await saveMessageToDatabase(msg, null, "user");
+    
+    // setInput("");  // input state not currently used in this component
     setIsLoading(true);
     
     try {
-      const res = await fetch("http://localhost:8081/sportify/rest/ai/analyze", {
+      // Prepare FormData if there are attachments
+      const formData = new FormData();
+      formData.append("message", msg.trim());
+      
+      // Add files to FormData
+      attachments.forEach((file) => {
+        formData.append("files", file);
+      });
+
+      // Sử dụng endpoint product-chat cho AI thân thiện + gợi ý sản phẩm
+      const res = await fetch("http://localhost:8081/sportify/rest/ai/product-chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: msg }),
+        body: attachments.length > 0 ? formData : JSON.stringify({ message: msg }),
+        headers: attachments.length > 0 
+          ? undefined 
+          : { "Content-Type": "application/json" },
       });
       const data = await res.json();
-      console.log(data);
+      console.log("Product Chat Response:", data);
       
       if (data && data.reply) {
-        appendBotMessage(data.reply);
+        // Nếu reply là HTML, hiển thị nó trực tiếp
+        if (typeof data.reply === 'string' && data.reply.includes('<')) {
+          setMessages((msgs) => [...msgs, { role: "bot", text: data.reply }]);
+          // Save bot response to database
+          await saveMessageToDatabase(msg, data.reply, "bot");
+        } else {
+          appendBotMessage(data.reply);
+          // Save bot response to database
+          await saveMessageToDatabase(msg, data.reply, "bot");
+        }
       } else {
-        appendBotMessage("Xin lỗi, hiện chưa nhận được phản hồi.");
+        const fallbackMsg = "Xin lỗi, hiện chưa nhận được phản hồi.";
+        appendBotMessage(fallbackMsg);
+        // Save bot response to database
+        await saveMessageToDatabase(msg, fallbackMsg, "bot");
       }
-    } catch {
+    } catch (error) {
+      console.error("Chat error:", error);
+      const errorMsg = "Lỗi kết nối đến AI.";
+      appendBotMessage(errorMsg);
+      // Save error message to database
+      await saveMessageToDatabase(msg, errorMsg, "bot");
+    } finally {
       setIsLoading(false);
-      appendBotMessage("Lỗi kết nối đến AI.");
     }
-  };
-
-  const handleSend = () => {
-    const v = input.trim();
-    if (v) ask(v);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") handleSend();
   };
 
   // Render a message based on its type
   const renderMessage = (message: Message, index: number) => {
     if (message.role === "user") {
-      return <div key={index} className="ai-msg ai-user">{message.text}</div>;
+      return (
+        <div key={index} className="ai-msg ai-user">
+          <div className="ai-msg-content">{message.text}</div>
+        </div>
+      );
     }
     
     if (message.role === "typing") {
@@ -452,13 +589,48 @@ const AIChatbox: React.FC = () => {
     
     // Bot responses
     if (message.text) {
-      return <div key={index} className="ai-msg ai-bot">{message.text}</div>;
+      // Nếu text chứa HTML, hiển thị dưới dạng HTML
+      if (message.text.includes('<')) {
+        return (
+          <div 
+            key={index} 
+            className="ai-msg ai-bot"
+          >
+            <div
+              className="ai-msg-content ai-html-content"
+              dangerouslySetInnerHTML={{ __html: message.text }}
+              onClick={(e) => {
+                const target = e.target as HTMLElement;
+                if (target.tagName === 'A') {
+                  const href = target.getAttribute('href');
+                  if (href) {
+                    // Nếu là absolute URL hoặc relative URL
+                    if (href.startsWith('/')) {
+                      window.location.href = href;
+                    } else if (href.startsWith('http')) {
+                      window.open(href, '_blank');
+                    }
+                    e.preventDefault();
+                  }
+                }
+              }}
+            />
+          </div>
+        );
+      }
+      return (
+        <div key={index} className="ai-msg ai-bot">
+          <div className="ai-msg-content">{message.text}</div>
+        </div>
+      );
     }
     
     if (message.fieldData) {
       return (
         <div key={index} className="ai-msg ai-bot">
-          <FieldList fields={message.fieldData.fields} />
+          <div className="ai-msg-content">
+            <FieldList fields={message.fieldData.fields} />
+          </div>
         </div>
       );
     }
@@ -466,7 +638,9 @@ const AIChatbox: React.FC = () => {
     if (message.shiftData) {
       return (
         <div key={index} className="ai-msg ai-bot">
-          <ShiftGroups data={message.shiftData} />
+          <div className="ai-msg-content">
+            <ShiftGroups data={message.shiftData} />
+          </div>
         </div>
       );
     }
@@ -474,7 +648,9 @@ const AIChatbox: React.FC = () => {
     if (message.bookingData) {
       return (
         <div key={index} className="ai-msg ai-bot">
-          <BookingInfo data={message.bookingData} />
+          <div className="ai-msg-content">
+            <BookingInfo data={message.bookingData} />
+          </div>
         </div>
       );
     }
@@ -506,7 +682,9 @@ const AIChatbox: React.FC = () => {
     if (message.unknownData) {
       return (
         <div key={index} className="ai-msg ai-bot ai-unknown">
-          {message.unknownData.message}
+          <div className="ai-msg-content">
+            {message.unknownData.message}
+          </div>
         </div>
       );
     }
@@ -514,7 +692,9 @@ const AIChatbox: React.FC = () => {
     if (message.infoNeededData) {
       return (
         <div key={index} className="ai-msg ai-bot ai-info-needed">
-          {message.infoNeededData.message}
+          <div className="ai-msg-content">
+            {message.infoNeededData.message}
+          </div>
         </div>
       );
     }
@@ -538,30 +718,65 @@ const AIChatbox: React.FC = () => {
       >
         <div className="ai-chat-header">
           <span>Sportify AI</span>
-          <button
-            onClick={() => setOpen(false)}
-            aria-label="Đóng"
-          >
-            ×
-          </button>
+          <div className="ai-header-actions">
+            {messages.length > 0 && (
+              <button
+                onClick={() => {
+                  if (confirm("Bạn có chắc muốn xóa toàn bộ lịch sử chat?")) {
+                    setMessages([]);
+                    localStorage.removeItem("aichatbox_messages");
+                  }
+                }}
+                aria-label="Xóa lịch sử"
+                title="Xóa lịch sử chat"
+                className="ai-clear-btn"
+              >
+                🗑️
+              </button>
+            )}
+            <button
+              onClick={() => setOpen(false)}
+              aria-label="Đóng"
+            >
+              ×
+            </button>
+          </div>
         </div>
         <div className="ai-chat-body" ref={bodyRef}>
-          {messages.map((message, index) => renderMessage(message, index))}
-          {isLoading && <TypingIndicator />}
+          {messages.length === 0 ? (
+            <div className="ai-welcome-container">
+              <div className="ai-welcome-emoji">👋</div>
+              <div className="ai-welcome-title">
+                Xin chào! Tôi là Sportify AI
+              </div>
+              <div className="ai-welcome-text">
+                Hỏi tôi về sản phẩm, sân, đội hoặc bất cứ điều gì!
+              </div>
+              <div className="ai-quick-replies">
+                {quickReplies.map((reply, i) => (
+                  <button 
+                    key={i}
+                    className="ai-quick-reply"
+                    onClick={() => ask(reply)}
+                  >
+                    {reply}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <>
+              {messages.map((message, index) => renderMessage(message, index))}
+              {isLoading && <TypingIndicator />}
+            </>
+          )}
         </div>
-        <div className="ai-chat-input">
-          <input
-            type="text"
-            placeholder="Nhập câu hỏi..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            disabled={isLoading}
-          />
-          <button onClick={handleSend} disabled={isLoading}>
-            Gửi
-          </button>
-        </div>
+        <AIChatInputWithMedia
+          onSendMessage={ask}
+          onStartRecording={() => console.log("Recording started")}
+          onStopRecording={() => console.log("Recording stopped")}
+          isLoading={isLoading}
+        />
       </div>
     </>
   );

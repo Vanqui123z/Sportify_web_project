@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import { useCart } from "../../../helper/useCartCount";
 
 interface CartItem {
   cartItemId: number;
@@ -25,6 +26,9 @@ interface ApiResponse {
 
 const Cart: React.FC = () => {
   const [cart, setCart] = useState<CartData | null>(null);
+  const [selectedItems, setSelectedItems] = useState<number[]>([]);
+  const { updateCartCount } = useCart();
+  const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     fetch("http://localhost:8081/api/user/cart/view", {
@@ -42,56 +46,186 @@ const Cart: React.FC = () => {
 
   const handleQuantityChange = (index: number, quantity: number) => {
     if (!cart) return;
+    
+    const newQuantity = Math.max(1, Math.min(15, quantity));
+    const item = cart.items[index];
+    
+    // Cập nhật UI ngay lập tức
     const items = [...cart.items];
-    items[index].quantity = Math.max(1, Math.min(15, quantity));
+    items[index].quantity = newQuantity;
     setCart({ ...cart, items });
-    // TODO: Call API to update quantity if needed
+    
+    // Clear timeout cũ nếu có
+    if (updateTimeoutRef.current) {
+      clearTimeout(updateTimeoutRef.current);
+    }
+    
+    // Đợi 500ms sau khi người dùng ngừng thay đổi mới gọi API
+    updateTimeoutRef.current = setTimeout(() => {
+      fetch(`http://localhost:8081/api/user/cart/update/${item.cartItemId}?quantity=${newQuantity}`, {
+        method: "PUT",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          console.log("Quantity updated successfully");
+          // Cập nhật số lượng giỏ hàng trong header
+          updateCartCount();
+        }
+      })
+      .catch((err) => {
+        console.error("Error updating quantity:", err);
+        // Nếu có lỗi, reload lại giỏ hàng từ server
+        fetch("http://localhost:8081/api/user/cart/view", {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((res) => res.json())
+          .then((data: ApiResponse) => {
+            if (data.success) setCart(data.cart);
+          })
+          .catch((reloadErr) => {
+            console.error("Error reloading cart:", reloadErr);
+          });
+      });
+    }, 500);
+  };
+
+  const toggleSelectItem = (cartItemId: number) => {
+    setSelectedItems(prev => {
+      if (prev.includes(cartItemId)) {
+        return prev.filter(id => id !== cartItemId);
+      } else {
+        return [...prev, cartItemId];
+      }
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (!cart) return;
+    if (selectedItems.length === cart.items.length) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(cart.items.map(item => item.cartItemId));
+    }
   };
 
   const removeProduct = (cartItemId: number) => {
     console.log("Removing item with ID:", cartItemId);
+    
+    if (!cart) return;
+    
+    // Cập nhật UI ngay lập tức để trải nghiệm mượt mà
+    const updatedItems = cart.items.filter((item) => item.cartItemId !== cartItemId);
+    setCart({ ...cart, items: updatedItems });
+    setSelectedItems(prev => prev.filter(id => id !== cartItemId));
+    
+    // Gọi API để xóa trong database
     fetch(`http://localhost:8081/api/user/cart/remove/${cartItemId}`, {
       method: "DELETE",
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
       }, 
-    }).then(() => {
-      if (!cart) return;
-      const items = cart.items.filter((item) => item.cartItemId !== cartItemId);
-      setCart({ ...cart, items });
-    }).catch((err) => {
+    })
+    .then((res) => {
+      console.log("Delete response status:", res.status);
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      return res.json();
+    })
+    .then((data) => {
+      console.log("Delete response data:", data);
+      if (data.success) {
+        // Cập nhật số lượng giỏ hàng trong header
+        updateCartCount();
+      }
+    })
+    .catch((err) => {
       console.error("Error removing product:", err);
-      if (!cart) return;
-      const items = cart.items.filter((item) => item.cartItemId !== cartItemId);
-      setCart({ ...cart, items });
+      // Nếu API lỗi, reload lại giỏ hàng từ server
+      fetch("http://localhost:8081/api/user/cart/view", {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((res) => res.json())
+        .then((data: ApiResponse) => {
+          if (data.success) setCart(data.cart);
+        })
+        .catch((reloadErr) => {
+          console.error("Error reloading cart:", reloadErr);
+        });
     });
   };
 
   const clearCart = () => {
+    if (!cart) return;
+    
+    // Cập nhật UI ngay lập tức
+    setCart({ ...cart, items: [] });
+    setSelectedItems([]);
+    
+    // Gọi API để xóa trong database
     fetch(`http://localhost:8081/api/user/cart/remove-all`, {
       method: "DELETE",
       credentials: "include",  
       headers: {
         "Content-Type": "application/json",
       },
-    }).then(() => {
-
-      if (!cart) return;
-      setCart({ ...cart, items: [] });
+    })
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      return res.json();
+    })
+    .then((data) => {
+      if (data.success) {
+        // Cập nhật số lượng giỏ hàng trong header
+        updateCartCount();
+      }
+    })
+    .catch((err) => {
+      console.error("Error clearing cart:", err);
+      // Nếu API lỗi, reload lại giỏ hàng từ server
+      fetch("http://localhost:8081/api/user/cart/view", {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((res) => res.json())
+        .then((data: ApiResponse) => {
+          if (data.success) setCart(data.cart);
+        })
+        .catch((reloadErr) => {
+          console.error("Error reloading cart:", reloadErr);
+        });
     });
-
   };
 
-  const cartCount = cart ? cart.items.reduce((sum, item) => sum + item.quantity, 0) : 0;
-  const totalPrice = cart
-    ? cart.items.reduce(
-        (sum, item) => sum + item.quantity * (item.price - item.discountprice),
-        0
-      )
+  
+  // Tính tổng tiền của các sản phẩm ĐƯỢC CHỌN
+  const selectedTotalPrice = cart
+    ? cart.items
+        .filter(item => selectedItems.includes(item.cartItemId))
+        .reduce((sum, item) => sum + item.quantity * (item.price - item.discountprice), 0)
     : 0;
-  const shippingFee = totalPrice > 0 ? 30000 : 0;
-  const updateTotalPrice = totalPrice + shippingFee;
+  
+  const shippingFee = selectedTotalPrice > 0 ? 30000 : 0;
+  const updateTotalPrice = selectedTotalPrice + shippingFee;
 
   return (
     <div>
@@ -130,7 +264,15 @@ const Cart: React.FC = () => {
               <table className="table">
                 <thead className="thead-primary">
                   <tr>
-                    <th>&nbsp;</th>
+                    <th>
+                      <input
+                        type="checkbox"
+                        checked={!!(cart && cart.items.length > 0 && selectedItems.length === cart.items.length)}
+                        onChange={toggleSelectAll}
+                        style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                      />
+                    </th>
+                    <th>Hình ảnh</th>
                     <th>Tên sản phẩm</th>
                     <th>Giá</th>
                     <th>Số lượng</th>
@@ -142,6 +284,14 @@ const Cart: React.FC = () => {
                   {cart && cart.items.length > 0 ? (
                     cart.items.map((item, idx) => (
                       <tr className="alert" role="alert" key={item.cartItemId}>
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={selectedItems.includes(item.cartItemId)}
+                            onChange={() => toggleSelectItem(item.cartItemId)}
+                            style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                          />
+                        </td>
                         <td>
                           <img className="img" alt="Error" src={`/user/images/${item.image}`} />
                         </td>
@@ -185,7 +335,7 @@ const Cart: React.FC = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={6} className="text-center">
+                      <td colSpan={7} className="text-center">
                         Giỏ hàng trống
                       </td>
                     </tr>
@@ -204,24 +354,51 @@ const Cart: React.FC = () => {
             <div className="col col-lg-5 col-md-6 mt-5 cart-wrap" style={{ background: "white" }}>
               <div className="cart-total mb-3">
                 <h3>Thanh toán giỏ hàng</h3>
-                <p className="d-flex">
-                  <span>Tạm tính: </span>
-                  <span>{totalPrice.toLocaleString()}đ</span>
-                </p>
-                <p className="d-flex">
-                  <span>Phí vận chuyển: </span>
-                  <span>{shippingFee.toLocaleString()}đ</span>
-                </p>
-                <hr />
-                <p className="d-flex total-price">
-                  <span>Thành tiền</span>
-                  <span>{updateTotalPrice.toLocaleString()}đ</span>
-                </p>
+                {selectedItems.length > 0 ? (
+                  <>
+                    <p className="d-flex">
+                      <span>Đã chọn: </span>
+                      <span style={{ color: '#28a745', fontWeight: 'bold' }}>
+                        {selectedItems.length} sản phẩm
+                      </span>
+                    </p>
+                    <p className="d-flex">
+                      <span>Tạm tính: </span>
+                      <span>{selectedTotalPrice.toLocaleString()}đ</span>
+                    </p>
+                    <p className="d-flex">
+                      <span>Phí vận chuyển: </span>
+                      <span>{shippingFee.toLocaleString()}đ</span>
+                    </p>
+                    <hr />
+                    <p className="d-flex total-price">
+                      <span>Thành tiền</span>
+                      <span>{updateTotalPrice.toLocaleString()}đ</span>
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-center text-muted" style={{ padding: '20px 0' }}>
+                    Vui lòng chọn sản phẩm để thanh toán
+                  </p>
+                )}
               </div>
               <p className="text-center">
-                <a href="/sportify/cart/checkout" className="btn btn-primary py-3 px-4">
-                  Tiến hành thanh toán
-                </a>
+                {selectedItems.length > 0 ? (
+                  <a 
+                    href={`/sportify/cart/checkout/items?ids=${selectedItems.join(',')}`}
+                    className="btn btn-primary py-3 px-4"
+                  >
+                    Thanh toán ({selectedItems.length} sản phẩm)
+                  </a>
+                ) : (
+                  <button 
+                    className="btn btn-secondary py-3 px-4" 
+                    disabled
+                    style={{ cursor: 'not-allowed' }}
+                  >
+                    Thanh toán
+                  </button>
+                )}
               </p>
             </div>
           </div>

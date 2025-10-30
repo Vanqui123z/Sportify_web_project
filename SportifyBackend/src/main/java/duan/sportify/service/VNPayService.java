@@ -12,7 +12,7 @@ import duan.sportify.config.VNPayConfig;
 public class VNPayService {
     // Tạo Url Thanh toán VNPAY
     public String generatePaymentUrl(String inputMoney, String ipAddress, Integer voucherOfUserId, String username) throws Exception {
-        int amount = (int) Double.parseDouble(inputMoney) * 100;
+         int amount = (int) Double.parseDouble(inputMoney) * 100;
         String vnp_TxnRef = "FIELD_" + VNPayConfig.getRandomNumber(8);
 
         Map<String, String> vnp_Params = new HashMap<>();
@@ -22,7 +22,7 @@ public class VNPayService {
         vnp_Params.put("vnp_Amount", String.valueOf(amount));
         vnp_Params.put("vnp_CurrCode", "VND");
         vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
-        vnp_Params.put("vnp_OrderInfo", "Thanh toan don hang:" + vnp_TxnRef +" cho username " + username + " voi voucher " + voucherOfUserId);
+        vnp_Params.put("vnp_OrderInfo", "Thanh toan don hang:" + vnp_TxnRef);
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_ReturnUrl", VNPayConfig.vnp_Returnurl);
         vnp_Params.put("vnp_IpAddr", ipAddress);
@@ -61,8 +61,10 @@ public class VNPayService {
         }
 
         String vnp_SecureHash = VNPayConfig.hmacSHA512(VNPayConfig.vnp_HashSecret, hashData.toString());
+        System.out.println("Generated VNPAY Payment URL: " + VNPayConfig.vnp_PayUrl + "?" + query.toString() + "&vnp_SecureHash=" + vnp_SecureHash);
         return VNPayConfig.vnp_PayUrl + "?" + query.toString() + "&vnp_SecureHash=" + vnp_SecureHash;
     }
+
     // Tạo Url Tạo token VNPAY
     public String generateTokenUrl(String ipAddress, String appUserId, String cardType, String bankCode)
             throws Exception {
@@ -131,7 +133,7 @@ public class VNPayService {
         vnp_Params.put("vnp_token", token);
         vnp_Params.put("vnp_amount", String.valueOf(amount));
         vnp_Params.put("vnp_curr_code", "VND");
-        vnp_Params.put("vnp_txn_desc", "Thanh toan don hang " + vnp_TxnRef + " cho username " + appUserId + " voi voucher " + voucherOfUserId);
+        vnp_Params.put("vnp_txn_desc", "Thanh toan don hang " + vnp_TxnRef + " cho username " + appUserId + " voi voucher " + (voucherOfUserId != null ? voucherOfUserId : 0));
         vnp_Params.put("vnp_create_date", new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
         vnp_Params.put("vnp_ip_addr", ipAddress);
         vnp_Params.put("vnp_return_url", VNPayConfig.vnp_Returnurl);

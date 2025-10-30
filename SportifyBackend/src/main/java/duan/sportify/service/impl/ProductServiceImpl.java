@@ -46,7 +46,7 @@ public class ProductServiceImpl implements ProductService{
 	@Override
 	public Products findById(Integer productid) {
 		// TODO Auto-generated method stub
-		return productDAO.findById(productid).get();
+		return productDAO.findById(productid).orElse(null);
 	}
 
 	@Override

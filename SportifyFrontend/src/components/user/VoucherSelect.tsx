@@ -46,8 +46,16 @@ const VoucherSelect: React.FC<VoucherSelectProps> = ({ username, tamtinh, onVouc
 
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedVoucherId = e.target.value;
+    // If user selected the "no voucher" option, clear selection
+    if (selectedVoucherId === 'none') {
+      setDiscountCode('none');
+      setVoucherOfUserId(null);
+      setSelectedVoucher(null);
+      return;
+    }
+
     const selectedVoucher = userVouchers.find(uv => uv.voucherid.voucherid === selectedVoucherId);
-    
+
     setDiscountCode(selectedVoucherId);
     if (selectedVoucher) {
       setVoucherOfUserId(selectedVoucher.id);
@@ -60,6 +68,22 @@ const VoucherSelect: React.FC<VoucherSelectProps> = ({ username, tamtinh, onVouc
 
   const handleApplyDiscount = async (e: React.MouseEvent) => {
     e.preventDefault();
+
+    // If user chose "no voucher", clear any applied voucher and restore original price
+    if (discountCode === 'none') {
+      setAppliedCode(null);
+      setVoucherOfUserId(null);
+      setSelectedVoucher(null);
+      if (tamtinh && onApply) {
+        onApply(null, tamtinh, null);
+      } else if (tamtinh && onVoucherApplied) {
+        // also notify voucher cleared
+        onVoucherApplied(0, null);
+      }
+      if (onVoucherApplied) onVoucherApplied(0, null);
+      alert('Voucher đã được hủy, giá trở về ban đầu.');
+      return;
+    }
 
     if (!discountCode || !selectedVoucher) {
       alert('Vui lòng chọn voucher!');
@@ -129,6 +153,7 @@ const VoucherSelect: React.FC<VoucherSelectProps> = ({ username, tamtinh, onVouc
         className="form-control"
       >
         <option value="">Chọn voucher</option>
+        <option value="none">Không voucher</option>
         {userVouchers.map((uv) => (
           <option 
             key={uv.id} 

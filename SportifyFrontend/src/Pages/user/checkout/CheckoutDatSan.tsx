@@ -447,9 +447,9 @@ const CheckoutDatSan: React.FC = () => {
                               </span>
                               <input type="hidden" name="pricefield" value={pricefield} />
                             </div>
-                            <div>
+                            <div className='d-flex'>
                               <label >Số lượng </label>
-                              <span style={{ color: "black", fontWeight: "bold", marginLeft: "30px" }}>
+                              <span  style={{ color: "black", fontWeight: "bold", marginLeft: "30px" }}>
                                 {totalDay.toLocaleString()}
                               </span>
                             </div>
@@ -457,15 +457,6 @@ const CheckoutDatSan: React.FC = () => {
                         </div>
                         <hr />
                         <div>
-                          <span>Tạm tính :</span>
-                          <span style={{ color: "black" }}>{tamtinh.toLocaleString()}₫</span>
-                        </div>
-                        <div>
-                          <span>Giảm giá :</span>
-                          <span style={{ color: "black" }}>{(tamtinh - thanhtien).toLocaleString()}₫</span>
-                        </div>
-                        <div>
-                          <label> Mã giảm giá:</label>
                           <div>
                             <VoucherSelect 
                               username={user?.username}
@@ -480,6 +471,20 @@ const CheckoutDatSan: React.FC = () => {
                           </div>
                         </div>
                         <hr />
+                         <div>
+                          <span>Tạm tính :</span>
+                          <span style={{ color: "black" }}>{tamtinh.toLocaleString()}₫</span>
+                        </div>
+                        <div>
+                          <span style={{ color: "green" }}>Giảm giá :  </span>
+                          {tamtinh !== thanhtien ? (
+                            <span style={{ color: "green" }}>
+                              {((tamtinh - thanhtien) / tamtinh * 100).toFixed(0)}% ({(tamtinh - thanhtien).toLocaleString()}₫)
+                            </span>
+                          ) : (
+                            <span style={{ color: "black" }}>0₫</span>
+                          )}
+                        </div>
                         <div style={{ height: "40px", display: "flex", alignItems: "center" }}>
                           <span style={{ color: "red" }}>Thành Tiền:</span> &nbsp;
                           <span style={{ color: "black", fontWeight: "bold" }}>

@@ -16,7 +16,6 @@ interface CustomCardProps {
 }
 
 export default function CustomCard({
-  id,
   title,
   link,
   image,
@@ -28,14 +27,17 @@ export default function CustomCard({
   buttonColor = "btn-primary",
   onClick
 }: CustomCardProps) {
+  const [imageError, setImageError] = React.useState(false);
+
   return (
     <div className="card h-100 shadow-sm border-0 rounded-3 overflow-hidden">
       <div className="position-relative">
         <img
-          src={image}
+          src={imageError ? "/user/images/default.png" : image}
           alt={title}
           className="card-img-top"
           style={{ height: "200px", objectFit: "cover" }}
+          onError={() => setImageError(true)}
         />
         {badgeText && (
           <span className={`position-absolute top-0 end-0 m-2 badge ${badgeColor} rounded-pill`}>

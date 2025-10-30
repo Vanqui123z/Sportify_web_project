@@ -35,6 +35,7 @@ import duan.sportify.config.VNPayConfig;
 import duan.sportify.config.appConfig;
 import duan.sportify.entities.Bookingdetails;
 import duan.sportify.entities.Bookings;
+import duan.sportify.entities.CartItem;
 import duan.sportify.entities.Orderdetails;
 import duan.sportify.entities.Orders;
 import duan.sportify.entities.PaymentMethod;
@@ -67,6 +68,8 @@ public class PaymentVNPayController {
 	duan.sportify.service.CartService cartService; // Thêm dòng này
 	@Autowired
 	duan.sportify.service.PaymentMethodService paymentMethodService;
+	@Autowired
+	duan.sportify.Repository.CartItemRepository cartItemRepository;
 
 	@Autowired
 	appConfig appConfig;
@@ -96,22 +99,54 @@ public class PaymentVNPayController {
 		return null;
 	}
 
-	// Lấy IP máy người dùng thông qua API
+	// Lấy IP từ HttpServletRequest với fallback
+	private String getClientIpAddress(HttpServletRequest request) {
+		String ip = request.getHeader("X-Forwarded-For");
+		if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+			ip = request.getHeader("Proxy-Client-IP");
+		}
+		if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+			ip = request.getHeader("WL-Proxy-Client-IP");
+		}
+		if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+			ip = request.getHeader("HTTP_CLIENT_IP");
+		}
+		if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+			ip = request.getHeader("HTTP_X_FORWARDED_FOR");
+		}
+		if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+			ip = request.getRemoteAddr();
+		}
+		// Nếu vẫn là localhost hoặc IPv6 localhost, dùng IP mặc định
+		if (ip != null && (ip.equals("0:0:0:0:0:0:0:1") || ip.equals("127.0.0.1"))) {
+			ip = "127.0.0.1";
+		}
+		return ip != null ? ip : "127.0.0.1";
+	}
+
+	// Lấy IP máy người dùng thông qua API (giữ lại cho các endpoint khác)
 	@GetMapping("api/sportify/getIp")
 	@ResponseBody
 	public Map<String, String> getIpAddress() {
 		String apiUrl = "https://api.ipify.org?format=json";
-
-		ResponseEntity<String> response = restTemplate.getForEntity(apiUrl, String.class);
 		Map<String, String> result = new HashMap<>();
-		if (response.getStatusCode().is2xxSuccessful()) {
-			String responseData = response.getBody();
-			ipAddress = getIpAddressFromJsonString(responseData);
-			result.put("ip", ipAddress);
-		} else {
-			result.put("error", "Không thể lấy dữ liệu từ API.");
+		
+		try {
+			ResponseEntity<String> response = restTemplate.getForEntity(apiUrl, String.class);
+			if (response.getStatusCode().is2xxSuccessful()) {
+				String responseData = response.getBody();
+				ipAddress = getIpAddressFromJsonString(responseData);
+				result.put("ip", ipAddress);
+			} else {
+				result.put("ip", "127.0.0.1");
+				result.put("error", "Không thể lấy dữ liệu từ API.");
+			}
+		} catch (Exception e) {
+			System.err.println("Lỗi khi lấy IP từ API: " + e.getMessage());
+			result.put("ip", "127.0.0.1");
+			result.put("error", "Không thể kết nối đến API: " + e.getMessage());
 		}
-		return result; // ✅ JSON: {"ip": "183.81.18.77"}
+		return result;
 	}
 
 	// Các đối tượng cần thiết để trả về trạng thái thanh toán
@@ -134,7 +169,10 @@ public class PaymentVNPayController {
 	@PostMapping("api/user/getIp/create")
 	public ResponseEntity<?> createPayment(@RequestBody PermanentPaymentRequest body, HttpServletRequest request)
 			throws Exception {
-		ipAddress = getIpAddress().get("ip");
+		// Lấy IP từ request thay vì gọi API bên ngoài
+		String clientIp = getClientIpAddress(request);
+		System.out.println("Client IP for booking: " + clientIp);
+		
 		String username = (String) request.getSession().getAttribute("username");
 		Integer voucherOfUserId = Integer.parseInt(body.getVoucherOfUserId() != null ? body.getVoucherOfUserId() : "0");
 		System.out.println("voucherOfUserId: " + voucherOfUserId);
@@ -162,17 +200,19 @@ public class PaymentVNPayController {
 					body.getPlaydate(),
 					body.getPricefield());
 		}
-		System.out.println("ip address: " + ipAddress);
+		System.out.println("ip address: " + clientIp);
 		if (body.getCardId() == null || body.getCardId().isEmpty()) {
+			System.out.println("body no card: " + body.getCardId()+ " voucher: " + voucherOfUserId+ " username: " + username+ " amount: " + body.getAmount().toString() + " ip: " + clientIp + " note: " + body.getNote());
 			// chuyển sang trang thanh toán
-			String paymentUrl = vnPayService.generatePaymentUrl(body.getAmount().toString(), ipAddress, voucherOfUserId,username);
+			String paymentUrl = vnPayService.generatePaymentUrl(body.getAmount().toString(), clientIp, voucherOfUserId,username);
+			
 			return ResponseEntity.ok(new PaymentResDTO("Ok", "Successfully", paymentUrl));
 		} else {
 			Long cardId = Long.parseLong(body.getCardId());
 			String token = paymentMethodService.getPaymentMethod(cardId).getToken();
 			System.out.println("body: " + token);
 			// chuyển sang trang thanh toán
-			String paymentUrl = vnPayService.generatePaymentUrlByToken(body.getAmount().toString(), ipAddress,
+			String paymentUrl = vnPayService.generatePaymentUrlByToken(body.getAmount().toString(), clientIp,
 					username, token, 	voucherOfUserId);
 			return ResponseEntity.ok(new PaymentResDTO("Ok", "Successfully", paymentUrl));
 		}
@@ -184,7 +224,7 @@ public class PaymentVNPayController {
 			@RequestParam("cartid") int cartid,
 			@RequestParam("totalPrice") Double totalPrice,
 			@RequestParam("phone") String phone,
-			@RequestParam("productid") String productIds,
+			@RequestParam("productid") String cartItemIds,
 			@RequestParam("quantity") String quantities,
 			@RequestParam(value = "voucherOfUserId", required = false, defaultValue = "0") Integer voucherOfUserId,
 			HttpServletRequest request) throws Throwable {
@@ -209,27 +249,41 @@ public class PaymentVNPayController {
 		saveOrder = ordersService.create(newOrder);
 
 		// Tạo chi tiết đơn hàng (Orderdetails) từ giỏ hàng
-
-		// 3️⃣ Tạo chi tiết đơn hàng (OrderDetails)
-		String[] productIdArray = productIds.split(",");
+		String[] cartItemIdArray = cartItemIds.split(",");
 		String[] quantityArray = quantities.split(",");
-		for (int i = 0; i < productIdArray.length; i++) {
-			Integer pid = Integer.parseInt(productIdArray[i].trim());
+		for (int i = 0; i < cartItemIdArray.length; i++) {
+			Integer cartItemId = Integer.parseInt(cartItemIdArray[i].trim());
 			int quantity = Integer.parseInt(quantityArray[i].trim());
 
-			// Lấy thông tin sản phẩm hoặc chi tiết giỏ hàng tương ứng (tuỳ bạn thiết kế)
-			Products cartItem = productsService.findById(pid); // giả sử có service này
+			// Lấy thông tin CartItem từ ID
+			CartItem cartItem = cartItemRepository.findById(cartItemId).orElse(null);
+			
+			// Kiểm tra xem CartItem có tồn tại không
+			if (cartItem == null) {
+				System.err.println("Không tìm thấy CartItem với ID: " + cartItemId);
+				continue; // Bỏ qua CartItem không tồn tại
+			}
+			
+			// Lấy product từ CartItem
+			Products product = cartItem.getProduct();
+			if (product == null) {
+				System.err.println("Không tìm thấy sản phẩm trong CartItem ID: " + cartItemId);
+				continue;
+			}
 
 			Orderdetails detail = new Orderdetails();
 			detail.setOrders(saveOrder);
-			detail.setProducts(cartItem);
-			detail.setQuantity((Double.valueOf(quantity)));
-			detail.setPrice(totalPrice);
+			detail.setProducts(product);
+			detail.setQuantity(Double.valueOf(quantity));
+			detail.setPrice(cartItem.getPrice() - (cartItem.getDiscountprice() != null ? cartItem.getDiscountprice() : 0));
 
 			orderDetailService.create(detail);
 		}
-		// Lấy IP
-		getIpAddress();
+		System.out.println("Username: " + saveOrder.getUsername());
+		
+		// Lấy IP từ request thay vì gọi API bên ngoài
+		String clientIp = getClientIpAddress(request);
+		System.out.println("Client IP: " + clientIp);
 
 		// Chuẩn bị thông tin thanh toán VNPay
 		int amount = (int) (totalPrice * 100);
@@ -247,7 +301,7 @@ public class PaymentVNPayController {
 		vnp_Params.put("vnp_OrderInfo", "Thanh toán giỏ hàng #" + cartid +" cho user "+ userlogin + "voi voucher " + voucherOfUserId);
 		vnp_Params.put("vnp_Locale", "vn");
 		vnp_Params.put("vnp_ReturnUrl", VNPayConfig.vnp_Returnurl);
-		vnp_Params.put("vnp_IpAddr", ipAddress);
+		vnp_Params.put("vnp_IpAddr", clientIp);
 		vnp_Params.put("vnp_OrderType", "billpayment");
 
 		Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));

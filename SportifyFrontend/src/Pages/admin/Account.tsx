@@ -30,13 +30,13 @@ const AccountPage: React.FC = () => {
   const [errors, setErrors] = useState<ErrorField[]>([]);
   const [showAdd, setShowAdd] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
-  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [search, setSearch] = useState({
     keyword: "",
     searchUser: "",
     searchStatus: "",
     searchRole: "",
   });
+  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [passwordFieldType, setPasswordFieldType] = useState<"password" | "text">("password");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -124,7 +124,6 @@ const AccountPage: React.FC = () => {
 
   // Open edit modal
   const openEditModal = (account: Account) => {
-    setSelectedAccount(account);
     setForm(account);
     setShowEdit(true);
     setErrors([]);
@@ -132,7 +131,7 @@ const AccountPage: React.FC = () => {
 
   const handleDeleteAccount = (username: String) => {
     axios.delete(`http://localhost:8081/api/rest/accounts/delete/${username}`)
-      .then(res => {
+      .then(() => {
         alert("Xóa tài khoản thành công");
         setAccounts(prev => prev.filter(acc => acc.username !== username));
       })

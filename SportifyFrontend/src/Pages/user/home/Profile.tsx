@@ -42,7 +42,6 @@ export default function Profile(): React.ReactElement {
   const [emailError, setEmailError] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [addressError, setAddressError] = useState('');
-  const [passwordError, setPasswordError] = useState(''); // keep only for compatibility if used elsewhere
 
   // Modal state for change password
   const [showChangePwdModal, setShowChangePwdModal] = useState(false);

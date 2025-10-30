@@ -7,10 +7,9 @@ const Login: React.FC = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
-    // Forgot password state
-    const [fpUsername, setFpUsername] = useState('');
-    const [fpEmail, setFpEmail] = useState('');
-    const [fpError, setFpError] = useState<string | null>(null);
+    // Forgot password state - currently not used
+    // const [fpUsername, setFpUsername] = useState('');
+    // const [fpEmail, setFpEmail] = useState('');
 
 
 
@@ -55,18 +54,7 @@ const Login: React.FC = () => {
         setNotification('Login clicked (not implemented)');
     };
 
-    const handleForgotSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        // Client-side validation example (replace with real check)
-        if (!fpUsername || !fpEmail) {
-            setFpError('Vui lòng nhập tên tài khoản và email.');
-            return;
-        }
-
-        // Example: perform request to your forgot-password endpoint here
-        setFpError(null);
-        setNotification('Yêu cầu khôi phục mật khẩu đã được gửi (demo).');
-    };
+    // Forgot password handler (not currently used)
 
 
 

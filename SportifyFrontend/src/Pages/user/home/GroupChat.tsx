@@ -10,7 +10,7 @@ let stompClient: any = null;
 
 export default function GroupChat() {
   const { teamId } = useParams<{ teamId: string }>();
-  const [roomId, setRoomId] = useState<string>(teamId || "general");
+  const roomId = teamId || "general";
   const [messages, setMessages] = useState<any[]>([]);
   const [message, setMessage] = useState("");
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);

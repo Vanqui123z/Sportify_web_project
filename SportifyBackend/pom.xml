@@ -135,6 +135,38 @@
     		<artifactId>poi-ooxml</artifactId>
     		<version>3.9</version>
 		</dependency>
+		
+		<!-- Thêm Flyway để hỗ trợ database migrations -->
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-core</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-mysql</artifactId>
+		</dependency>
+		
+		<!-- Google Cloud Vertex AI -->
+		<dependency>
+			<groupId>com.google.cloud</groupId>
+			<artifactId>google-cloud-aiplatform</artifactId>
+			<version>3.38.0</version>
+		</dependency>
+		
+		<!-- Google Auth Library for authentication -->
+		<dependency>
+			<groupId>com.google.auth</groupId>
+			<artifactId>google-auth-library-oauth2-http</artifactId>
+			<version>1.19.0</version>
+		</dependency>
+		
+		<!-- Gson for JSON parsing -->
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.10.1</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>

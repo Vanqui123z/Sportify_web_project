@@ -26,7 +26,6 @@ const statusColors: Record<string, string> = {
 
 const OrderList: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     fetch("http://localhost:8081/api/user/order/historyList",{
@@ -40,9 +39,6 @@ const OrderList: React.FC = () => {
       .then(data => {
         if (data.success) {
           setOrders(data.orders);
-          if (data.orders.length > 0) {
-            setUser(data.orders[0].users);
-          }
         }
       });
   }, []);

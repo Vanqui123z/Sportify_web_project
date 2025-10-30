@@ -3,19 +3,20 @@ import { useContext, useState, useEffect } from "react";
 import ConfirmModal from "./Modal";
 import { AuthContext } from "../../helper/AuthContext";
 import { ShoppingCart } from "react-feather";
-import { getCartQuantity } from "../../helper/checkQuatityCart";
+import { useCart } from "../../helper/useCartCount";
+import NotificationDropdown from "./NotificationDropdown";
 
 export default function Header() {
 
-  const { user, setUser, loading } = useContext(AuthContext);
+  const { user, loading } = useContext(AuthContext);
   const [showModal, setShowModal] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
+  const { cartCount, updateCartCount, resetCartCount } = useCart();
 
   useEffect(() => {
     if (user) {
-      getCartQuantity().then(setCartCount);
+      updateCartCount();
     } else {
-      setCartCount(0);
+      resetCartCount();
     }
   }, [user]);
 
@@ -74,13 +75,20 @@ export default function Header() {
                       {/* icon giỏ hàng */}
                       <div className="me-4">
                         <a className="d-flex align-items-center position-relative text-dark" href="/sportify/cart/view">
-                          <ShoppingCart size={20} color="#fff" />
-                          {cartCount > 0 && (
-                            <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: '0.7rem' }}>
-                              {cartCount}
-                            </span>
-                          )}
+                          <div className="icon-container">
+                            <ShoppingCart size={20} color="#fff" />
+                            {cartCount > 0 && (
+                              <span className="position-absolute badge rounded-pill bg-danger sportify-badge">
+                                {cartCount}
+                              </span>
+                            )}
+                          </div>
                         </a>
+                      </div>
+                      
+                      {/* icon thông báo */}
+                      <div className="me-4">
+                        <NotificationDropdown />
                       </div>
 
                       <div className="dropdown">

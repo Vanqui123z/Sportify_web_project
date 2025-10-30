@@ -25,7 +25,7 @@ public class DataCache {
     // Thêm cache cho embedding theo id/text
     private final Map<String, float[]> embeddingCache = new ConcurrentHashMap<>();
 
-    @Value("${google.api.key}")
+    @Value("${gemini.api.key}")
     private String googleApiKey;
 
     private static final String GEMINI_BASE_URL =

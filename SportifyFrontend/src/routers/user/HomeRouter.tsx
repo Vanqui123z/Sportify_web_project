@@ -16,7 +16,8 @@ import TeamDetail from "../../Pages/user/home/TeamDetail";
 import CheckoutDatSan from "../../Pages/user/checkout/CheckoutDatSan";
 import OrderDetailPage from "../../Pages/user/history/OrderHistoryListDetail";
 import Cart from "../../Pages/user/history/Cart";
-import CheckoutCart from "../../Pages/user/checkout/CheckoutCart";
+// import CheckoutCart from "../../Pages/user/checkout/CheckoutCart";
+import CheckoutCartItems from "../../Pages/user/checkout/CheckoutCartItems";
 import FootballPredictionPage from "../../Pages/user/home/FootballPredictionPage";
 import FieldHistoryList from "../../Pages/user/history/FieldHistoryList";
 import FieldHistoryListDetail from "../../Pages/user/history/FieldHistoryListDetail";
@@ -55,6 +56,7 @@ const UserRoutes: React.FC = () => (
     {/* Field */}
     <Route path="field" element={<FieldPage />} />
     <Route path="field/:cid" element={<FieldPage />} />
+    <Route path="field/nearest" element={<FieldPage />} />
     <Route path="field/detail/:idField" element={<DetailFields />} />
     <Route path="field/booking/:idField" element={<CheckoutDatSan />} />
     <Route path="field/permanent-booking/create/:idField" element={<CheckoutDatSan />} />
@@ -76,7 +78,8 @@ const UserRoutes: React.FC = () => (
 
 {/* Cart */}
     <Route path="cart/view" element={<Cart />} />
-    <Route path="cart/checkout" element={<CheckoutCart />} />
+    {/* <Route path="cart/checkout" element={<CheckoutCart />} /> */}
+    <Route path="cart/checkout/items" element={<CheckoutCartItems />} />
     
 
     {/* Team */}
