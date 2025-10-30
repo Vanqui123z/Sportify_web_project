@@ -7,6 +7,7 @@ package duan.sportify.entities;
 import java.io.Serializable;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -19,6 +20,7 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -32,6 +34,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 @Table(name="users", catalog="sportify")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Users implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -108,4 +111,6 @@ public class Users implements Serializable {
     @JsonIgnore
     @OneToMany(mappedBy="username")
     private List<Contacts> listOfContact;  
+
 }
+  

@@ -16,7 +16,7 @@ import TeamDetail from "../../Pages/user/home/TeamDetail";
 import CheckoutDatSan from "../../Pages/user/checkout/CheckoutDatSan";
 import OrderDetailPage from "../../Pages/user/history/OrderHistoryListDetail";
 import Cart from "../../Pages/user/history/Cart";
-import CheckoutCart from "../../Pages/user/checkout/CheckoutCart";
+// import CheckoutCart from "../../Pages/user/checkout/CheckoutCart";
 import CheckoutCartItems from "../../Pages/user/checkout/CheckoutCartItems";
 import FootballPredictionPage from "../../Pages/user/home/FootballPredictionPage";
 import FieldHistoryList from "../../Pages/user/history/FieldHistoryList";
@@ -25,6 +25,8 @@ import OrderHistoryList from "../../Pages/user/history/OrderHistoryList";
 import OrderHistoryListDetail from "../../Pages/user/history/OrderHistoryListDetail";
 import ListFavorite from "../../Pages/user/home/ListFavorite";
 import ListCardBank from "../../Pages/user/home/ManagerCardBank";
+import ListVoucher from "../../Pages/user/home/ListVoucher";
+
 
 
 const UserRoutes: React.FC = () => (
@@ -35,6 +37,7 @@ const UserRoutes: React.FC = () => (
     {/* <Route path="about" element={<HomeAbout />} /> */}
     <Route path="profile" element={<Profile />} />
     <Route path="profile/listcard" element={<ListCardBank />} />
+    <Route path="profile/listvoucher" element={<ListVoucher />} />
 
 
 
@@ -75,7 +78,7 @@ const UserRoutes: React.FC = () => (
 
 {/* Cart */}
     <Route path="cart/view" element={<Cart />} />
-    <Route path="cart/checkout" element={<CheckoutCart />} />
+    {/* <Route path="cart/checkout" element={<CheckoutCart />} /> */}
     <Route path="cart/checkout/items" element={<CheckoutCartItems />} />
     
 

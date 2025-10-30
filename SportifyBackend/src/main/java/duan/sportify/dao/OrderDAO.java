@@ -168,4 +168,42 @@ public interface OrderDAO extends JpaRepository<Orders, Integer> {
 			+ "WHERE\r\n" + "  YEAR(createdate) = :year\r\n" + "GROUP BY thang\r\n"
 			+ "ORDER BY thang;", nativeQuery = true)
 	List<Object[]> rpSoLuongOrderTrongNam(@Param("year") String year);
+
+	// Get product sales for a specific date
+	@Query(value = "SELECT p.productid, p.productname, p.image, p.price, SUM(od.quantity) as total_quantity " +
+			"FROM orderdetails od " +
+			"JOIN products p ON od.productid = p.productid " +
+			"JOIN orders o ON od.orderid = o.orderid " +
+			"WHERE DATE(o.createdate) = :date " +
+			"AND o.paymentstatus = 1 " +
+			"GROUP BY p.productid, p.productname, p.image, p.price " +
+			"ORDER BY total_quantity DESC", nativeQuery = true)
+	List<Object[]> getProductSalesByDate(@Param("date") String date);
+
+	// Get product sales for a specific month
+	@Query(value = "SELECT p.productid, p.productname, p.image, p.price, SUM(od.quantity) as total_quantity " +
+			"FROM orderdetails od " +
+			"JOIN products p ON od.productid = p.productid " +
+			"JOIN orders o ON od.orderid = o.orderid " +
+			"WHERE DATE_FORMAT(o.createdate, '%Y-%m') = :yearMonth " +	
+			"AND o.paymentstatus = 1 " +
+			"GROUP BY p.productid, p.productname, p.image, p.price " +
+			"ORDER BY total_quantity DESC", nativeQuery = true)
+	List<Object[]> getProductSalesByMonth(@Param("yearMonth") String yearMonth);
+
+	// Get total sales for a specific date
+	@Query(value = "SELECT SUM(od.quantity) as total_quantity " +
+			"FROM orderdetails od " +
+			"JOIN orders o ON od.orderid = o.orderid " +
+			"WHERE DATE(o.createdate) = :date " +
+			"AND o.paymentstatus = 1", nativeQuery = true)
+	Long getTotalSalesByDate(@Param("date") String date);
+
+	// Get total sales for a specific month
+	@Query(value = "SELECT SUM(od.quantity) as total_quantity " +
+			"FROM orderdetails od " +
+			"JOIN orders o ON od.orderid = o.orderid " +
+			"WHERE DATE_FORMAT(o.createdate, '%Y-%m') = :yearMonth " +
+			"AND o.paymentstatus = 1", nativeQuery = true)
+	Long getTotalSalesByMonth(@Param("yearMonth") String yearMonth);
 }

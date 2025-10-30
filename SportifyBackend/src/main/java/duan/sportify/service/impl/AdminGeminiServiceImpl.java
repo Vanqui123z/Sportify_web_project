@@ -337,6 +337,15 @@ public class AdminGeminiServiceImpl implements AIService {
                "- Tách các phần bằng dòng trống (Enter)\n" +
                "- Nếu cần bảng, sử dụng HTML table hoặc định dạng text đơn giản (không dùng Markdown table)\n" +
                "- Nhấn mạnh quan trọng: dùng CHỮ IN HOA thay vì **bold** hoặc __underline__\n" +
+               "- Sử dụng HTML để tạo định dạng đẹp với màu sắc và link:\n" +
+               "  + Phần tiêu đề: <span style=\"color: #2e7d32; font-weight: bold; font-size: 16px;\">TIÊU ĐỀ</span>\n" +
+               "  + Chữ quan trọng: <span style=\"color: #c62828; font-weight: bold;\">TEXT</span> (đỏ)\n" +
+               "  + Chữ bình thường: <span style=\"color: #558b2f;\">TEXT</span> (xanh nhạt)\n" +
+               "  + Link nội bộ: <a href=\"#products\" style=\"color: #1976d2; text-decoration: underline;\">Xem sản phẩm</a>\n" +
+               "  + Link có thể dùng: #products, #fields, #bookings, #users, #categories, #revenue, #events\n" +
+               "- Sử dụng định dạng số: 1. ..., 2. ..., 3. ... cho danh sách\n" +
+               "- Tách các phần bằng dòng trống (Enter) hoặc <br/>\n" +
+               "- Nếu cần bảng, sử dụng HTML table với border và styling\n" +
                "- Nếu là HTML, hãy format đẹp mắt để hiển thị tốt trên web\n" +
                "- Cung cấp thông tin hữu ích, đề xuất và hướng dẫn chi tiết cho admin\n" +
                "- Đảm bảo nội dung dễ đọc và không có ký tự kỳ lạ";

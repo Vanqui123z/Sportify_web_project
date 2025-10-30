@@ -74,12 +74,18 @@ const CheckoutCartItems: React.FC = () => {
     
     if (!data) return;
 
+    const discountAmount = Math.round(totalPrice * (voucherInfo.discountPercent / 100));
+    const finalPrice = totalPrice - discountAmount + shippingFee;
+
     const formData = new FormData();
     formData.append('cartid', data.cartid.toString());
-    formData.append('totalPrice', totalPrice.toString());
+    formData.append('totalPrice', finalPrice.toString());
     formData.append('phone', data.user.phone.toString());
     formData.append('productid', data.items.map(item => item.cartItemId).join(','));
     formData.append('quantity', data.items.map(item => item.quantity).join(','));
+    if (voucherInfo.isValid && voucherOfUserId !== null) {
+      formData.append('voucherOfUserId', voucherOfUserId.toString());
+    }
 
     try {
       const res = await fetch('http://localhost:8081/api/user/cart/payment', {
@@ -241,6 +247,45 @@ const CheckoutCartItems: React.FC = () => {
                       <span>Thành tiền</span> 
                       <span>{finalPrice.toLocaleString("vi-VN")}đ</span>
                     </p>
+                    {/* Voucher selection */}
+                    <div className="mb-3">
+                      <VoucherSelect
+                        username={user?.username}
+                        onVoucherApplied={(discountPercent, voucherId) => {
+                          setVoucherInfo({ voucherId: voucherId?.toString() || "", discountPercent, isValid: discountPercent > 0 });
+                          setVoucherOfUserId(voucherId ?? null);
+                        }}
+                      />
+                    </div>
+
+                    {/* Totals */}
+                    {(() => {
+                      const discountAmount = Math.round(totalPrice * (voucherInfo.discountPercent / 100));
+                      const finalPriceValue = totalPrice - discountAmount + shippingFee;
+                      return (
+                        <>
+                          <p className="d-flex">
+                            <span>Tạm tính: </span>
+                            <span>{totalPrice.toLocaleString("vi-VN")}đ</span>
+                          </p>
+                          {voucherInfo.isValid && (
+                            <p className="d-flex text-success">
+                              <span>Giảm giá ({voucherInfo.discountPercent}%): </span>
+                              <span>-{discountAmount.toLocaleString("vi-VN")}đ</span>
+                            </p>
+                          )}
+                          <p className="d-flex">
+                            <span>Phí vận chuyển: </span>
+                            <span>{shippingFee.toLocaleString("vi-VN")}đ</span>
+                          </p>
+                          <hr />
+                          <p className="d-flex total-price">
+                            <span>Thành tiền</span>
+                            <span>{finalPriceValue.toLocaleString("vi-VN")}đ</span>
+                          </p>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
                 <div className="col-md-6">

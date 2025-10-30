@@ -59,6 +59,10 @@ public class ProductServiceImpl implements ProductService{
 	public List<Products> findByCategoryId(Integer categoryid) {
 		return productDAO.findByCategoryId(categoryid);
 	}
+	@Override
+	public List<Products> findByProductName(String name) {
+		return productDAO.findByProductName(name);
+	}
 
 	
 

@@ -91,8 +91,8 @@ public class VoucherRestController {
 	
 	@DeleteMapping("delete/{voucherid}")
 	public ResponseEntity<Map<String, String>> deleteByVoucherId(@PathVariable("voucherid") String voucherid) {
-		List<Voucher> vouchers = voucherDAO.findByVoucherId(voucherid);
-		if (vouchers == null || vouchers.isEmpty()) {
+		Voucher voucher = voucherDAO.findByVoucherId(voucherid);
+		if (voucher == null) {
 			return ResponseEntity.notFound().build();
 		}
 		voucherService.deleteByVoucherId(voucherid);

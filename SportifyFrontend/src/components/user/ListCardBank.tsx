@@ -33,7 +33,7 @@ interface ListCardBankProps {
     showDeleteButton?: boolean; // Optional flag to show/hide delete button
     showDefaultButton?: boolean; // Optional flag to show/hide set default button
     selectedCardId?: string; // ID of the currently selected card
-    onCardSelect?: (cardId: string) => void; // Callback when a card is selected
+    onCardSelect?: (cardId: string) => void; 
 }
 
 // Hàm dùng chung để lấy danh sách ngân hàng từ VNPAY API

@@ -14,12 +14,17 @@ import CategorySportPage from "../../Pages/admin/CategorySport";
 import ReportBookingPage from "../../Pages/admin/ReportBooking";
 import ReportOrderPage from "../../Pages/admin/ReportOrder";
 import CommentPage from "../../Pages/admin/Comment";
+import FieldManager from "../../Pages/admin/FieldManager";
+import OrderManager from "../../Pages/admin/OrderManager";
+import AiSupportPage from "../../Pages/admin/AISupport";
 
 const AdminRoutes: React.FC = () => (
   <Routes>
     <Route path="dashboard" element={<Dashboard />} />
     <Route path="accounts" element={<AccountPage />} />
     <Route path="bookings" element={<BookingPage />} />
+    <Route path="/manager-bookings" element={<FieldManager />} />
+    <Route path="/manager-orders" element={<OrderManager />} />
     <Route path="products" element={<ProductPage />} />
     <Route path="fields" element={<FieldPage />} />
     <Route path="events" element={<EventPage />} />
@@ -31,6 +36,7 @@ const AdminRoutes: React.FC = () => (
     <Route path="category-sport" element={<CategorySportPage />} />
     <Route path="reportBooking" element={<ReportBookingPage />} />
     <Route path="reportOrder" element={<ReportOrderPage />} />
+    <Route path="ai-support" element={<AiSupportPage />} />
   </Routes>
 );
 

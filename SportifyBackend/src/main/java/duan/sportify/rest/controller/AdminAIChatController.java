@@ -21,7 +21,6 @@ import duan.sportify.service.ShiftService;
 import duan.sportify.service.UserService;
 import duan.sportify.service.impl.BookingServiceImpl;
 import duan.sportify.utils.AI.AIServiceFactory;
-import duan.sportify.utils.PromptManager;
 import duan.sportify.DTO.AIRequest;
 
 @CrossOrigin("*")
@@ -50,8 +49,6 @@ public class AdminAIChatController {
   @Autowired
   AIServiceFactory aiServiceFactory;
   
-  @Autowired
-  PromptManager promptManager;
 
   /**
    * Endpoint riêng cho Admin Chat

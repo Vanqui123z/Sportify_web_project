@@ -4,11 +4,7 @@ import duan.sportify.entities.Field;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
 
-@Getter
-@Setter
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

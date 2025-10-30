@@ -1,6 +1,6 @@
 package duan.sportify.controller;
 
-import java.sql.Date;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.chrono.ChronoLocalDate;
@@ -10,28 +10,22 @@ import java.util.Map;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.constraints.NotNull;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import duan.sportify.dao.OrderDAO;
 import duan.sportify.dao.VoucherDAO;
 import duan.sportify.entities.Orderdetails;
 import duan.sportify.entities.Orders;
-import duan.sportify.entities.Products;
 import duan.sportify.entities.Voucher;
 import duan.sportify.service.OrderDetailService;
 import duan.sportify.service.OrderService;
@@ -55,8 +49,6 @@ public class OrderController {
 	UserService userService;
 
 	String userlogin = null;
-
-	
 
 	@GetMapping("/order/checkout")
 	public ResponseEntity<?> checkOutCart(HttpServletRequest request) {
@@ -106,47 +98,46 @@ public class OrderController {
 		return ResponseEntity.ok(Map.of("success", true, "message", "Order canceled"));
 	}
 
-	// tìm kiếm voucher
 	@PostMapping("/order/cart/voucher")
-	public ResponseEntity<?> cartVoucher(@RequestParam String voucherId) {
-		if (voucherId == null || voucherId.isBlank()) {
-			return ResponseEntity.badRequest()
-					.body(Map.of("success", false, "message", "voucherId is required"));
-		}
+public ResponseEntity<?> cartVoucher(@RequestParam String voucherId) {
+    if (voucherId == null || voucherId.isBlank()) {
+        return ResponseEntity.badRequest()
+                .body(Map.of("success", false, "message", "voucherId is required"));
+    }
 
-		List<Voucher> voucherList = voucherDAO.findByVoucherId(voucherId);
-		int discountPercent = 0;
-		String voucherMsg;
+    Voucher voucher = voucherDAO.findByVoucherId(voucherId);
 
-		LocalDate currentDate = LocalDate.now();
+    if (voucher == null) {
+        return ResponseEntity.ok(Map.of(
+                "success", false,
+                "message", "Không tìm thấy voucher '" + voucherId + "'"
+        ));
+    }
 
-		Optional<Voucher> validVoucher = voucherList.stream()
-				.filter(v -> {
-					// Chuyển java.util.Date -> LocalDate
-					LocalDate startDate = v.getStartdate().toInstant()
-							.atZone(ZoneId.systemDefault())
-							.toLocalDate();
-					LocalDate endDate = v.getEnddate().toInstant()
-							.atZone(ZoneId.systemDefault())
-							.toLocalDate();
-					return (!startDate.isAfter(currentDate) && !endDate.isBefore(currentDate));
-				})
-				.findFirst();
+    // Lấy ngày hiện tại và ngày hiệu lực của voucher
+    LocalDate currentDate = LocalDate.now();
+    LocalDate startDate = Instant.ofEpochMilli(voucher.getStartdate().getTime())
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate();
+    LocalDate endDate = Instant.ofEpochMilli(voucher.getEnddate().getTime())
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate();
 
-		if (validVoucher.isPresent()) {
-			discountPercent = validVoucher.get().getDiscountpercent();
-			voucherMsg = "Đã áp dụng thành công voucher '" + voucherId + "'. Giảm " + discountPercent + "%";
-		} else {
-			voucherMsg = voucherList.isEmpty() ? "Không tìm thấy voucher '" + voucherId + "'."
-					: "Voucher '" + voucherId + "' đã hết hạn sử dụng";
-		}
+    boolean isValid = !startDate.isAfter(currentDate) && !endDate.isBefore(currentDate);
 
-		Map<String, Object> response = new HashMap<>();
-		response.put("voucherList", voucherList);
-		response.put("discountPercent", discountPercent);
-		response.put("voucherMsg", voucherMsg);
+    if (!isValid) {
+        return ResponseEntity.ok(Map.of(
+                "success", false,
+                "message", "Voucher '" + voucherId + "' đã hết hạn sử dụng"
+        ));
+    }
 
-		return ResponseEntity.ok(response);
-	}
-
+    // Nếu hợp lệ
+    return ResponseEntity.ok(Map.of(
+            "success", true,
+            "voucherId", voucherId,
+            "discountPercent", voucher.getDiscountpercent(),
+            "message", "Voucher hợp lệ!"
+    ));
+}
 }

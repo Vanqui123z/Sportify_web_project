@@ -400,6 +400,9 @@ export default function Profile(): React.ReactElement {
                   <a className="btn btn-outline-primary" href="profile/listcard" style={{ marginLeft: '10px' }}>
                     Quản lý tài khoản thẻ
                   </a>
+                  <a className="btn btn-outline-primary" href="profile/listvoucher" style={{ marginLeft: '10px' }}>
+                    Quản lý voucher
+                  </a>
                 </div>
               </div>
             </div>

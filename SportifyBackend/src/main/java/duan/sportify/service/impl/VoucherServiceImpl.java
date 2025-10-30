@@ -51,16 +51,16 @@ public class VoucherServiceImpl implements VoucherService{
 	}
 
 	@Override
-	public List<Voucher> findByVoucherId(String voucherid) {
+	public Voucher findByVoucherId(String voucherid) {
 		// TODO Auto-generated method stub
 		return voucherDAO.findByVoucherId(voucherid);
 	}
 
 	@Override
 	public void deleteByVoucherId(String voucherid) {
-		List<Voucher> vouchers = voucherDAO.findByVoucherId(voucherid);
-		for (Voucher v : vouchers) {
-			voucherDAO.delete(v);
+		Voucher voucher = voucherDAO.findByVoucherId(voucherid);
+		if (voucher != null) {
+			voucherDAO.delete(voucher);
 		}
 		voucherDAO.flush(); // lưu thay đổi vào db sau khi xóa
 	}

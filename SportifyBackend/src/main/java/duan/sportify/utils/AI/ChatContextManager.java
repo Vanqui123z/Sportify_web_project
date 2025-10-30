@@ -13,7 +13,6 @@ public class ChatContextManager {
     
     // Thời gian một context hết hạn (30 phút)
     private static final long CONTEXT_EXPIRY_MINUTES = 30;
-    
     /**
      * Lấy context hiện tại của người dùng, tạo mới nếu chưa có hoặc đã hết hạn
      */

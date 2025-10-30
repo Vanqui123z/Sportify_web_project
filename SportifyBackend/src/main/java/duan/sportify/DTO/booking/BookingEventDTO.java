@@ -8,7 +8,8 @@ import lombok.Data;
 @NoArgsConstructor
 public class BookingEventDTO {
     private Integer bookingId;
-    private String title;          // "Sân A - Ca 1"
+    private String title;  
+    private String shiftName;
     private LocalDateTime start;   // ISO datetime
     private LocalDateTime end;     // ISO datetime
     private Integer dayOfWeek ;     // 1=Mon ... 7=Sun, chỉ dùng cho PERMANENT

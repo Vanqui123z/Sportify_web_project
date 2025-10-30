@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import BootstrapModal from "../../components/admin/BootstrapModal";
 import getImageUrl from "../../helper/getImageUrl";
+import VoucherOfUser from "./VorcherOfUser";
 
 interface Account {
   username: string;
@@ -35,6 +36,7 @@ const AccountPage: React.FC = () => {
     searchStatus: "",
     searchRole: "",
   });
+  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [passwordFieldType, setPasswordFieldType] = useState<"password" | "text">("password");
   // Search handler
   const handleSearch = () => {
@@ -53,10 +55,6 @@ const AccountPage: React.FC = () => {
     setSearch({ keyword: "", searchUser: "", searchStatus: "", searchRole: "" });
     axios.get("http://localhost:8081/api/rest/accounts/getAll").then(res => setAccounts(res.data));
   };
-
-  // Thêm state cho preview ảnh khi chọn
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
 
   // Sửa handleImageChange để lưu file và preview
   const handleImageChange = (files: FileList | null) => {
@@ -195,6 +193,7 @@ const AccountPage: React.FC = () => {
     }
   };
 
+
   return (
     <div className=" page-wrapper py-4">
       <div className="container bg-white rounded shadow-sm p-4">
@@ -298,13 +297,20 @@ const AccountPage: React.FC = () => {
                       <td>{item.address}</td>
                       <td>{item.gender ? "Nam" : "Nữ"}</td>
                       <td className="text-center">
-                        <button className="btn btn-outline-danger btn-sm"
+                        <button className="btn btn-outline-danger btn-sm me-1"
                           onClick={() => handleDeleteAccount(item.username)}>
-                          <i className="fa fa-pencil me-1"></i> Xóa
+                          <i className="fa fa-trash me-1"></i> Xóa
                         </button>
-                        <button className="btn btn-outline-primary btn-sm"
+                        <button className="btn btn-outline-primary btn-sm me-1"
                           onClick={() => openEditModal(item)}>
                           <i className="fa fa-pencil me-1"></i> Xem chi tiết
+                        </button>
+                        <button className="btn btn-outline-success btn-sm"
+                          onClick={() => {
+                            setSelectedAccount(item);
+                            setShowVoucherModal(true);
+                          }}>
+                          <i className="fa fa-ticket me-1"></i> Voucher
                         </button>
                       </td>
                     </tr>
@@ -684,17 +690,24 @@ const AccountPage: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="mt-4 text-end">
-            <button type="button" className="btn btn-primary" onClick={handleEditAccount}>
-              Chỉnh sửa tài khoản
-            </button>
-          </div>
         </form>
       </BootstrapModal>
+
+      {/* Voucher management section */}
+      <BootstrapModal 
+        show={showVoucherModal}
+        onHide={() => setShowVoucherModal(false)}
+        title="Quản lý voucher"
+        size="lg"
+      >
+        {selectedAccount && <VoucherOfUser username={selectedAccount.username} ButtonAdd={true} />}
+      </BootstrapModal>
+
       {/* Toast/Notification */}
       <div id="toast"></div>
     </div>
   );
+  
 };
 
 export default AccountPage;

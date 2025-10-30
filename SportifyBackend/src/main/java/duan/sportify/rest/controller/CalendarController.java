@@ -1,22 +1,18 @@
 package duan.sportify.rest.controller;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import duan.sportify.DTO.booking.BookingEventDTO;
 import duan.sportify.DTO.booking.BookingDetailDTO;
-import duan.sportify.entities.Bookings;
 import duan.sportify.service.BookingService;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 
 
 @CrossOrigin(origins = "*")

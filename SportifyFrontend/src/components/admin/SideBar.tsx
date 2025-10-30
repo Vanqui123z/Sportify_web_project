@@ -152,11 +152,30 @@ const Sidebar: React.FC = () => {
                       </li>
                       <li className="nav-item">
                         <a
+                          href="/admin/manager-bookings"
+                          className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
+                        >
+                          <i className="fas fa-ticket-alt me-3 text-primary"></i>
+                          <span>Quản lí đặt sân </span>
+                        </a>
+                      </li>
+                     
+                      <li className="nav-item">
+                        <a
                           href="/admin/order-products"
                           className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
                         >
                           <i className="fas fa-receipt me-3 text-success"></i>
                           <span>Đơn hàng</span>
+                        </a>
+                      </li>
+                       <li className="nav-item">
+                        <a
+                          href="/admin/manager-orders"
+                          className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
+                        >
+                          <i className="fas fa-ticket-alt me-3 text-primary"></i>
+                          <span>Quản lí đơn hàng  </span>
                         </a>
                       </li>
                     </ul>
@@ -258,6 +277,15 @@ const Sidebar: React.FC = () => {
                 </div>
               </div>
             </div>
+          </li>
+          <li className="nav-item mb-1">
+            <a
+              href="/admin/ai-support"
+              className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
+            >
+              <i className="fas fa-cogs me-3 text-secondary"></i>
+              <span>AI hỗ trợ</span>
+            </a>
           </li>
         </ul>
       </div>
