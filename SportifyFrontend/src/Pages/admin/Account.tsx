@@ -30,6 +30,9 @@ const AccountPage: React.FC = () => {
   const [errors, setErrors] = useState<ErrorField[]>([]);
   const [showAdd, setShowAdd] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
+  const [showVoucherModal, setShowVoucherModal] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [search, setSearch] = useState({
     keyword: "",
     searchUser: "",

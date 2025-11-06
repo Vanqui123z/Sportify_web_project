@@ -425,7 +425,7 @@ public class AIChatController {
 
         List<FieldRequestAI.FavoriteInfo> favorites = favoriteService.findFavoriteByUsername(users).stream()
                 .map(fa -> new FieldRequestAI.FavoriteInfo(
-                        fa.getUsername().getUsername(),
+                        fa.getUsername(),
                         new FieldRequestAI.FieldInfo(
                                 fa.getField().getFieldid(),
                                 fa.getField().getNamefield(),
@@ -475,71 +475,7 @@ public class AIChatController {
         // ✅ Trả về response đã parse
         return ResponseEntity.ok(aiResponse);
     }
-  /**
-   * Endpoint riêng cho Product Chat (trả lời thân thiện + gợi ý sản phẩm)
-   * POST /sportify/rest/ai/product-chat
-   * Hỗ trợ file upload (ảnh, file, audio) và JSON request
-   */
-  @PostMapping("/product-chat")
-  public ResponseEntity<Map<String, Object>> productChat(
-      @RequestParam(value = "message", required = false) String messageParam,
-      @RequestParam(value = "files", required = false) java.util.List<org.springframework.web.multipart.MultipartFile> files,
-      @RequestBody(required = false) Map<String, String> jsonBody) {
-    
-    // Lấy message từ RequestParam hoặc JSON Body
-    String message = messageParam;
-    if ((message == null || message.trim().isEmpty()) && jsonBody != null) {
-      message = jsonBody.get("message");
-    }
-    
-    // Kiểm tra message không rỗng
-    if (message == null || message.trim().isEmpty()) {
-      return ResponseEntity.badRequest().body(Map.of(
-          "error", "Message không được trống",
-          "reply", ""));
-    }
-    
-    try {
-      // Build message with file info
-      String enrichedMessage = message;
-      
-      if (files != null && !files.isEmpty()) {
-        enrichedMessage += "\n\n[Tin nhắn đi kèm các tệp/ảnh đính kèm]\n";
-        for (org.springframework.web.multipart.MultipartFile file : files) {
-          String fileType = file.getContentType() != null ? file.getContentType() : "unknown";
-          enrichedMessage += String.format(
-              "- %s (%s, %d bytes)\n",
-              file.getOriginalFilename(),
-              fileType,
-              file.getSize()
-          );
-        }
-        enrichedMessage += "\nVui lòng phân tích và trả lời dựa trên tệp đính kèm.";
-      }
-      
-      System.out.println("📩 Product Chat Request: " + enrichedMessage.substring(0, Math.min(100, enrichedMessage.length())));
-      
-      // Gọi AI Service (GeminiServiceImpl sẽ lấy products + tạo context)
-      String provider = "gemini";
-      var aiService = aiServiceFactory.getService(provider);
-      String htmlReply = aiService.chat(enrichedMessage);
-      
-      System.out.println("✅ Product Chat Response nhận được");
-      
-      return ResponseEntity.ok(Map.of(
-          "reply", htmlReply,
-          "status", "success"
-      ));
-    } catch (Exception ex) {
-      System.out.println("❌ Product Chat Error: " + ex.getMessage());
-      ex.printStackTrace();
-      
-      return ResponseEntity.ok(Map.of(
-          "reply", "❌ Lỗi: " + ex.getMessage(),
-          "status", "error"
-      ));
-    }
-  }
+ 
 
   /**
    * Endpoint riêng cho Product Chat (trả lời thân thiện + gợi ý sản phẩm)
