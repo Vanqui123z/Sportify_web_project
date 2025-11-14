@@ -1,16 +1,17 @@
-import React, { useState, useEffect } from 'react';
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 import axios from 'axios';
-import { Container, Row, Col, Card, Form, Table, Alert, Button } from 'react-bootstrap';
-import { Bar } from 'react-chartjs-2';
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
   BarElement,
+  CategoryScale,
+  Chart as ChartJS,
+  Legend,
+  LinearScale,
   Title,
   Tooltip,
-  Legend,
 } from 'chart.js';
+import React, { useEffect, useState } from 'react';
+import { Alert, Form } from 'react-bootstrap';
+import { Bar } from 'react-chartjs-2';
 import getImageUrl from '../../helper/getImageUrl';
 
 // Register Chart.js components
@@ -73,7 +74,7 @@ const FieldManager: React.FC = () => {
   const calculateTotal = (data: FieldUsageDetailDTO[], property: keyof Pick<FieldUsageDetailDTO, 'oneTimeBookings' | 'permanentBookings' | 'totalBookings'>) => {
     return data.reduce((sum, item) => sum + item[property], 0);
   };
-  
+
   const calculatePercentage = (part: number, total: number) => {
     return Math.round((part / (total || 1)) * 100);
   };
@@ -82,7 +83,7 @@ const FieldManager: React.FC = () => {
   const fetchDailyDetailData = async (date: string) => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:8081/api/field-usage/active-fields/by-date?date=${date}`);
+      const response = await axios.get(`${URL_BACKEND}/api/field-usage/active-fields/by-date?date=${date}`);
       setDailyDetailData(response.data);
       setLoading(false);
     } catch (err) {
@@ -94,7 +95,7 @@ const FieldManager: React.FC = () => {
   const fetchMonthlyDetailData = async (yearMonth: string) => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:8081/api/field-usage/active-fields/by-month?yearMonth=${yearMonth}`);
+      const response = await axios.get(`${URL_BACKEND}/api/field-usage/active-fields/by-month?yearMonth=${yearMonth}`);
       setMonthlyDetailData(response.data);
       setLoading(false);
     } catch (err) {
@@ -115,7 +116,7 @@ const FieldManager: React.FC = () => {
     const fieldNames = dailyDetailData.map(item => item.fieldName);
     const oneTimeData = dailyDetailData.map(item => item.oneTimeBookings);
     const permanentData = dailyDetailData.map(item => item.permanentBookings);
-    
+
     return {
       labels: fieldNames,
       datasets: [
@@ -132,12 +133,12 @@ const FieldManager: React.FC = () => {
       ],
     };
   };
-  
+
   const prepareMonthlyChartData = () => {
     const fieldNames = monthlyDetailData.map(item => item.fieldName);
     const oneTimeData = monthlyDetailData.map(item => item.oneTimeBookings);
     const permanentData = monthlyDetailData.map(item => item.permanentBookings);
-    
+
     return {
       labels: fieldNames,
       datasets: [
@@ -194,12 +195,12 @@ const FieldManager: React.FC = () => {
         </tr>
       );
     }
-    
+
     return data.map((item, idx) => (
       <tr key={item.fieldId}>
         <td>{idx + 1}</td>
         <td>{item.fieldId}</td>
-        <td><img src={ getImageUrl(item.fieldImage)} alt={item.fieldName} style={{ width: '80px', height: '50px', objectFit: 'cover' }} /></td>
+        <td><img src={getImageUrl(item.fieldImage)} alt={item.fieldName} style={{ width: '80px', height: '50px', objectFit: 'cover' }} /></td>
         <td>{item.fieldName}</td>
         <td>{item.oneTimeBookings}</td>
         <td>{item.permanentBookings}</td>
@@ -292,7 +293,7 @@ const FieldManager: React.FC = () => {
         {/* Tab Navigation */}
         <ul className="nav nav-tabs mb-4">
           <li className="nav-item">
-            <button 
+            <button
               className={`nav-link ${activeTab === 'daily' ? 'active' : ''}`}
               onClick={() => setActiveTab('daily')}
             >
@@ -300,7 +301,7 @@ const FieldManager: React.FC = () => {
             </button>
           </li>
           <li className="nav-item">
-            <button 
+            <button
               className={`nav-link ${activeTab === 'monthly' ? 'active' : ''}`}
               onClick={() => setActiveTab('monthly')}
             >
@@ -443,7 +444,7 @@ const FieldManager: React.FC = () => {
                       <h6>Đặt Một Lần</h6>
                       <div className="display-6 text-primary">
                         {calculatePercentage(
-                          calculateTotal(getCurrentData(), 'oneTimeBookings'), 
+                          calculateTotal(getCurrentData(), 'oneTimeBookings'),
                           calculateTotal(getCurrentData(), 'totalBookings')
                         )}%
                       </div>
@@ -452,7 +453,7 @@ const FieldManager: React.FC = () => {
                       <h6>Đặt Cố Định</h6>
                       <div className="display-6 text-warning">
                         {calculatePercentage(
-                          calculateTotal(getCurrentData(), 'permanentBookings'), 
+                          calculateTotal(getCurrentData(), 'permanentBookings'),
                           calculateTotal(getCurrentData(), 'totalBookings')
                         )}%
                       </div>
@@ -469,4 +470,3 @@ const FieldManager: React.FC = () => {
 };
 
 export default FieldManager;
-                  

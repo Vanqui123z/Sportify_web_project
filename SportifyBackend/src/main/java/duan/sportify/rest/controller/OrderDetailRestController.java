@@ -14,10 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import duan.sportify.GlobalExceptionHandler;
-import duan.sportify.dao.BookingDetailDAO;
-import duan.sportify.dao.OrderDAO;
 import duan.sportify.dao.OrderDetailDAO;
-import duan.sportify.entities.Bookingdetails;
 import duan.sportify.entities.Orderdetails;
 import duan.sportify.utils.ErrorResponse;
 
@@ -29,13 +26,14 @@ public class OrderDetailRestController {
 	MessageSource messagesource;
 	@Autowired
 	OrderDetailDAO orderDetailDAO;
-	
+
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
 		return GlobalExceptionHandler.handleValidationException(ex);
 	}
+
 	@GetMapping("{id}")
-    public List<Orderdetails> getOrderDetails(@PathVariable("id") Integer productid) {
-        return orderDetailDAO.detailOrder(productid);
-    }
+	public List<Orderdetails> getOrderDetails(@PathVariable("id") Integer productid) {
+		return orderDetailDAO.detailOrder(productid);
+	}
 }

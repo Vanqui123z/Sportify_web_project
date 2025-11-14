@@ -1,15 +1,23 @@
 package duan.sportify.rest.controller;
 
-import duan.sportify.entities.AdminAIChatHistory;
-import duan.sportify.service.AdminAIChatHistoryService;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import duan.sportify.entities.AdminAIChatHistory;
+import duan.sportify.service.AdminAIChatHistoryService;
 
 @CrossOrigin("*")
 @RestController
@@ -35,22 +43,18 @@ public class AdminAIChatHistoryController {
 
             if (adminId == null || adminId.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(
-                        Map.of("error", "adminId không được để trống")
-                );
+                        Map.of("error", "adminId không được để trống"));
             }
 
             AdminAIChatHistory history = chatHistoryService.saveMessage(
-                    adminId, message, response, role, messageData
-            );
+                    adminId, message, response, role, messageData);
 
             return ResponseEntity.ok(Map.of(
                     "status", "success",
-                    "data", history
-            ));
+                    "data", history));
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    Map.of("error", ex.getMessage())
-            );
+                    Map.of("error", ex.getMessage()));
         }
     }
 
@@ -64,8 +68,7 @@ public class AdminAIChatHistoryController {
         try {
             if (adminId == null || adminId.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(
-                        Map.of("error", "adminId không được để trống")
-                );
+                        Map.of("error", "adminId không được để trống"));
             }
 
             String queryAdminId = adminId;
@@ -73,12 +76,10 @@ public class AdminAIChatHistoryController {
 
             return ResponseEntity.ok(Map.of(
                     "status", "success",
-                    "data", history
-            ));
+                    "data", history));
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    Map.of("error", ex.getMessage())
-            );
+                    Map.of("error", ex.getMessage()));
         }
     }
 
@@ -92,12 +93,10 @@ public class AdminAIChatHistoryController {
             List<AdminAIChatHistory> history = chatHistoryService.getAllChatHistory();
             return ResponseEntity.ok(Map.of(
                     "status", "success",
-                    "data", history
-            ));
+                    "data", history));
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    Map.of("error", ex.getMessage())
-            );
+                    Map.of("error", ex.getMessage()));
         }
     }
 
@@ -112,12 +111,10 @@ public class AdminAIChatHistoryController {
             chatHistoryService.clearChatHistory(adminId);
             return ResponseEntity.ok(Map.of(
                     "status", "success",
-                    "message", "Xóa lịch sử chat thành công"
-            ));
+                    "message", "Xóa lịch sử chat thành công"));
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    Map.of("error", ex.getMessage())
-            );
+                    Map.of("error", ex.getMessage()));
         }
     }
 }

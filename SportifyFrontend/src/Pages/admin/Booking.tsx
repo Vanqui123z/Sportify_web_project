@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 import axios from "axios";
+import React, { useEffect, useState } from "react";
 import ListCardBank from "../../components/user/ListCardBank";
 
 interface User {
@@ -76,20 +77,20 @@ const BookingPage: React.FC = () => {
   const [showCardSelection, setShowCardSelection] = useState(false);
   const [selectedCard, setSelectedCard] = useState<string>("");
   const [showCardConfirm, setShowCardConfirm] = useState(false);
-  const [selectedCardData, setSelectedCardData] = useState<{cardId: string, amount: number} | null>(null);
+  const [selectedCardData, setSelectedCardData] = useState<{ cardId: string, amount: number } | null>(null);
 
   // Fetch all bookings
   useEffect(() => {
-    axios.get("http://localhost:8081/rest/bookings/getAll").then(res => {
+    axios.get(`${URL_BACKEND}/rest/bookings/getAll`).then(res => {
       setBookings(res.data);
     });
   }, []);
 
-  
+
   // Search handler
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    axios.get("http://localhost:8081/rest/bookings/search", {
+    axios.get(`${URL_BACKEND}/rest/bookings/search`, {
       params: {
         keyword: search.keyword,
         datebook: search.datebook,
@@ -101,14 +102,14 @@ const BookingPage: React.FC = () => {
   // Refresh handler
   const handleRefresh = () => {
     setSearch({ keyword: "", datebook: "", status: "" });
-    axios.get("http://localhost:8081/rest/bookings/getAll").then(res => setBookings(res.data));
+    axios.get(`${URL_BACKEND}/rest/bookings/getAll`).then(res => setBookings(res.data));
   };
 
   // Open edit modal
   const openEditModal = (booking: Booking) => {
     setForm(booking);
     setShowEdit(true);
-    axios.get(`http://localhost:8081/rest/bookingdetails/${booking.bookingid}`)
+    axios.get(`${URL_BACKEND}/rest/bookingdetails/${booking.bookingid}`)
       .then((res) => {
         setBookingDetail(res.data.bookingDetail);
         setBookingPermanent(res.data.bookingPermanent);
@@ -124,7 +125,7 @@ const BookingPage: React.FC = () => {
   // Update booking handler
   const handleUpdateBooking = () => {
     if (!form.bookingid) return;
-    axios.put(`http://localhost:8081/rest/bookings/update/${form.bookingid}`, form)
+    axios.put(`${URL_BACKEND}/rest/bookings/update/${form.bookingid}`, form)
       .then(res => {
         setBookings(prev => prev.map(b => b.bookingid === res.data.bookingid ? res.data : b));
         setShowEdit(false);
@@ -167,7 +168,7 @@ const BookingPage: React.FC = () => {
     if (selectedBookings.length === 0) return;
 
     if (window.confirm(`Bạn có chắc chắn muốn xóa ${selectedBookings.length} phiếu đặt sân đã chọn?`)) {
-      axios.post("http://localhost:8081/rest/bookings/deleteMultiple", selectedBookings)
+      axios.post(`${URL_BACKEND}/rest/bookings/deleteMultiple`, selectedBookings)
         .then(() => {
           // Remove deleted bookings from the list
           setBookings(prev => prev.filter(booking => !selectedBookings.includes(booking.bookingid)));
@@ -194,7 +195,7 @@ const BookingPage: React.FC = () => {
 
   const getRefundAmount = () => {
     if (!form.bookingprice) return 0;
-    
+
     switch (form.bookingstatus) {
       case "Đã Cọc":
         return form.bookingprice * 0.3; // 30% deposit amount
@@ -222,21 +223,21 @@ const BookingPage: React.FC = () => {
 
   const handleFinalConfirm = async () => {
     if (!selectedCardData) return;
-    
-    try {
-    const res = await axios.post(
-    "http://localhost:8081/api/user/payment/refund",
-    {
-      amount: selectedCardData.amount,
-      cardId: selectedCardData.cardId,
-      bookingId: form.bookingid
-    },
-    {
-      withCredentials: true 
-    }
-  );
 
-         if (!res.data) {
+    try {
+      const res = await axios.post(
+        `${URL_BACKEND}/api/user/payment/refund`,
+        {
+          amount: selectedCardData.amount,
+          cardId: selectedCardData.cardId,
+          bookingId: form.bookingid
+        },
+        {
+          withCredentials: true
+        }
+      );
+
+      if (!res.data) {
         throw new Error(`API trả về lỗi ${res.status}`);
       }
       const data = res.data;
@@ -343,7 +344,7 @@ const BookingPage: React.FC = () => {
                 <tbody>
                   {bookings.map((item, idx) => (
                     <tr key={item.bookingid}>
-                      
+
                       <td><input
                         type="checkbox"
                         className="mr-2"
@@ -488,17 +489,17 @@ const BookingPage: React.FC = () => {
                       </div>
                     </div>
                     <div className="mt-4 text-end">
-                     <button 
-                        type="button" 
+                      <button
+                        type="button"
                         className={`btn ${form.refund === true ? 'btn-secondary' : 'btn-warning'} me-2`}
                         onClick={handleRefundClick}
                         disabled={form.refund === true}
                       >
                         {form.refund === true ? 'Đã hoàn tiền' : 'Hoàn tiền'}
                       </button>
-                      <button 
-                        type="button" 
-                        className="btn btn-primary" 
+                      <button
+                        type="button"
+                        className="btn btn-primary"
                         onClick={handleUpdateBooking}
                       >
                         Chỉnh sửa phiếu đặt sân
@@ -523,8 +524,8 @@ const BookingPage: React.FC = () => {
                 <div className="modal-body">
                   <p>Bạn muốn hoàn {formatCurrency(getRefundAmount())} cho đơn {form.bookingid}?</p>
                   <small className="text-muted">
-                    {form.bookingstatus === "Đã Cọc" 
-                      ? "(Hoàn lại tiền cọc 30%)" 
+                    {form.bookingstatus === "Đã Cọc"
+                      ? "(Hoàn lại tiền cọc 30%)"
                       : "(Hoàn lại toàn bộ số tiền)"}
                   </small>
                 </div>
@@ -567,9 +568,9 @@ const BookingPage: React.FC = () => {
               <div className="modal-content">
                 <div className="modal-header">
                   <h5 className="modal-title">Xác nhận cuối cùng</h5>
-                  <button 
-                    type="button" 
-                    className="btn-close" 
+                  <button
+                    type="button"
+                    className="btn-close"
                     onClick={() => setShowCardConfirm(false)}
                   ></button>
                 </div>
@@ -582,16 +583,16 @@ const BookingPage: React.FC = () => {
                   </ul>
                 </div>
                 <div className="modal-footer">
-                  <button 
-                    type="button" 
-                    className="btn btn-secondary" 
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
                     onClick={() => setShowCardConfirm(false)}
                   >
                     Hủy
                   </button>
-                  <button 
-                    type="button" 
-                    className="btn btn-primary" 
+                  <button
+                    type="button"
+                    className="btn btn-primary"
                     onClick={handleFinalConfirm}
                   >
                     Xác nhận hoàn tiền

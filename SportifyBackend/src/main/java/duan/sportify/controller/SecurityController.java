@@ -4,21 +4,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import duan.sportify.service.AuthorizedService;
-import duan.sportify.service.MailerService;
 import duan.sportify.service.UserService;
 import duan.sportify.dao.UserDAO;
-import duan.sportify.DTO.MailInfo;
 import duan.sportify.dao.AuthorizedDAO;
 import duan.sportify.entities.Users;
 
 import duan.sportify.entities.Authorized;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.Random;
 import java.util.HashMap;
 import java.util.Map;
 import javax.servlet.http.HttpSession;

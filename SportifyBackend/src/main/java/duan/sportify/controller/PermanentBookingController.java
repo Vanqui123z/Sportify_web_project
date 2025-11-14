@@ -7,8 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import duan.sportify.entities.Field;
-import duan.sportify.entities.PermanentBooking;
-import duan.sportify.entities.Shifts;
 import duan.sportify.entities.Users;
 import duan.sportify.service.ShiftService;
 import duan.sportify.service.FieldService;
@@ -18,11 +16,9 @@ import duan.sportify.DTO.booking.PermanentBookingRequest;
 import duan.sportify.Repository.PermanentBookingRepository;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 

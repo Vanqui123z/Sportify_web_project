@@ -2,15 +2,13 @@ package duan.sportify.dao;
 
 import java.sql.Date;
 import java.util.List;
-import java.util.Optional;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import duan.sportify.entities.Bookings;
-import duan.sportify.entities.Contacts;
+
 
 public interface BookingDAO extends JpaRepository<Bookings, Integer> {
 
@@ -71,9 +69,9 @@ public interface BookingDAO extends JpaRepository<Bookings, Integer> {
 	// search admin
 	@Query(value = "SELECT b.* FROM bookings b " +
 			"JOIN users u ON b.username = u.username " +
-			"WHERE (:keyword IS NULL OR CONCAT(u.firstname, ' ', u.lastname) LIKE %:keyword%) " +
+			"WHERE (:keyword IS NULL OR CONCAT(u.firstname, ' ', u.lastname) LIKE CONCAT('%', :keyword, '%')) " +
 			"AND (:datebook IS NULL OR DATE(b.bookingdate) = :datebook) " +
-			"AND (:status IS NULL OR b.bookingstatus LIKE %:status%)", nativeQuery = true)
+			"AND (:status IS NULL OR b.bookingstatus LIKE CONCAT('%', :status, '%'))", nativeQuery = true)
 	List<Bookings> findByFlexibleConditions(@Param("keyword") String keyword,
 			@Param("datebook") Date datebook,
 			@Param("status") String status);

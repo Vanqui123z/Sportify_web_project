@@ -1,8 +1,9 @@
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 import React, { useEffect, useState } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
-import { fetchBookingData } from '../../../service/user/checkout/checkBookingFields';
+import { useLocation, useParams } from 'react-router-dom';
 import PaymentExpression from '../../../components/user/PaymentExpression';
 import VoucherSelect from '../../../components/user/VoucherSelect';
+import { fetchBookingData } from '../../../service/user/checkout/checkBookingFields';
 
 interface SportType {
   sporttypeid: string;
@@ -114,7 +115,7 @@ const CheckoutDatSan: React.FC = () => {
 
   useEffect(() => {
     if (user?.username) {
-      fetch(`http://localhost:8081/api/user/voucher-of-user?username=${user.username}`, {
+      fetch(`${URL_BACKEND}/api/user/voucher-of-user?username=${user.username}`, {
         credentials: 'include'
       })
         .then(res => res.json())
@@ -154,7 +155,7 @@ const CheckoutDatSan: React.FC = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:8081/api/user/order/cart/voucher?voucherId=${encodeURIComponent(discountCode)}`,
+        `${URL_BACKEND}/api/user/order/cart/voucher?voucherId=${encodeURIComponent(discountCode)}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -213,7 +214,7 @@ const CheckoutDatSan: React.FC = () => {
     console.log('Payload JSON:', payload);
 
     try {
-      const res = await fetch('http://localhost:8081/api/user/getIp/create?', {
+      const res = await fetch(`${URL_BACKEND}/api/user/getIp/create?`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -449,7 +450,7 @@ const CheckoutDatSan: React.FC = () => {
                             </div>
                             <div className='d-flex'>
                               <label >Số lượng </label>
-                              <span  style={{ color: "black", fontWeight: "bold", marginLeft: "30px" }}>
+                              <span style={{ color: "black", fontWeight: "bold", marginLeft: "30px" }}>
                                 {totalDay.toLocaleString()}
                               </span>
                             </div>
@@ -458,7 +459,7 @@ const CheckoutDatSan: React.FC = () => {
                         <hr />
                         <div>
                           <div>
-                            <VoucherSelect 
+                            <VoucherSelect
                               username={user?.username}
                               tamtinh={tamtinh}
                               onApply={(discountCode, newThanhtien, voucherOfUserId) => {
@@ -471,7 +472,7 @@ const CheckoutDatSan: React.FC = () => {
                           </div>
                         </div>
                         <hr />
-                         <div>
+                        <div>
                           <span>Tạm tính :</span>
                           <span style={{ color: "black" }}>{tamtinh.toLocaleString()}₫</span>
                         </div>

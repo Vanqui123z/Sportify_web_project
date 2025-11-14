@@ -9,7 +9,6 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -26,7 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 import duan.sportify.GlobalExceptionHandler;
 import duan.sportify.dao.SportTypeDAO;
 import duan.sportify.entities.Sporttype;
-
 import duan.sportify.utils.ErrorResponse;
 
 @CrossOrigin(origins = "*")
@@ -37,11 +35,12 @@ public class CategorySportRestController {
 	MessageSource messagesource;
 	@Autowired
 	SportTypeDAO sportTypeDAO;
-	
+
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
 		return GlobalExceptionHandler.handleValidationException(ex);
 	}
+
 	@GetMapping("getAll")
 	public List<Sporttype> getAll() {
 		return sportTypeDAO.findAll();
@@ -49,7 +48,7 @@ public class CategorySportRestController {
 
 	@GetMapping("get/{id}")
 	public Object getOne(@PathVariable("id") String id) {
-		if(!sportTypeDAO.existsById(id)) {
+		if (!sportTypeDAO.existsById(id)) {
 			return Map.of("error", "Not found");
 		}
 		return sportTypeDAO.findById(id).get();
@@ -69,7 +68,7 @@ public class CategorySportRestController {
 
 	@PutMapping("update/{id}")
 	public Map<String, Object> update(@PathVariable("id") String id, @Valid @RequestBody Sporttype sportType) {
-		if(!sportTypeDAO.existsById(id)) {
+		if (!sportTypeDAO.existsById(id)) {
 			return Map.of("error", "Not found");
 		}
 		sportTypeDAO.save(sportType);
@@ -78,7 +77,7 @@ public class CategorySportRestController {
 
 	@DeleteMapping("delete/{id}")
 	public Map<String, Object> delete(@PathVariable("id") String id) {
-		if(!sportTypeDAO.existsById(id)) {
+		if (!sportTypeDAO.existsById(id)) {
 			return Map.of("error", "Not found");
 		}
 		try {
@@ -86,15 +85,15 @@ public class CategorySportRestController {
 			return Map.of("message", "Xóa loại hình thể thao thành công");
 		} catch (org.springframework.dao.DataIntegrityViolationException ex) {
 			return Map.of(
-				"error", "Không thể xóa loại hình thể thao này vì đang được sử dụng ở bảng sân hoặc thực thể khác.",
-				"detail", "Vui lòng xóa hoặc cập nhật các sân (field) liên quan trước khi xóa loại hình thể thao này."
-			);
+					"error", "Không thể xóa loại hình thể thao này vì đang được sử dụng ở bảng sân hoặc thực thể khác.",
+					"detail",
+					"Vui lòng xóa hoặc cập nhật các sân (field) liên quan trước khi xóa loại hình thể thao này.");
 		}
 	}
 
 	@GetMapping("search")
-	public List<Sporttype> search(@RequestParam("categoryname") Optional<String> categoryname){
+	public List<Sporttype> search(@RequestParam("categoryname") Optional<String> categoryname) {
 		return sportTypeDAO.searchSport(categoryname);
 	}
-	
+
 }

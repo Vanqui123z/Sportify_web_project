@@ -22,9 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import duan.sportify.GlobalExceptionHandler;
-import duan.sportify.dao.BookingDAO;
 import duan.sportify.dao.OrderDAO;
-import duan.sportify.entities.Bookings;
 import duan.sportify.entities.Orders;
 import duan.sportify.service.OrderService;
 import duan.sportify.utils.ErrorResponse;

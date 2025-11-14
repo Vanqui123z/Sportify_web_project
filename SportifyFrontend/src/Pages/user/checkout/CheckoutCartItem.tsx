@@ -1,5 +1,6 @@
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useNotification } from "../../../helper/NotificationContext";
 
 interface User {
@@ -45,7 +46,7 @@ const CheckoutCartItem: React.FC = () => {
       return;
     }
 
-    fetch(`http://localhost:8081/api/user/cart/checkout/${cartItemId}`, {
+    fetch(`${URL_BACKEND}/api/user/cart/checkout/${cartItemId}`, {
       method: "GET",
       credentials: "include",
       headers: {
@@ -69,7 +70,7 @@ const CheckoutCartItem: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!data) return;
 
     const formData = new FormData();
@@ -80,18 +81,18 @@ const CheckoutCartItem: React.FC = () => {
     formData.append('quantity', data.item.quantity.toString());
 
     try {
-      const res = await fetch('http://localhost:8081/api/user/cart/payment', {
+      const res = await fetch(`${URL_BACKEND}/api/user/cart/payment`, {
         method: 'POST',
         body: formData,
         credentials: "include",
       });
-      
+
       if (!res.ok) {
         throw new Error(`API trả về lỗi ${res.status}`);
       }
-      
+
       const responseData = await res.json();
-      
+
       // Nếu API trả về url để redirect, chuyển hướng tại đây
       if (responseData && responseData.url) {
         addNotification("Đang chuyển hướng đến trang thanh toán...", "info");
@@ -122,7 +123,7 @@ const CheckoutCartItem: React.FC = () => {
           <div className="row no-gutters slider-text align-items-end justify-content-center">
             <div className="col-md-9 mb-5 text-center">
               <p className="breadcrumbs mb-0">
-                <span className="mr-2"><a href="index.html">Trang Chủ <i className="fa fa-chevron-right"></i></a></span> 
+                <span className="mr-2"><a href="index.html">Trang Chủ <i className="fa fa-chevron-right"></i></a></span>
                 <span>Cửa hàng<i className="fa fa-chevron-right"></i></span>
               </p>
               <h2 className="mb-0 bread">Thanh Toán Sản Phẩm</h2>
@@ -141,13 +142,13 @@ const CheckoutCartItem: React.FC = () => {
                 <div className="row align-items-end">
                   <div className="col-md-6">
                     <div className="form-group">
-                      <label htmlFor="firstname">Họ: </label> 
+                      <label htmlFor="firstname">Họ: </label>
                       <input type="text" className="form-control" value={user.firstname} readOnly />
                     </div>
                   </div>
                   <div className="col-md-6">
                     <div className="form-group">
-                      <label htmlFor="lastname">Tên: </label> 
+                      <label htmlFor="lastname">Tên: </label>
                       <input type="text" className="form-control" value={user.lastname} readOnly />
                     </div>
                   </div>
@@ -155,13 +156,13 @@ const CheckoutCartItem: React.FC = () => {
                   <div className="w-100"></div>
                   <div className="col-md-6">
                     <div className="form-group">
-                      <label htmlFor="streetaddress">Địa chỉ nhận hàng: </label> 
+                      <label htmlFor="streetaddress">Địa chỉ nhận hàng: </label>
                       <input type="text" className="form-control" value={user.address} readOnly />
                     </div>
                   </div>
                   <div className="col-md-6">
                     <div className="form-group">
-                      <label htmlFor="streetaddress">Ngày đặt hàng: </label> 
+                      <label htmlFor="streetaddress">Ngày đặt hàng: </label>
                       <input type="text" className="form-control" value={new Date().toLocaleDateString('vi-VN')} readOnly />
                     </div>
                   </div>
@@ -169,13 +170,13 @@ const CheckoutCartItem: React.FC = () => {
                   <div className="w-100"></div>
                   <div className="col-md-6">
                     <div className="form-group">
-                      <label htmlFor="phone">Số điện thoại: </label> 
+                      <label htmlFor="phone">Số điện thoại: </label>
                       <input type="text" className="form-control" value={user.phone} readOnly />
                     </div>
                   </div>
                   <div className="col-md-6">
                     <div className="form-group">
-                      <label htmlFor="emailaddress">Email: </label> 
+                      <label htmlFor="emailaddress">Email: </label>
                       <input type="text" className="form-control" value={user.email} readOnly />
                     </div>
                   </div>
@@ -189,7 +190,7 @@ const CheckoutCartItem: React.FC = () => {
                 <div className="col-md-6 d-flex">
                   <div className="cart-detail cart-total p-3 p-md-4" style={{ background: "white" }}>
                     <h3>Chi tiết sản phẩm</h3>
-                    
+
                     {/* Hiển thị sản phẩm đang thanh toán */}
                     <div className="mb-3">
                       <div className="d-flex align-items-center mb-2 pb-2 border-bottom">
@@ -201,8 +202,8 @@ const CheckoutCartItem: React.FC = () => {
                               style={{ width: "100%", height: "100%", objectFit: "cover" }}
                             />
                           ) : (
-                            <div className="bg-light d-flex align-items-center justify-content-center" 
-                                 style={{ width: "100%", height: "100%" }}>
+                            <div className="bg-light d-flex align-items-center justify-content-center"
+                              style={{ width: "100%", height: "100%" }}>
                               <span className="text-muted">No image</span>
                             </div>
                           )}
@@ -220,16 +221,16 @@ const CheckoutCartItem: React.FC = () => {
                     </div>
 
                     <p className="d-flex">
-                      <span>Tạm tính: </span> 
+                      <span>Tạm tính: </span>
                       <span>{totalPrice.toLocaleString("vi-VN")}đ</span>
                     </p>
                     <p className="d-flex">
-                      <span>Phí vận chuyển: </span> 
+                      <span>Phí vận chuyển: </span>
                       <span>30.000đ</span>
                     </p>
                     <hr />
                     <p className="d-flex total-price">
-                      <span>Thành tiền</span> 
+                      <span>Thành tiền</span>
                       <span>{(totalPrice + 30000).toLocaleString("vi-VN")}đ</span>
                     </p>
                   </div>

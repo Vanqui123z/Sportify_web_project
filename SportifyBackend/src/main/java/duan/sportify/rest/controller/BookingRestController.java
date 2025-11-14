@@ -1,16 +1,14 @@
 package duan.sportify.rest.controller;
 
 import java.sql.Date;
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -26,10 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import duan.sportify.GlobalExceptionHandler;
 import duan.sportify.dao.BookingDAO;
-import duan.sportify.dao.FieldDAO;
 import duan.sportify.entities.Bookings;
-import duan.sportify.entities.Field;
-import duan.sportify.entities.Sporttype;
 import duan.sportify.utils.ErrorResponse;
 
 @CrossOrigin(origins = "*")
@@ -99,6 +94,5 @@ public class BookingRestController {
 		bookingDAO.deleteAllByIdInBatch(bookingIds);
 		return ResponseEntity.ok().build();
 	}
-	
 
 }

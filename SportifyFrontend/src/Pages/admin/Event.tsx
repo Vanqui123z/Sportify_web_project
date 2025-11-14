@@ -24,6 +24,7 @@ const eventTypeOptions = [
   "Bảo trì",
   "Khác"
 ];
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 const VITE_CLOUDINARY_BASE_URL = import.meta.env.VITE_CLOUDINARY_BASE_URL || "";
 
 const EventPage: React.FC = () => {
@@ -41,7 +42,7 @@ const EventPage: React.FC = () => {
 
   // Fetch all events
   useEffect(() => {
-    fetch("http://localhost:8081/rest/events/getAll")
+    fetch(`${URL_BACKEND}/rest/events/getAll`)
       .then(res => res.json())
       .then(data => setEvents(data));
   }, []);
@@ -51,7 +52,7 @@ const EventPage: React.FC = () => {
     const params = new URLSearchParams();
     if (search.searchName) params.append("nameevent", search.searchName);
     if (search.searchType) params.append("eventtype", search.searchType);
-    fetch(`http://localhost:8081/rest/events/search?${params}`)
+    fetch(`${URL_BACKEND}/rest/events/search?${params}`)
       .then(res => res.json())
       .then(data => setEvents(data));
   };
@@ -59,7 +60,7 @@ const EventPage: React.FC = () => {
   // Refresh handler
   const handleRefresh = () => {
     setSearch({ searchName: "", searchType: "" });
-    fetch("http://localhost:8081/rest/events/getAll")
+    fetch(`${URL_BACKEND}/rest/events/getAll`)
       .then(res => res.json())
       .then(data => setEvents(data));
   };
@@ -84,7 +85,7 @@ const EventPage: React.FC = () => {
         }
       });
       console.log("formdata", Array.from(formData.entries()));
-      fetch("http://localhost:8081/rest/events/create", {
+      fetch(`${URL_BACKEND}/rest/events/create`, {
         method: "POST",
         body: formData,
       })
@@ -116,7 +117,7 @@ const EventPage: React.FC = () => {
   // Edit event handler
   const handleEditEvent = () => {
     if (!form.eventid) return;
-    fetch(`http://localhost:8081/rest/events/update/${form.eventid}`, {
+    fetch(`${URL_BACKEND}/rest/events/update/${form.eventid}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
@@ -142,7 +143,7 @@ const EventPage: React.FC = () => {
 
   // Delete event handler
   const handleDeleteEvent = (eventid: number) => {
-    fetch(`http://localhost:8081/rest/events/delete/${eventid}`, {
+    fetch(`${URL_BACKEND}/rest/events/delete/${eventid}`, {
       method: "DELETE",
     })
       .then(res => res.json())

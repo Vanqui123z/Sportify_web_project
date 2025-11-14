@@ -1,7 +1,6 @@
 package duan.sportify.rest.controller;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -11,7 +10,11 @@ import java.util.TreeMap;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -100,7 +103,7 @@ public class ReportBookingRestController {
 			}
 
 			int lastDataRowIndex = dataRowIndex - 1;
-			int startRow = lastDataRowIndex + 2;
+			// int startRow = lastDataRowIndex + 2;
 
 			// Thêm dữ liệu vào trang tính (sheet)
 			for (Map.Entry<Integer, Object[]> entry : data.entrySet()) {
@@ -252,7 +255,7 @@ public class ReportBookingRestController {
 			}
 
 			int lastDataRowIndex = dataRowIndex - 1;
-			int startRow = lastDataRowIndex + 2;
+			// int startRow = lastDataRowIndex + 2;
 
 			// Thêm dữ liệu vào trang tính (sheet)
 			for (Map.Entry<Integer, Object[]> entry : data.entrySet()) {
@@ -400,7 +403,7 @@ public class ReportBookingRestController {
 			}
 
 			int lastDataRowIndex = dataRowIndex - 1;
-			int startRow = lastDataRowIndex + 2;
+			// int startRow = lastDataRowIndex + 2;
 
 			// Thêm dữ liệu vào trang tính (sheet)
 			for (Map.Entry<Integer, Object[]> entry : data.entrySet()) {
@@ -549,7 +552,7 @@ public class ReportBookingRestController {
 			}
 
 			int lastDataRowIndex = dataRowIndex - 1;
-			int startRow = lastDataRowIndex + 2;
+			// int startRow = lastDataRowIndex + 2;
 
 			// Thêm dữ liệu vào trang tính (sheet)
 			for (Map.Entry<Integer, Object[]> entry : data.entrySet()) {

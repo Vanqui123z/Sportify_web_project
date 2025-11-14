@@ -55,35 +55,37 @@ const LichSuDatSanDetail: React.FC = () => {
   const [data, setData] = useState<ApiResponse | null>(null);
   const [shifts, setShifts] = useState<Shift[]>([]);
 
+  const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
+
   useEffect(() => {
-  const fetchData = async () => {
-    try {
-      // gọi API chi tiết booking
-      const res1 = await fetch(
-        `http://localhost:8081/api/user/field/profile/historybooking/detail?bookingId=${bookingId}&bookingPrice=${bookingPrice}`,
-        {
+    const fetchData = async () => {
+      try {
+        // gọi API chi tiết booking
+        const res1 = await fetch(
+          `${URL_BACKEND}/api/user/field/profile/historybooking/detail?bookingId=${bookingId}&bookingPrice=${bookingPrice}`,
+          {
+            method: "GET",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+        const data = await res1.json();
+        setData(data);
+
+        // gọi API shift
+        const res2 = await fetch(`${URL_BACKEND}/api/sportify/shift`, {
           method: "GET",
-          credentials: "include",
           headers: { "Content-Type": "application/json" },
-        }
-      );
-      const data = await res1.json();
-      setData(data);
+        });
+        const shiftData = await res2.json();
+        setShifts(shiftData);
+      } catch (err) {
+        console.error("Fetch error:", err);
+      }
+    };
 
-      // gọi API shift
-      const res2 = await fetch("http://localhost:8081/api/sportify/shift", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
-      const shiftData = await res2.json();
-      setShifts(shiftData);
-    } catch (err) {
-      console.error("Fetch error:", err);
-    }
-  };
-
-  fetchData();
-}, [bookingId, bookingPrice]);
+    fetchData();
+  }, [bookingId, bookingPrice]);
 
 
   if (!data) return <div>Loading...</div>;
@@ -146,7 +148,7 @@ const LichSuDatSanDetail: React.FC = () => {
       </style>
 
       <section className="hero-wrap hero-wrap-2"
-        style={{backgroundImage: "url('/user/images/backgroundField.gif')"}}
+        style={{ backgroundImage: "url('/user/images/backgroundField.gif')" }}
         data-stellar-background-ratio="0.5">
         <div className="overlay"></div>
       </section>
@@ -166,21 +168,21 @@ const LichSuDatSanDetail: React.FC = () => {
                 bookingInfo[2] === "Hoàn Thành"
                   ? "#39AEA9"
                   : bookingInfo[2] === "Đã Cọc"
-                  ? "#FFA41B"
-                  : bookingInfo[2] === "Hủy Đặt"
-                  ? "red"
-                  : "white";
+                    ? "#FFA41B"
+                    : bookingInfo[2] === "Hủy Đặt"
+                      ? "red"
+                      : "white";
               return (
                 <div key={idx} className="card col-12 mb-3" style={{ borderRadius: 10, marginTop: 20 }}>
                   <h6 className="card-header">
                     Mã phiếu <span style={{ color: "black", fontWeight: "bold" }}>#{bookingInfo[0]}</span> <span>Đặt lúc</span> <span style={{ color: "black", fontWeight: "bold" }}>
-                      {new Date(bookingInfo[1]).toLocaleString("vi-VN", { 
-                        day: '2-digit', 
-                        month: '2-digit', 
-                        year: 'numeric', 
-                        hour: '2-digit', 
-                        minute: '2-digit', 
-                        second: '2-digit' 
+                      {new Date(bookingInfo[1]).toLocaleString("vi-VN", {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
                       })}
                     </span>
                     <span
@@ -215,10 +217,10 @@ const LichSuDatSanDetail: React.FC = () => {
                     <div>
                       <span style={{ color: "black" }}>Ngày nhận sân:</span>{" "}
                       <span style={{ color: "#1F8A70", fontWeight: "bold" }}>
-                        {new Date(bookingInfo[4]).toLocaleDateString("vi-VN", { 
-                          day: '2-digit', 
-                          month: '2-digit', 
-                          year: 'numeric' 
+                        {new Date(bookingInfo[4]).toLocaleDateString("vi-VN", {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric'
                         })}
                       </span>
                     </div>
@@ -287,20 +289,20 @@ const LichSuDatSanDetail: React.FC = () => {
                   <div>
                     <span style={{ color: "black" }}>Ngày bắt đầu:</span>{" "}
                     <span style={{ color: "#1F8A70", fontWeight: "bold" }}>
-                      {new Date(bookingInfo.startDate).toLocaleDateString("vi-VN", { 
-                        day: '2-digit', 
-                        month: '2-digit', 
-                        year: 'numeric' 
+                      {new Date(bookingInfo.startDate).toLocaleDateString("vi-VN", {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
                       })}
                     </span>
                   </div>
                   <div>
                     <span style={{ color: "black" }}>Ngày kết thúc:</span>{" "}
                     <span style={{ color: "#1F8A70", fontWeight: "bold" }}>
-                      {new Date(bookingInfo.endDate).toLocaleDateString("vi-VN", { 
-                        day: '2-digit', 
-                        month: '2-digit', 
-                        year: 'numeric' 
+                      {new Date(bookingInfo.endDate).toLocaleDateString("vi-VN", {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
                       })}
                     </span>
                   </div>

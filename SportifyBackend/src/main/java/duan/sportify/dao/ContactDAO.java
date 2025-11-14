@@ -14,8 +14,8 @@ import duan.sportify.entities.Contacts;
 
 public interface ContactDAO extends JpaRepository<Contacts, String>{
 	// search admin 
-	@Query(value = "select * from contact where  datecontact = :datecontact and category like %:category% ", nativeQuery = true)
-    List<Contacts> findByDatecontact(@Param("datecontact") Date datecontact, @Param("category") Optional<String> category);
+	@Query(value = "select * from contact where  datecontact = :datecontact and category like CONCAT('%', :category, '%') ", nativeQuery = true)
+	List<Contacts> findByDatecontact(@Param("datecontact") Date datecontact, @Param("category") Optional<String> category);
 	// dashboard
 	// lấy danh sách 3 contact trong ngày
 	@Query(value = "SELECT * FROM contact where date(datecontact) = curdate() limit 2", nativeQuery = true)

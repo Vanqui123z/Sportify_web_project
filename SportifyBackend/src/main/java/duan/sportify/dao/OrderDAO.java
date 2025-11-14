@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import duan.sportify.entities.Bookings;
 import duan.sportify.entities.Orders;
 
 public interface OrderDAO extends JpaRepository<Orders, Integer> {
@@ -18,8 +17,8 @@ public interface OrderDAO extends JpaRepository<Orders, Integer> {
 
 	// search admin
 	@Query(value = "SELECT o.* FROM orders o \r\n" + "	        JOIN users u ON o.username = u.username \r\n"
-			+ "	        where(CONCAT(u.firstname, ' ', u.lastname) LIKE %:keyword%)\r\n"
-			+ "	        AND o.createdate LIKE %:datebook% \r\n" + "            and o.orderstatus like %:status%\r\n"
+			+ "	        where(CONCAT(u.firstname, ' ', u.lastname) LIKE CONCAT('%', :keyword, '%'))\r\n"
+			+ "	        AND o.createdate LIKE CONCAT('%', :datebook, '%') \r\n" + "            and o.orderstatus like CONCAT('%', :status, '%')\r\n"
 			+ "         and  (:payment IS NULL OR o.paymentstatus = :payment)", nativeQuery = true)
 	List<Orders> findByConditions(@Param("keyword") String keyword, @Param("datebook") Date datebook,
 			@Param("status") String status, @Param("payment") Optional<Integer> payment);

@@ -1,3 +1,5 @@
+
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -66,8 +68,9 @@ const OrderDetail: React.FC = () => {
 
   useEffect(() => {
     setLoading(true);
+    const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
     fetch(
-      `http://localhost:8081/api/user/order/historyList/detail/${orderId}`,
+      `${URL_BACKEND}/api/user/order/historyList/detail/${orderId}`,
       {
         method: "GET",
         credentials: "include",
@@ -89,9 +92,9 @@ const OrderDetail: React.FC = () => {
   }, [orderId]);
 
   const handleDelete = (orderid: number) => {
-    fetch(`http://localhost:8081/api/user/order/cancelOrder/${orderid}`, {
+    fetch(`${URL_BACKEND}/api/user/order/cancelOrder/${orderid}`, {
       method: "DELETE",
-      credentials: "include", 
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -125,9 +128,9 @@ const OrderDetail: React.FC = () => {
 
   // Lấy thông tin đơn hàng từ chi tiết đầu tiên
   const orderInfo = data.order[0].orders;
-  
+
   // Tính tổng tiền thực tế từ tất cả các chi tiết đơn hàng
-  const totalOrderAmount = data.order.reduce((sum, item) => 
+  const totalOrderAmount = data.order.reduce((sum, item) =>
     sum + (item.price * item.quantity), 0
   );
 
@@ -155,15 +158,15 @@ const OrderDetail: React.FC = () => {
             <div className="col-md-9 mb-5 text-center">
               <p className="breadcrumbs mb-0">
                 <span className="mr-2"><a href="/sportify">Trang Chủ <i
-                    className="fa fa-chevron-right"></i></a></span> <span>Sản Phẩm <i
-                  className="fa fa-chevron-right"></i></span>
+                  className="fa fa-chevron-right"></i></a></span> <span>Sản Phẩm <i
+                    className="fa fa-chevron-right"></i></span>
               </p>
               <h2 className="mb-0 bread">Chi tiết đơn hàng</h2>
             </div>
           </div>
         </div>
       </section>
-      
+
       {/* container sản phẩm */}
       <section className="ftco-section">
         <div className="container">
@@ -171,7 +174,7 @@ const OrderDetail: React.FC = () => {
             <i className="fa fa-arrow-left me-2"></i>
             Quay lại Lịch sử đặt hàng
           </a>
-          
+
           <div className="card mb-4">
             <div className="card-header bg-primary text-white">
               <h5 className="mb-0">Đơn hàng #{orderInfo.orderid}</h5>
@@ -184,11 +187,10 @@ const OrderDetail: React.FC = () => {
                   <p><strong>Ngày đặt:</strong> {formatDate(orderInfo.createdate)}</p>
                 </div>
                 <div className="col-md-6">
-                  <p><strong>Trạng thái đơn hàng:</strong> <span className={`badge ${
-                    orderInfo.orderstatus === 'Đã Thanh Toán' ? 'bg-success' :
-                    orderInfo.orderstatus === 'Chờ Xác Nhận' ? 'bg-warning' :
-                    'bg-primary'
-                  }`}>{orderInfo.orderstatus}</span></p>
+                  <p><strong>Trạng thái đơn hàng:</strong> <span className={`badge ${orderInfo.orderstatus === 'Đã Thanh Toán' ? 'bg-success' :
+                      orderInfo.orderstatus === 'Chờ Xác Nhận' ? 'bg-warning' :
+                        'bg-primary'
+                    }`}>{orderInfo.orderstatus}</span></p>
                   <p><strong>Trạng thái thanh toán:</strong> <span className={`badge ${orderInfo.paymentstatus ? 'bg-success' : 'bg-danger'}`}>
                     {orderInfo.paymentstatus ? 'Đã thanh toán' : 'Chưa thanh toán'}
                   </span></p>
@@ -224,7 +226,7 @@ const OrderDetail: React.FC = () => {
                           <img
                             className="img-fluid"
                             src={
-                              item.products.image.startsWith("v") 
+                              item.products.image.startsWith("v")
                                 ? `${import.meta.env.VITE_CLOUDINARY_BASE_URL}/${item.products.image}`
                                 : `/user/images/${item.products.image}`
                             }
@@ -267,8 +269,8 @@ const OrderDetail: React.FC = () => {
             </div>
             <div className="card-footer text-end">
               {orderInfo.orderstatus === "Chờ Xác Nhận" && (
-                <button 
-                  onClick={() => {handleDelete(orderInfo.orderid)}}
+                <button
+                  onClick={() => { handleDelete(orderInfo.orderid) }}
                   className="btn btn-danger"
                 >
                   <i className="fa fa-times-circle me-1"></i>

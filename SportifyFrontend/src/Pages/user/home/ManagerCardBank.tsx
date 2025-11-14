@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import "../../../styles/ListCard.css";
+import React, { useEffect, useState } from 'react';
 import ListCardBank from '../../../components/user/ListCardBank';
+import "../../../styles/ListCard.css";
 
 interface BankData {
     code: string;
@@ -13,7 +13,8 @@ interface BankData {
 // Constants
 const VNPAY_BASE_URL = 'https://sandbox.vnpayment.vn';
 const API_BANK_LIST = 'https://sandbox.vnpayment.vn/qrpayauth/api/merchant/get_bank_list';
-const API_GENERATE_TOKEN = 'http://localhost:8081/api/user/generate-token';
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
+const API_GENERATE_TOKEN = `${URL_BACKEND}/api/user/generate-token`;
 
 
 const CARD_TYPE_MAP: Record<string, string> = {
@@ -274,7 +275,7 @@ const ManagerCardBank: React.FC = () => {
 
         loadBankList();
     }, []);
-    
+
     // Hàm dùng chung để lấy danh sách ngân hàng từ VNPAY API
     async function fetchBanksFromVNPay(): Promise<BankData[]> {
         try {
@@ -316,7 +317,7 @@ const ManagerCardBank: React.FC = () => {
         }
     }
 
-  
+
 
     return (
         <div className="list-card-container">
@@ -324,7 +325,7 @@ const ManagerCardBank: React.FC = () => {
 
             <div className="card-list">
                 {/* Extracted ListCardBank component */}
-                <ListCardBank 
+                <ListCardBank
                     username={username}
                 />
 

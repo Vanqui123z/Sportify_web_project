@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 import axios from "axios";
+import React, { useEffect, useState } from "react";
 import BootstrapModal from "../../components/admin/BootstrapModal";
 import "../../styles/AdminModal.css";
 
@@ -55,7 +56,7 @@ const CommentPage: React.FC = () => {
 
   const fetchReviews = async () => {
     try {
-      const response = await axios.get("http://localhost:8081/api/user/reviews/all", { withCredentials: true });
+      const response = await axios.get(`${URL_BACKEND}/api/user/reviews/all`, { withCredentials: true });
       setReviews(response.data);
     } catch (error) {
       console.error("Error fetching reviews:", error);
@@ -66,10 +67,10 @@ const CommentPage: React.FC = () => {
   // Handle reply submission
   const handleSubmitReply = async () => {
     if (!selectedReview) return;
-    
+
     try {
       const response = await axios.post(
-        `http://localhost:8081/api/user/reviews/${selectedReview.reviewId}/reply`,
+        `${URL_BACKEND}/api/user/reviews/${selectedReview.reviewId}/reply`,
         replyForm,
         { withCredentials: true }
       );
@@ -77,7 +78,7 @@ const CommentPage: React.FC = () => {
       if (response.data.success) {
         setSuccess(response.data.message);
         // Update the review in the list
-        setReviews(reviews.map(review => 
+        setReviews(reviews.map(review =>
           review.reviewId === selectedReview.reviewId ? response.data.reply : review
         ));
         setShowReplyModal(false);
@@ -92,16 +93,16 @@ const CommentPage: React.FC = () => {
   // Add new function to handle reply deletion
   const handleDeleteReply = async () => {
     if (!selectedReview || !selectedReview.reviewId) return;
-    
+
     try {
       const response = await axios.delete(
-        `http://localhost:8081/api/user/reviews/delete/${selectedReview.reviewId}`,
+        `${URL_BACKEND}/api/user/reviews/delete/${selectedReview.reviewId}`,
         { withCredentials: true }
       );
 
       if (response.data.success) {
         setSuccess(response.data.message);
-        
+
         // Update the review in the list by removing reply data
         const updatedReview = {
           ...selectedReview,
@@ -110,14 +111,14 @@ const CommentPage: React.FC = () => {
           sellerReplyAdminName: null,
           sellerReplyDate: null
         };
-        
-        setReviews(reviews.map(review => 
+
+        setReviews(reviews.map(review =>
           review.reviewId === selectedReview.reviewId ? updatedReview : review
         ));
-        
+
         // Update selected review to reflect changes
         setSelectedReview(updatedReview);
-        
+
         // Clear the form content but keep the admin name
         setReplyForm(prev => ({ ...prev, content: "", status: "active" }));
       }
@@ -144,18 +145,18 @@ const CommentPage: React.FC = () => {
   const handleSearch = () => {
     fetchReviews().then(() => {
       const filtered = reviews.filter(review => {
-        const usernameMatch = search.username 
-          ? review.username.toLowerCase().includes(search.username.toLowerCase()) || 
-            review.customerName.toLowerCase().includes(search.username.toLowerCase())
+        const usernameMatch = search.username
+          ? review.username.toLowerCase().includes(search.username.toLowerCase()) ||
+          review.customerName.toLowerCase().includes(search.username.toLowerCase())
           : true;
-        
-        const statusMatch = search.status 
-          ? review.status === search.status 
+
+        const statusMatch = search.status
+          ? review.status === search.status
           : true;
-          
+
         return usernameMatch && statusMatch;
       });
-      
+
       setReviews(filtered);
     });
   };
@@ -187,8 +188,8 @@ const CommentPage: React.FC = () => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
       stars.push(
-        <i 
-          key={i} 
+        <i
+          key={i}
           className={`fa ${i <= rating ? 'fa-star text-warning' : 'fa-star-o text-muted'}`}
         ></i>
       );
@@ -322,13 +323,12 @@ const CommentPage: React.FC = () => {
                         {formatDate(review.createdAt)}
                       </td>
                       <td>
-                        <span className={`badge ${
-                          review.status === 'active' ? 'bg-success' : 
-                          review.status === 'hidden' ? 'bg-warning' : 
-                          'bg-danger'
-                        }`}>
-                          {review.status === 'active' ? 'Đang hiển thị' : 
-                           review.status === 'hidden' ? 'Đã ẩn' : 'Đã xóa'}
+                        <span className={`badge ${review.status === 'active' ? 'bg-success' :
+                            review.status === 'hidden' ? 'bg-warning' :
+                              'bg-danger'
+                          }`}>
+                          {review.status === 'active' ? 'Đang hiển thị' :
+                            review.status === 'hidden' ? 'Đã ẩn' : 'Đã xóa'}
                         </span>
                       </td>
                       <td className="text-center">
@@ -364,26 +364,26 @@ const CommentPage: React.FC = () => {
             <>
               {selectedReview && selectedReview.sellerReplyContent ? (
                 <>
-                  <button 
-                    type="button" 
-                    className="btn btn-danger" 
+                  <button
+                    type="button"
+                    className="btn btn-danger"
                     onClick={handleDeleteReply}
                   >
                     <i className="fa fa-trash me-1"></i> Xóa phản hồi
                   </button>
-                  <button 
-                    type="button" 
-                    className="btn btn-primary ms-2" 
-                    onClick={handleSubmitReply} 
+                  <button
+                    type="button"
+                    className="btn btn-primary ms-2"
+                    onClick={handleSubmitReply}
                     disabled
                   >
                     Phản hồi đã gửi
                   </button>
                 </>
               ) : (
-                <button 
-                  type="button" 
-                  className="btn btn-primary" 
+                <button
+                  type="button"
+                  className="btn btn-primary"
                   onClick={handleSubmitReply}
                 >
                   <i className="fa fa-paper-plane me-1"></i> Gửi phản hồi
@@ -406,7 +406,7 @@ const CommentPage: React.FC = () => {
                   </div>
                 </div>
                 <p className="mb-2">{selectedReview.comment}</p>
-                
+
                 {parseImages(selectedReview.images).length > 0 && (
                   <div className="d-flex gap-2 mb-2">
                     {parseImages(selectedReview.images).map((img, i) => (
@@ -440,7 +440,7 @@ const CommentPage: React.FC = () => {
                     disabled={selectedReview.sellerReplyContent !== null}
                   ></textarea>
                 </div>
-                
+
                 <div className="mb-3">
                   <label htmlFor="reviewStatus" className="form-label">Trạng thái đánh giá</label>
                   <select
@@ -454,11 +454,11 @@ const CommentPage: React.FC = () => {
                     <option value="deleted">Xóa</option>
                   </select>
                 </div>
-                
+
                 <div className="form-text text-muted mb-3">
                   Phản hồi với tư cách: <strong>{replyForm.adminName || "Admin"}</strong>
                 </div>
-                
+
                 {selectedReview.sellerReplyContent && (
                   <div className="alert alert-info">
                     <strong>Phản hồi hiện tại:</strong> {selectedReview.sellerReplyContent}

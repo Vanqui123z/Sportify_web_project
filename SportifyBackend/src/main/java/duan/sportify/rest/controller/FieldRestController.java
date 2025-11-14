@@ -1,35 +1,40 @@
 package duan.sportify.rest.controller;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+
 //import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
-
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import duan.sportify.GlobalExceptionHandler;
 import duan.sportify.dao.FieldDAO;
-
 import duan.sportify.entities.Field;
 import duan.sportify.entities.Sporttype;
-import duan.sportify.utils.ErrorResponse;
 import duan.sportify.service.UploadService;
+import duan.sportify.utils.ErrorResponse;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -70,12 +75,12 @@ public class FieldRestController {
 
 	@PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> create(
-		@RequestParam("sporttypeid") String sporttypeid,
-		@ModelAttribute Field field,
-		@RequestParam(value = "imageFile", required = false) MultipartFile imageFile) throws IOException {
+			@RequestParam("sporttypeid") String sporttypeid,
+			@ModelAttribute Field field,
+			@RequestParam(value = "imageFile", required = false) MultipartFile imageFile) throws IOException {
 
 		// ánh xạ sporttype từ id
-		 field.setSporttype(entityManager.getReference(Sporttype.class, sporttypeid));
+		field.setSporttype(entityManager.getReference(Sporttype.class, sporttypeid));
 
 		if (field.getFieldid() != null && fieldDAO.existsById(field.getFieldid())) {
 			return ResponseEntity.badRequest().body("Field đã tồn tại");
@@ -93,7 +98,7 @@ public class FieldRestController {
 		}
 		Field savedField = fieldDAO.save(field);
 		// Trả về entity vừa lưu
-    	return ResponseEntity.ok(savedField);
+		return ResponseEntity.ok(savedField);
 	}
 
 	@PutMapping(value = "update/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -101,11 +106,11 @@ public class FieldRestController {
 			@PathVariable("id") Integer id,
 			@RequestPart("field") Field field,
 			@RequestParam(value = "imageFile", required = false) MultipartFile imageFile) {
-		
+
 		if (!fieldDAO.existsById(id)) {
 			return ResponseEntity.notFound().build();
 		}
-		
+
 		// Upload avatar nếu có
 		if (imageFile != null && !imageFile.isEmpty()) {
 			try {
@@ -117,7 +122,7 @@ public class FieldRestController {
 				return ResponseEntity.status(500).body("Upload avatar thất bại: " + e.getMessage());
 			}
 		}
-		
+
 		Field savedField = fieldDAO.save(field);
 		return ResponseEntity.ok(savedField);
 	}

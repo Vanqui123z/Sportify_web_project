@@ -1,3 +1,4 @@
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 import React, { useEffect, useState } from "react";
 
 interface SportType {
@@ -43,10 +44,10 @@ const TeamPage: React.FC = () => {
 
   // Fetch all teams and sport types
   useEffect(() => {
-    fetch("http://localhost:8081/rest/teams/getAll")
+    fetch(`${URL_BACKEND}/rest/teams/getAll`)
       .then(res => res.json())
       .then(data => setTeams(data));
-    fetch("http://localhost:8081/rest/sportTypes/getAll")
+    fetch(`${URL_BACKEND}/rest/sportTypes/getAll`)
       .then(res => res.json())
       .then(data => setSportTypes(data));
   }, []);
@@ -56,7 +57,7 @@ const TeamPage: React.FC = () => {
     const params = new URLSearchParams();
     if (search.searchName) params.append("nameteam", search.searchName);
     if (search.searchSport) params.append("sporttypeid", search.searchSport);
-    fetch(`http://localhost:8081/rest/teams/search?${params}`)
+    fetch(`${URL_BACKEND}/rest/teams/search?${params}`)
       .then(res => res.json())
       .then(data => setTeams(data));
   };
@@ -64,14 +65,14 @@ const TeamPage: React.FC = () => {
   // Refresh handler
   const handleRefresh = () => {
     setSearch({ searchName: "", searchSport: "" });
-    fetch("http://localhost:8081/rest/teams/getAll")
+    fetch(`${URL_BACKEND}/rest/teams/getAll`)
       .then(res => res.json())
       .then(data => setTeams(data));
   };
 
   // Add team handler
   const handleAddTeam = () => {
-    fetch("http://localhost:8081/rest/teams/create", {
+    fetch(`${URL_BACKEND}/rest/teams/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
@@ -97,7 +98,7 @@ const TeamPage: React.FC = () => {
   // Edit team handler
   const handleEditTeam = () => {
     if (!form.teamid) return;
-    fetch(`http://localhost:8081/rest/teams/update/${form.teamid}`, {
+    fetch(`${URL_BACKEND}/rest/teams/update/${form.teamid}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
@@ -122,7 +123,7 @@ const TeamPage: React.FC = () => {
 
   // Delete team handler
   const handleDeleteTeam = (teamid: number) => {
-    fetch(`http://localhost:8081/rest/teams/delete/${teamid}`, {
+    fetch(`${URL_BACKEND}/rest/teams/delete/${teamid}`, {
       method: "DELETE",
     })
       .then(res => res.json())

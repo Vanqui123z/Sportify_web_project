@@ -1,4 +1,5 @@
 import React from "react";
+import { NavLink } from "react-router-dom";
 
 const Sidebar: React.FC = () => {
   return (
@@ -14,53 +15,63 @@ const Sidebar: React.FC = () => {
       <div className="sidebar-content p-3">
         <ul className="nav flex-column">
           <li className="nav-item mb-1">
-            <a
-              href="/admin/dashboard"
-              className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
+            <NavLink
+              to="/admin/dashboard"
+              className={({ isActive }) =>
+                `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
+              }
             >
               <i className="fas fa-tachometer-alt me-3 text-primary"></i>
               <span>Dashboard</span>
-            </a>
+            </NavLink>
           </li>
 
           <li className="nav-item mb-1">
-            <a
-              href="/admin/products"
-              className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
+            <NavLink
+              to="/admin/products"
+              className={({ isActive }) =>
+                `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
+              }
             >
               <i className="fas fa-store me-3 text-success"></i>
               <span>Sản phẩm</span>
-            </a>
+            </NavLink>
           </li>
 
           <li className="nav-item mb-1">
-            <a
-              href="/admin/fields"
-              className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
+            <NavLink
+              to="/admin/fields"
+              className={({ isActive }) =>
+                `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
+              }
             >
               <i className="fas fa-futbol me-3 text-warning"></i>
               <span>Sân thể thao</span>
-            </a>
+            </NavLink>
           </li>
 
           <li className="nav-item mb-1">
-            <a
-              href="/admin/accounts"
-              className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
+            <NavLink
+              to="/admin/accounts"
+              className={({ isActive }) =>
+                `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
+              }
             >
               <i className="fas fa-users-cog me-3 text-info"></i>
               <span>Quản lý tài khoản</span>
-            </a>
+            </NavLink>
           </li>
 
           <li className="nav-item mb-1">
-            <a
-              href="/admin/events"
-              className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
+            <NavLink
+              to="/admin/events"
+              className={({ isActive }) =>
+                `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
+              }
             >
               <i className="fas fa-newspaper me-3 text-danger"></i>
               <span>Tin tức & Sự kiện</span>
-            </a>
+            </NavLink>
           </li>
 
           {/* Dropdown Menu - Khác */}
@@ -86,31 +97,37 @@ const Sidebar: React.FC = () => {
                   <div className="accordion-body p-0">
                     <ul className="nav flex-column ms-4">
                       <li className="nav-item">
-                        <a
-                          href="/admin/vouchers"
-                          className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
+                        <NavLink
+                          to="/admin/vouchers"
+                          className={({ isActive }) =>
+                            `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
+                          }
                         >
                           <i className="fas fa-gift me-3 text-primary"></i>
                           <span>Mã giảm giá</span>
-                        </a>
+                        </NavLink>
                       </li>
                       <li className="nav-item">
-                        <a
-                          href="/admin/contacts"
-                          className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
+                        <NavLink
+                          to="/admin/contacts"
+                          className={({ isActive }) =>
+                            `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
+                          }
                         >
                           <i className="fas fa-comments me-3 text-success"></i>
                           <span>Liên hệ</span>
-                        </a>
+                        </NavLink>
                       </li>
                       <li className="nav-item">
-                        <a
-                          href="/admin/comments"
-                          className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
+                        <NavLink
+                          to="/admin/comments"
+                          className={({ isActive }) =>
+                            `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
+                          }
                         >
                           <i className="fas fa-comments me-3 text-success"></i>
                           <span>Quản lý bình luận</span>
-                        </a>
+                        </NavLink>
                       </li>
                     </ul>
                   </div>
@@ -142,41 +159,49 @@ const Sidebar: React.FC = () => {
                   <div className="accordion-body p-0">
                     <ul className="nav flex-column ms-4">
                       <li className="nav-item">
-                        <a
-                          href="/admin/bookings"
-                          className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
+                        <NavLink
+                          to="/admin/bookings"
+                          className={({ isActive }) =>
+                            `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
+                          }
                         >
                           <i className="fas fa-ticket-alt me-3 text-primary"></i>
                           <span>Lịch đặt sân</span>
-                        </a>
+                        </NavLink>
                       </li>
                       <li className="nav-item">
-                        <a
-                          href="/admin/manager-bookings"
-                          className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
+                        <NavLink
+                          to="/admin/manager-bookings"
+                          className={({ isActive }) =>
+                            `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
+                          }
                         >
                           <i className="fas fa-ticket-alt me-3 text-primary"></i>
                           <span>Quản lí đặt sân </span>
-                        </a>
+                        </NavLink>
                       </li>
-                     
+
                       <li className="nav-item">
-                        <a
-                          href="/admin/order-products"
-                          className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
+                        <NavLink
+                          to="/admin/order-products"
+                          className={({ isActive }) =>
+                            `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
+                          }
                         >
                           <i className="fas fa-receipt me-3 text-success"></i>
                           <span>Đơn hàng</span>
-                        </a>
+                        </NavLink>
                       </li>
-                       <li className="nav-item">
-                        <a
-                          href="/admin/manager-orders"
-                          className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
+                      <li className="nav-item">
+                        <NavLink
+                          to="/admin/manager-orders"
+                          className={({ isActive }) =>
+                            `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
+                          }
                         >
                           <i className="fas fa-ticket-alt me-3 text-primary"></i>
                           <span>Quản lí đơn hàng  </span>
-                        </a>
+                        </NavLink>
                       </li>
                     </ul>
                   </div>
@@ -208,22 +233,26 @@ const Sidebar: React.FC = () => {
                   <div className="accordion-body p-0">
                     <ul className="nav flex-column ms-4">
                       <li className="nav-item">
-                        <a
-                          href="/admin/category-product"
-                          className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
+                        <NavLink
+                          to="/admin/category-product"
+                          className={({ isActive }) =>
+                            `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
+                          }
                         >
                           <i className="fas fa-tshirt me-3 text-primary"></i>
                           <span>Loại sản phẩm</span>
-                        </a>
+                        </NavLink>
                       </li>
                       <li className="nav-item">
-                        <a
-                          href="/admin/category-sport"
-                          className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
+                        <NavLink
+                          to="/admin/category-sport"
+                          className={({ isActive }) =>
+                            `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
+                          }
                         >
                           <i className="fas fa-running me-3 text-success"></i>
                           <span>Loại thể thao</span>
-                        </a>
+                        </NavLink>
                       </li>
                     </ul>
                   </div>
@@ -255,22 +284,26 @@ const Sidebar: React.FC = () => {
                   <div className="accordion-body p-0">
                     <ul className="nav flex-column ms-4">
                       <li className="nav-item">
-                        <a
-                          href="/admin/reportBooking"
-                          className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
+                        <NavLink
+                          to="/admin/reportBooking"
+                          className={({ isActive }) =>
+                            `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
+                          }
                         >
                           <i className="fas fa-chart-line me-3 text-primary"></i>
                           <span>Thống kê đặt sân</span>
-                        </a>
+                        </NavLink>
                       </li>
                       <li className="nav-item">
-                        <a
-                          href="/admin/reportOrder"
-                          className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
+                        <NavLink
+                          to="/admin/reportOrder"
+                          className={({ isActive }) =>
+                            `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
+                          }
                         >
                           <i className="fas fa-chart-area me-3 text-success"></i>
                           <span>Thống kê bán hàng</span>
-                        </a>
+                        </NavLink>
                       </li>
                     </ul>
                   </div>
@@ -279,13 +312,15 @@ const Sidebar: React.FC = () => {
             </div>
           </li>
           <li className="nav-item mb-1">
-            <a
-              href="/admin/ai-support"
-              className="nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
+            <NavLink
+              to="/admin/ai-support"
+              className={({ isActive }) =>
+                `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
+              }
             >
               <i className="fas fa-cogs me-3 text-secondary"></i>
               <span>AI hỗ trợ</span>
-            </a>
+            </NavLink>
           </li>
         </ul>
       </div>

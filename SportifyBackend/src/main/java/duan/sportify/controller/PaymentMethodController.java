@@ -1,6 +1,5 @@
 package duan.sportify.controller;
 
-import duan.sportify.DTO.PaymentMethodRequest;
 import duan.sportify.entities.PaymentMethod;
 import duan.sportify.service.PaymentMethodService;
 

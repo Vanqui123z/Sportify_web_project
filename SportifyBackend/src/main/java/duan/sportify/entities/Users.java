@@ -7,7 +7,6 @@ package duan.sportify.entities;
 import java.io.Serializable;
 import java.util.List;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -24,93 +23,93 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 @Getter
 @Setter
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name="users", catalog="sportify")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Table(name = "users", catalog = "sportify")
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class Users implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    //--- ENTITY PRIMARY KEY 
+    // --- ENTITY PRIMARY KEY
     @Id
-    @Column(name="username", nullable=false, length=16)
+    @Column(name = "username", nullable = false, length = 16)
     @NotBlank(message = "{NotBlank.users.username}")
     @Size(min = 6, max = 15, message = "{Size.users.username}")
     private String username;
 
-    //--- ENTITY DATA FIELDS 
-    @Column(name="passwords", nullable=false, length=16)
+    // --- ENTITY DATA FIELDS
+    @Column(name = "passwords", nullable = false, length = 16)
     @NotBlank(message = "{NotBlank.users.passwords}")
     @Size(min = 6, max = 15, message = "{Size.users.passwords}")
     private String passwords;
 
-    @Column(name="firstname", length=50)
+    @Column(name = "firstname", length = 50)
     @NotBlank(message = "{NotBlank.users.firstname}")
     @Pattern(regexp = "^[\\p{L} ]+$", message = "{Pattern.users.firstname}")
     @Size(max = 50, message = "{Size.users.firstname}")
     private String firstname;
 
-    @Column(name="lastname", length=50)
+    @Column(name = "lastname", length = 50)
     @NotBlank(message = "{NotBlank.users.lastname}")
     @Pattern(regexp = "^[\\p{L} ]+$", message = "{Pattern.users.lastname}")
     @Size(max = 50, message = "{Size.users.lastname}")
     private String lastname;
 
-    @Column(name="phone", nullable=false, length=15)
+    @Column(name = "phone", nullable = false, length = 15)
     @NotBlank(message = "{NotBlank.users.phone}")
     @Pattern(regexp = "^(0|\\+84)\\d{9,10}$", message = "{Pattern.users.phone}")
     private String phone;
 
-    @Column(name="email", length=50)
+    @Column(name = "email", length = 50)
     @NotBlank(message = "{NotBlank.users.email}")
     @Email(message = "{Email.users.email}")
     private String email;
 
-    @Column(name="address", length=100)
+    @Column(name = "address", length = 100)
     @NotBlank(message = "{NotBlank.users.address}")
     private String address;
 
-    @Column(name="image", length=50)
+    @Column(name = "image", length = 50)
     private String image;
 
-    @Column(name="gender")
+    @Column(name = "gender")
     private Boolean gender;
 
-    @Column(name="status")
+    @Column(name = "status")
     private Boolean status;
 
-    //--- ENTITY LINKS ( RELATIONSHIP )
+    // --- ENTITY LINKS ( RELATIONSHIP )
     @JsonIgnore
-    @OneToMany(mappedBy="users")
-    private List<Teamdetails> listOfTeamdetails; 
+    @OneToMany(mappedBy = "users")
+    private List<Teamdetails> listOfTeamdetails;
 
     @JsonIgnore
-    @OneToMany(mappedBy="users")
-    private List<Orders> listOfOrders; 
+    @OneToMany(mappedBy = "users")
+    private List<Orders> listOfOrders;
 
     @JsonIgnore
-    @OneToMany(mappedBy="users", fetch = FetchType.EAGER)
-    private List<Authorized> listOfAuthorized; 
+    @OneToMany(mappedBy = "users", fetch = FetchType.EAGER)
+    private List<Authorized> listOfAuthorized;
 
     @JsonIgnore
-    @OneToMany(mappedBy="users")
-    private List<Bookings> listOfBookings; 
+    @OneToMany(mappedBy = "users")
+    private List<Bookings> listOfBookings;
 
     @JsonIgnore
-    @OneToMany(mappedBy="users")
-    private List<Teams> listOfTeams;  
+    @OneToMany(mappedBy = "users")
+    private List<Teams> listOfTeams;
 
     @JsonIgnore
-    @OneToMany(mappedBy="username")
-    private List<Contacts> listOfContact;  
+    @OneToMany(mappedBy = "username")
+    private List<Contacts> listOfContact;
 
 }
-  

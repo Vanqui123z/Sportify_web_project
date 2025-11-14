@@ -16,60 +16,52 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.Proxy;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
 
-@Table(name="teamdetails", catalog="sportify" )
+@Table(name = "teamdetails", catalog = "sportify")
 
 public class Teamdetails implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    //--- ENTITY PRIMARY KEY 
+    // --- ENTITY PRIMARY KEY
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    @Column(name="teamdetailid", nullable=false)
-    private Integer    teamdetailid ;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "teamdetailid", nullable = false)
+    private Integer teamdetailid;
 
-    //--- ENTITY DATA FIELDS 
-    @Column(name="teamid", nullable=false)
-    private Integer    teamid ;
+    // --- ENTITY DATA FIELDS
+    @Column(name = "teamid", nullable = false)
+    private Integer teamid;
 
-    @Column(name="username", nullable=false, length=16)
-    private String     username ;
-    
-    @Column(name="joindate", nullable=false)
-    private LocalDate joindate ;
-    
-    @Column(name="infouser", length=5000)
-    private String     infouser ;
-    
+    @Column(name = "username", nullable = false, length = 16)
+    private String username;
+
+    @Column(name = "joindate", nullable = false)
+    private LocalDate joindate;
+
+    @Column(name = "infouser", length = 5000)
+    private String infouser;
+
     @Column(name = "status", nullable = false)
     private Boolean status;
-    //--- ENTITY LINKS ( RELATIONSHIP )
+    // --- ENTITY LINKS ( RELATIONSHIP )
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name="username", referencedColumnName="username", insertable=false, updatable=false)
-    private Users      users ; 
+    @JoinColumn(name = "username", referencedColumnName = "username", insertable = false, updatable = false)
+    private Users users;
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name="teamid", referencedColumnName="teamid", insertable=false, updatable=false)
-    private Teams      teams ; 
-
-
-    
+    @JoinColumn(name = "teamid", referencedColumnName = "teamid", insertable = false, updatable = false)
+    private Teams teams;
 
 }

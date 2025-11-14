@@ -1,3 +1,4 @@
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 import React, { useEffect, useState } from "react";
 
 interface User {
@@ -50,7 +51,7 @@ const OrderProductPage: React.FC = () => {
 
   // Fetch all orders
   useEffect(() => {
-    fetch("http://localhost:8081/sportify/rest/orders")
+    fetch(`${URL_BACKEND}/sportify/rest/orders`)
       .then(res => res.json())
       .then(data => setOrders(data));
   }, []);
@@ -63,7 +64,7 @@ const OrderProductPage: React.FC = () => {
       status: search.searchStatus,
       payment: search.searchPayment,
     });
-    fetch(`http://localhost:8081/sportify/rest/orders/search?${params}`)
+    fetch(`${URL_BACKEND}/sportify/rest/orders/search?${params}`)
       .then(res => res.json())
       .then(data => setOrders(data));
   };
@@ -71,7 +72,7 @@ const OrderProductPage: React.FC = () => {
   // Refresh handler
   const handleRefresh = () => {
     setSearch({ searchName: "", searchDate: "", searchStatus: "", searchPayment: "" });
-    fetch("http://localhost:8081/sportify/rest/orders")
+    fetch(`${URL_BACKEND}/sportify/rest/orders`)
       .then(res => res.json())
       .then(data => setOrders(data));
   };
@@ -80,7 +81,7 @@ const OrderProductPage: React.FC = () => {
   const openEditModal = (order: Order) => {
     setForm(order);
     setShowEdit(true);
-    fetch(`http://localhost:8081/rest/orderdetails/${order.orderid}`)
+    fetch(`${URL_BACKEND}/rest/orderdetails/${order.orderid}`)
       .then(res => res.json())
       .then(data => setOrderDetail(data));
   };
@@ -93,7 +94,7 @@ const OrderProductPage: React.FC = () => {
   // Update order handler
   const handleUpdateOrder = () => {
     if (!form.orderid) return;
-    fetch(`http://localhost:8081/sportify/rest/orders/${form.orderid}`, {
+    fetch(`${URL_BACKEND}/sportify/rest/orders/${form.orderid}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
@@ -108,7 +109,7 @@ const OrderProductPage: React.FC = () => {
   // Confirm order handler
   const handleConfirmOrder = () => {
     if (!form.orderid) return;
-    fetch(`http://localhost:8081/sportify/rest/orders/confirm/${form.orderid}`, {
+    fetch(`${URL_BACKEND}/sportify/rest/orders/confirm/${form.orderid}`, {
       method: "POST",
     })
       .then(() => handleRefresh());
@@ -117,7 +118,7 @@ const OrderProductPage: React.FC = () => {
   // Cancel order handler
   const handleCancelOrder = () => {
     if (!form.orderid) return;
-    fetch(`http://localhost:8081/sportify/rest/orders/cancel/${form.orderid}`, {
+    fetch(`${URL_BACKEND}/sportify/rest/orders/cancel/${form.orderid}`, {
       method: "POST",
     })
       .then(() => handleRefresh());
@@ -155,8 +156,8 @@ const OrderProductPage: React.FC = () => {
           <div className="col-sm-6 col-md-2">
             <label className="focus-label">Họ tên người đặt</label>
             <div className="form-group form-focus">
-              <input 
-                type="text" 
+              <input
+                type="text"
                 className="form-control floating"
                 value={search.searchName}
                 onChange={e => setSearch(s => ({ ...s, searchName: e.target.value }))}
@@ -166,8 +167,8 @@ const OrderProductPage: React.FC = () => {
           <div className="col-sm-6 col-md-2">
             <label className="focus-label">Ngày đặt</label>
             <div className="form-group form-focus">
-              <input 
-                type="date" 
+              <input
+                type="date"
                 className="form-control floating"
                 value={search.searchDate}
                 onChange={e => setSearch(s => ({ ...s, searchDate: e.target.value }))}
@@ -177,7 +178,7 @@ const OrderProductPage: React.FC = () => {
           <div className="col-sm-2 col-md-2">
             <label className="focus-label">Trạng thái đơn hàng</label>
             <div className="form-group form-focus select-focus">
-              <select 
+              <select
                 className="select floating"
                 value={search.searchStatus}
                 onChange={e => setSearch(s => ({ ...s, searchStatus: e.target.value }))}
@@ -194,7 +195,7 @@ const OrderProductPage: React.FC = () => {
           <div className="col-sm-2 col-md-2">
             <label className="focus-label">Trạng thái thanh toán</label>
             <div className="form-group form-focus select-focus">
-              <select 
+              <select
                 className="select floating"
                 value={search.searchPayment}
                 onChange={e => setSearch(s => ({ ...s, searchPayment: e.target.value }))}
@@ -249,8 +250,8 @@ const OrderProductPage: React.FC = () => {
                       <td>{item.orderstatus}</td>
                       <td>{item.paymentstatus ? "Đã thanh toán" : "Chưa thanh toán"}</td>
                       <td className="text-center">
-                        <button 
-                          className="btn btn-danger btn-block" 
+                        <button
+                          className="btn btn-danger btn-block"
                           onClick={() => openEditModal(item)}
                         >
                           <i className="fa fa-pencil m-r-5"></i> Xem chi tiết
@@ -289,8 +290,8 @@ const OrderProductPage: React.FC = () => {
                     <div className="col-sm-6">
                       <div className="form-group">
                         <label className="col-form-label">Người đặt <span className="text-danger">*</span></label>
-                        <input 
-                          className="form-control" 
+                        <input
+                          className="form-control"
                           type="text"
                           value={
                             form.users
@@ -316,7 +317,7 @@ const OrderProductPage: React.FC = () => {
                     <div className="col-sm-6">
                       <div className="form-group">
                         <label className="col-form-label">Trạng thái đặt hàng<span className="text-danger">*</span></label>
-                        <select 
+                        <select
                           className="form-control"
                           value={form.orderstatus || ""}
                           onChange={e => handleFormChange("orderstatus", e.target.value)}
@@ -332,7 +333,7 @@ const OrderProductPage: React.FC = () => {
                     <div className="col-sm-6">
                       <div className="form-group">
                         <label className="col-form-label">Trạng thái thanh toán<span className="text-danger">*</span></label>
-                        <select 
+                        <select
                           className="form-control"
                           value={form.paymentstatus ? "true" : "false"}
                           onChange={e => handleFormChange("paymentstatus", e.target.value === "true")}

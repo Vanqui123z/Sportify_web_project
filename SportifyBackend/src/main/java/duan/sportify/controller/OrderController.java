@@ -3,11 +3,8 @@ package duan.sportify.controller;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.chrono.ChronoLocalDate;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 

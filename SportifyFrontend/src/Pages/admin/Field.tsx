@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 import axios from "axios";
+import React, { useEffect, useState } from "react";
 import BootstrapModal from "../../components/admin/BootstrapModal";
 import "../../styles/AdminModal.css";
 
@@ -52,11 +53,11 @@ const FieldPage: React.FC = () => {
 
   // Fetch all fields
   useEffect(() => {
-    fetch("http://localhost:8081/rest/fields/getAll")
+    fetch(`${URL_BACKEND}/rest/fields/getAll`)
       .then(res => res.json())
       .then(data => setFields(data));
     // Fetch sport types
-    fetch("http://localhost:8081/rest/sportTypes/getAll")
+    fetch(`${URL_BACKEND}/rest/sportTypes/getAll`)
       .then(res => res.json())
       .then(data => setSportTypes(data));
   }, []);
@@ -67,7 +68,7 @@ const FieldPage: React.FC = () => {
     if (search.namefield) params.append("namefield", search.namefield);
     if (search.sporttypeid) params.append("sporttypeid", search.sporttypeid);
     if (search.status) params.append("status", search.status);
-    fetch(`http://localhost:8081/rest/fields/search?${params}`)
+    fetch(`${URL_BACKEND}/rest/fields/search?${params}`)
       .then(res => res.json())
       .then(data => setFields(data));
   };
@@ -75,7 +76,7 @@ const FieldPage: React.FC = () => {
   // Refresh handler
   const handleRefresh = () => {
     setSearch({ namefield: "", sporttypeid: "", status: "" });
-    fetch("http://localhost:8081/rest/fields/getAll")
+    fetch(`${URL_BACKEND}/rest/fields/getAll`)
       .then(res => res.json())
       .then(data => setFields(data));
   };
@@ -108,7 +109,7 @@ const FieldPage: React.FC = () => {
         formData.append("imageFile", imageFile);
       }
       // Không set Content-Type ở đây!
-      const res = await axios.post("http://localhost:8081/rest/fields/create", formData);
+      const res = await axios.post(`${URL_BACKEND}/rest/fields/create`, formData);
       const data = res.data;
       if (data) {
         alert("Thêm sân thành công");
@@ -136,27 +137,27 @@ const FieldPage: React.FC = () => {
         sporttype: { sporttypeid: form.sporttypeid }
       };
       delete fieldData.sporttypeid;
-      
+
       // Chuẩn bị formData
       const formData = new FormData();
       formData.append("field", new Blob([JSON.stringify(fieldData)], { type: "application/json" }));
-      
+
       // Thêm file ảnh nếu có
       if (imageFile) {
         formData.append("imageFile", imageFile);
       }
-      
+
       // Gửi request PUT
       const res = await axios.put(
-        `http://localhost:8081/rest/fields/update/${form.fieldid}`, 
-        formData, 
+        `${URL_BACKEND}/rest/fields/update/${form.fieldid}`,
+        formData,
         {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
         }
       );
-      
+
       const data = res.data;
       if (data) {
         alert("Cập nhật sân thành công");
@@ -178,7 +179,7 @@ const FieldPage: React.FC = () => {
 
   // Delete field handler
   const handleDeleteField = (fieldid: number) => {
-    fetch(`http://localhost:8081/rest/fields/delete/${fieldid}`, {
+    fetch(`${URL_BACKEND}/rest/fields/delete/${fieldid}`, {
       method: "DELETE",
     })
       .then(res => res.json())

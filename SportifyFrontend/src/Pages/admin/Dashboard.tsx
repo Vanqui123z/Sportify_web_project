@@ -1,3 +1,4 @@
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 import React, { useEffect, useState } from "react";
 import BookingCalendar from "../../components/admin/BookingCalendar";
 import getImageUrl from "../../helper/getImageUrl";
@@ -110,8 +111,8 @@ const Dashboard: React.FC = () => {
       setLoading(true);
       // Fetch both APIs in parallel
       const [summaryResponse, detailsResponse] = await Promise.all([
-        fetch('http://localhost:8081/rest/dashboard/summary'),
-        fetch('http://localhost:8081/rest/dashboard/all-details')
+        fetch(`${URL_BACKEND}/rest/dashboard/summary`),
+        fetch(`${URL_BACKEND}/rest/dashboard/all-details`)
       ]);
 
       const summaryData: DashboardSummaryResponse = await summaryResponse.json();
@@ -217,7 +218,7 @@ const Dashboard: React.FC = () => {
     return value.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
   };
 
-  const formatDate = (dateStr: string) => 
+  const formatDate = (dateStr: string) =>
     new Date(dateStr).toLocaleDateString("vi-VN");
 
   const calculatePercentage = (value: number, total: number) => {
@@ -229,7 +230,7 @@ const Dashboard: React.FC = () => {
       {/* Page Content */}
       <div className="content container-fluid">
         <BookingCalendar />
-        
+
         <div className="row">
           <div className="col-md-6 col-sm-6 col-lg-6 col-xl-3">
             <div className="card dash-widget">
@@ -300,15 +301,15 @@ const Dashboard: React.FC = () => {
                 </div>
                 <div className="progress mb-4">
                   <div className="progress-bar bg-purple" role="progressbar"
-                    style={{width: `${calculatePercentage(bookingStats.completed, bookingStats.total)}%`}} aria-valuenow={parseInt(calculatePercentage(bookingStats.completed, bookingStats.total))}
+                    style={{ width: `${calculatePercentage(bookingStats.completed, bookingStats.total)}%` }} aria-valuenow={parseInt(calculatePercentage(bookingStats.completed, bookingStats.total))}
                     aria-valuemin={0} aria-valuemax={100}>{calculatePercentage(bookingStats.completed, bookingStats.total)}%</div>
 
                   <div className="progress-bar bg-warning" role="progressbar"
-                    style={{width: `${calculatePercentage(bookingStats.deposit, bookingStats.total)}%`}} aria-valuenow={parseInt(calculatePercentage(bookingStats.deposit, bookingStats.total))}
+                    style={{ width: `${calculatePercentage(bookingStats.deposit, bookingStats.total)}%` }} aria-valuenow={parseInt(calculatePercentage(bookingStats.deposit, bookingStats.total))}
                     aria-valuemin={0} aria-valuemax={100}>{calculatePercentage(bookingStats.deposit, bookingStats.total)}%</div>
 
                   <div className="progress-bar bg-danger" role="progressbar"
-                    style={{width: `${calculatePercentage(bookingStats.cancelled, bookingStats.total)}%`}} aria-valuenow={parseInt(calculatePercentage(bookingStats.cancelled, bookingStats.total))}
+                    style={{ width: `${calculatePercentage(bookingStats.cancelled, bookingStats.total)}%` }} aria-valuenow={parseInt(calculatePercentage(bookingStats.cancelled, bookingStats.total))}
                     aria-valuemin={0} aria-valuemax={100}>{calculatePercentage(bookingStats.cancelled, bookingStats.total)}%</div>
                 </div>
 
@@ -354,12 +355,12 @@ const Dashboard: React.FC = () => {
                 </div>
                 <div className="progress mb-4">
                   <div className="progress-bar bg-purple" role="progressbar"
-                    style={{width: `${calculatePercentage(orderStats.paid, orderStats.total)}%`}}
+                    style={{ width: `${calculatePercentage(orderStats.paid, orderStats.total)}%` }}
                     aria-valuenow={parseInt(calculatePercentage(orderStats.paid, orderStats.total))} aria-valuemin={0}
                     aria-valuemax={100}>{calculatePercentage(orderStats.paid, orderStats.total)}%</div>
 
                   <div className="progress-bar bg-warning" role="progressbar"
-                    style={{width: `${calculatePercentage(orderStats.unpaid, orderStats.total)}%`}}
+                    style={{ width: `${calculatePercentage(orderStats.unpaid, orderStats.total)}%` }}
                     aria-valuenow={parseInt(calculatePercentage(orderStats.unpaid, orderStats.total))} aria-valuemin={0}
                     aria-valuemax={100}>{calculatePercentage(orderStats.unpaid, orderStats.total)}%</div>
                 </div>
@@ -395,12 +396,12 @@ const Dashboard: React.FC = () => {
                       <div className="media row"  >
                         <div className="media-left col-8 d-flex align-items-center">
                           <div className="avatar">
-                          <img alt="" src={ contact.users.image ? getImageUrl(contact.users.image)
+                            <img alt="" src={contact.users.image ? getImageUrl(contact.users.image)
                               : `/user/images/${contact.users.image || 'avatar1.png'}`} />
-                        </div>
-                        <div className="media-body">
-                          <div className="text-sm my-0">{contact.users.firstname + ' ' + contact.users.lastname}</div>
-                        </div>
+                          </div>
+                          <div className="media-body">
+                            <div className="text-sm my-0">{contact.users.firstname + ' ' + contact.users.lastname}</div>
+                          </div>
                         </div>
                         <div className="media-right col-4 text-right">
                           <div className="text-sm my-0">{formatDate(contact.datecontact)}</div>

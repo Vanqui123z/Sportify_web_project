@@ -1,8 +1,9 @@
-import React, { useState } from "react";
 import axios from "axios";
+import React, { useEffect, useState } from "react";
 import BootstrapModal from "../../components/admin/BootstrapModal";
 import getImageUrl from "../../helper/getImageUrl";
 import VoucherOfUser from "./VorcherOfUser";
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 
 interface Account {
   username: string;
@@ -41,9 +42,15 @@ const AccountPage: React.FC = () => {
   });
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [passwordFieldType, setPasswordFieldType] = useState<"password" | "text">("password");
+  useEffect(() => {
+    axios.get(`${URL_BACKEND}/api/rest/accounts/getAll`)
+      .then(res => setAccounts(res.data))
+      .catch(err => console.error("Failed to fetch accounts:", err));
+  }, []);
+
   // Search handler
   const handleSearch = () => {
-    axios.get("http://localhost:8081/api/rest/accounts/search", {
+    axios.get(`${URL_BACKEND}/api/rest/accounts/search`, {
       params: {
         user: search.searchUser,
         keyword: search.keyword,
@@ -56,7 +63,7 @@ const AccountPage: React.FC = () => {
   // Refresh handler
   const handleRefresh = () => {
     setSearch({ keyword: "", searchUser: "", searchStatus: "", searchRole: "" });
-    axios.get("http://localhost:8081/api/rest/accounts/getAll").then(res => setAccounts(res.data));
+    axios.get(`${URL_BACKEND}/api/rest/accounts/getAll`).then(res => setAccounts(res.data));
   };
 
   // Sửa handleImageChange để lưu file và preview
@@ -81,7 +88,7 @@ const AccountPage: React.FC = () => {
       formData.append("avatarFile", imageFile);
     }
     console.log("Form Data Entries:", Array.from(formData.entries()));
-    axios.post("http://localhost:8081/api/rest/accounts/create", formData, {
+    axios.post(`${URL_BACKEND}/api/rest/accounts/create`, formData, {
       headers: { "Content-Type": "multipart/form-data" }
     })
       .then(res => {
@@ -101,7 +108,7 @@ const AccountPage: React.FC = () => {
   // Edit account handler
   const handleEditAccount = () => {
     if (!form.username) return;
-    axios.put(`http://localhost:8081/api/rest/accounts/update/${form.username}`, form)
+    axios.put(`${URL_BACKEND}/api/rest/accounts/update/${form.username}`, form)
       .then(res => {
         alert("Cập nhật tài khoản thành công");
         setAccounts(prev => prev.map(acc => acc.username === res.data.username ? res.data : acc));
@@ -122,7 +129,7 @@ const AccountPage: React.FC = () => {
   };
 
   const handleDeleteAccount = (username: String) => {
-    axios.delete(`http://localhost:8081/api/rest/accounts/delete/${username}`)
+    axios.delete(`${URL_BACKEND}/api/rest/accounts/delete/${username}`)
       .then(() => {
         alert("Xóa tài khoản thành công");
         setAccounts(prev => prev.filter(acc => acc.username !== username));
@@ -288,7 +295,7 @@ const AccountPage: React.FC = () => {
                       <td>{idx + 1}</td>
                       <td>
                         <div className="d-flex align-items-center">
-                          <img alt="" src={ getImageUrl(item.image)} className="rounded-circle me-2" style={{ width: 40, height: 40, objectFit: "cover" }} />
+                          <img alt="" src={getImageUrl(item.image)} className="rounded-circle me-2" style={{ width: 40, height: 40, objectFit: "cover" }} />
                           <div>
                             <div>{item.firstname + " " + item.lastname}</div>
                             <small className="text-muted">{item.username}</small>
@@ -697,7 +704,7 @@ const AccountPage: React.FC = () => {
       </BootstrapModal>
 
       {/* Voucher management section */}
-      <BootstrapModal 
+      <BootstrapModal
         show={showVoucherModal}
         onHide={() => setShowVoucherModal(false)}
         title="Quản lý voucher"
@@ -710,7 +717,7 @@ const AccountPage: React.FC = () => {
       <div id="toast"></div>
     </div>
   );
-  
+
 };
 
 export default AccountPage;

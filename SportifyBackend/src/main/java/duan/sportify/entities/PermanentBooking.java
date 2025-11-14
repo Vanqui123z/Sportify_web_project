@@ -1,8 +1,6 @@
 package duan.sportify.entities;
 
 import javax.persistence.*;
-import javax.persistence.criteria.CriteriaBuilder.In;
-
 import org.springframework.format.annotation.DateTimeFormat;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -10,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.List;
 
 
 @Entity

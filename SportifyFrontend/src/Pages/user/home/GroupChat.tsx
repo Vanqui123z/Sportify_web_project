@@ -1,8 +1,9 @@
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
+import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import SockJS from "sockjs-client";
 import { over } from "stompjs";
-import axios from "axios";
 import { checkLogin } from "../../../helper/checkLogin";
 import "../../../styles/GroupChat.css";
 
@@ -19,7 +20,7 @@ export default function GroupChat() {
   const typingTimeouts = useRef<{ [username: string]: NodeJS.Timeout }>({});
   const [isConnected, setIsConnected] = useState(false);
   const chatBoxRef = useRef<HTMLDivElement>(null);
-    const [showScrollDown, setShowScrollDown] = useState(false);
+  const [showScrollDown, setShowScrollDown] = useState(false);
   // Kiểm tra vị trí scroll để hiển thị/ẩn nút cuộn xuống
   const handleScroll = () => {
     if (chatBoxRef.current) {
@@ -45,12 +46,12 @@ export default function GroupChat() {
         setUsername(res.username);
 
         // tạo socket sau khi có username
-        const socket = new SockJS("http://localhost:8081/api/user/ws");
+        const socket = new SockJS(`${URL_BACKEND}/api/user/ws`);
         stompClient = over(socket);
 
         stompClient.connect({ username: res.username, roomId: roomId }, async () => {
           console.log("✅ Connected to WebSocket");
-           setIsConnected(true); 
+          setIsConnected(true);
           joinRoom(roomId);
           await loadHistory(roomId);
           await loadOnlineUsers();
@@ -91,7 +92,7 @@ export default function GroupChat() {
     });
 
     return () => typingSubscription.unsubscribe();
-  }, [isConnected,stompClient]);
+  }, [isConnected, stompClient]);
 
   // người dùng nhập
   const handleTyping = () => {
@@ -108,12 +109,12 @@ export default function GroupChat() {
   };
 
   const loadHistory = async (room: string) => {
-    const res = await axios.get(`http://localhost:8081/api/user/chat/history/${room}`);
+    const res = await axios.get(`${URL_BACKEND}/api/user/chat/history/${room}`);
     setMessages(res.data);
   };
 
   const loadOnlineUsers = async () => {
-    const res = await axios.get("http://localhost:8081/api/user/online-users", {
+    const res = await axios.get(`${URL_BACKEND}/api/user/online-users`, {
       params: { roomId } // gửi roomId hiện tại
     });
     setOnlineUsers(res.data); // res.data là array user trong room
@@ -174,21 +175,21 @@ export default function GroupChat() {
                 </div>
               </div>
             )}
-           
+
           </div>
-      {showScrollDown && (
-  <button
-    type="button"
-    onClick={scrollToBottom}
-    className={`scroll-down-btn ${!showScrollDown ? "hidden" : ""}`}
-    aria-label="Cuộn xuống dưới"
-  >
-    <i className="fa fa-arrow-down"></i>
-  </button>
-)}
+          {showScrollDown && (
+            <button
+              type="button"
+              onClick={scrollToBottom}
+              className={`scroll-down-btn ${!showScrollDown ? "hidden" : ""}`}
+              aria-label="Cuộn xuống dưới"
+            >
+              <i className="fa fa-arrow-down"></i>
+            </button>
+          )}
 
         </div>
-        
+
         <form className="d-flex gap-2" onSubmit={sendMessage}>
           <input
             className="form-control"
@@ -215,7 +216,7 @@ export default function GroupChat() {
           </div>
         </div>
       </div>
-     
+
     </div>
   );
 }

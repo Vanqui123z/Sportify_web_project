@@ -1,15 +1,16 @@
-import React, { useEffect, useState } from "react";
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 import axios from "axios";
-import { Bar } from 'react-chartjs-2';
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
   BarElement,
+  CategoryScale,
+  Chart as ChartJS,
+  Legend,
+  LinearScale,
   Title,
   Tooltip,
-  Legend,
 } from 'chart.js';
+import React, { useEffect, useState } from "react";
+import { Bar } from 'react-chartjs-2';
 import getImageUrl from "../../helper/getImageUrl";
 
 // Register Chart.js components
@@ -54,10 +55,10 @@ const OrderManager: React.FC = () => {
   // Helper functions for calculations
   const calculateTotalRevenue = (): number => {
     if (!salesData || !salesData.productSales) return 0;
-    return salesData.productSales.reduce((total, product) => 
+    return salesData.productSales.reduce((total, product) =>
       total + (product.price * product.quantitySold), 0);
   };
-  
+
   const getAveragePrice = (): string => {
     if (!salesData?.totalQuantitySold || salesData.totalQuantitySold === 0) return "0.00";
     return (calculateTotalRevenue() / salesData.totalQuantitySold).toFixed(2);
@@ -69,7 +70,7 @@ const OrderManager: React.FC = () => {
     const d = new Date(dateStr);
     return d.toLocaleDateString("vi-VN");
   };
-  
+
   const formatMonthYear = (dateStr: string) => {
     if (!dateStr) return "-";
     return new Date(dateStr + '-01').toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' });
@@ -89,7 +90,7 @@ const OrderManager: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`http://localhost:8081/sportify/rest/sales/by-date?date=${formatDate(date)}`);
+      const response = await axios.get(`${URL_BACKEND}/sportify/rest/sales/by-date?date=${formatDate(date)}`);
       console.log(formatDate(date));
       setSalesData(response.data);
       setLoading(false);
@@ -104,7 +105,7 @@ const OrderManager: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`http://localhost:8081/sportify/rest/sales/by-month?month=${month}`);
+      const response = await axios.get(`${URL_BACKEND}/sportify/rest/sales/by-month?month=${month}`);
       setSalesData(response.data);
       setLoading(false);
     } catch (err) {
@@ -194,9 +195,9 @@ const OrderManager: React.FC = () => {
       <td>{idx + 1}</td>
       {showImage && (
         <td>
-          <img 
-            src={getImageUrl(product.image)} 
-            alt={product.productName} 
+          <img
+            src={getImageUrl(product.image)}
+            alt={product.productName}
             style={{ width: '50px', height: '50px', objectFit: 'cover' }}
             className="rounded border"
           />
@@ -272,10 +273,10 @@ const OrderManager: React.FC = () => {
           </div>
         </div>
 
-   
-         
+
+
         <div>
-            <div className="col-sm-6 col-md-2">
+          <div className="col-sm-6 col-md-2">
             <button type="button" className="btn btn-secondary w-100" onClick={handleRefresh}>
               <i className="fa fa-refresh "></i> Làm Mới
             </button>
@@ -286,7 +287,7 @@ const OrderManager: React.FC = () => {
         {/* Tab Navigation */}
         <ul className="nav nav-tabs mb-4">
           <li className="nav-item">
-            <button 
+            <button
               className={`nav-link ${activeTab === 'daily' ? 'active' : ''}`}
               onClick={() => setActiveTab('daily')}
             >
@@ -294,7 +295,7 @@ const OrderManager: React.FC = () => {
             </button>
           </li>
           <li className="nav-item">
-            <button 
+            <button
               className={`nav-link ${activeTab === 'monthly' ? 'active' : ''}`}
               onClick={() => setActiveTab('monthly')}
             >
@@ -368,7 +369,7 @@ const OrderManager: React.FC = () => {
                           </td>
                         </tr>
                       ) : hasData() ? (
-                        salesData!.productSales.map((product, idx) => 
+                        salesData!.productSales.map((product, idx) =>
                           renderProductRow(product, idx)
                         )
                       ) : (
@@ -445,8 +446,8 @@ const OrderManager: React.FC = () => {
                     {activeTab === 'daily' ? 'Báo Cáo Doanh Thu Theo Ngày' : 'Báo Cáo Doanh Thu Theo Tháng'}
                   </h4>
                   <p className="text-muted">
-                    Thời Gian: {salesData?.date ? 
-                      (activeTab === 'daily' ? formatDate(salesData.date) : formatMonthYear(salesData.date)) 
+                    Thời Gian: {salesData?.date ?
+                      (activeTab === 'daily' ? formatDate(salesData.date) : formatMonthYear(salesData.date))
                       : '-'}
                   </p>
                   <div className="row mt-4">

@@ -1,19 +1,13 @@
 package duan.sportify.controller;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Random;
-
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import duan.sportify.DTO.MailInfo;
 import duan.sportify.entities.Users;
 import duan.sportify.service.MailerService;
 import duan.sportify.service.UserService;

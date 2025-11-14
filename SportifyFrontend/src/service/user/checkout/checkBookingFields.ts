@@ -1,4 +1,6 @@
 // bookingService.ts
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
+
 export const fetchBookingData = async (
   fieldid: string | number,
   parmanent: string,
@@ -11,12 +13,12 @@ export const fetchBookingData = async (
   let url = "";
 
   if (isPermanent) {
-    url = `http://localhost:8081/api/user/field/permanent-booking/${fieldid}`;
+    url = `${URL_BACKEND}/api/user/field/permanent-booking/${fieldid}`;
   } else {
     if (!shiftid || !dateselect) {
       throw new Error("Thiếu shiftid hoặc dateselect khi gọi API booking");
     }
-    url = `http://localhost:8081/api/user/field/booking/${fieldid}?shiftid=${encodeURIComponent(
+    url = `${URL_BACKEND}/api/user/field/booking/${fieldid}?shiftid=${encodeURIComponent(
       shiftid
     )}&dateselect=${encodeURIComponent(dateselect)}`;
   }

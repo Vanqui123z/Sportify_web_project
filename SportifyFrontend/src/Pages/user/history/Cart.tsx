@@ -1,5 +1,7 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useCart } from "../../../helper/useCartCount";
+
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 
 interface CartItem {
   cartItemId: number;
@@ -31,7 +33,7 @@ const Cart: React.FC = () => {
   const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    fetch("http://localhost:8081/api/user/cart/view", {
+    fetch(`${URL_BACKEND}/api/user/cart/view`, {
       method: "GET",
       credentials: "include",
       headers: {
@@ -46,55 +48,55 @@ const Cart: React.FC = () => {
 
   const handleQuantityChange = (index: number, quantity: number) => {
     if (!cart) return;
-    
+
     const newQuantity = Math.max(1, Math.min(15, quantity));
     const item = cart.items[index];
-    
+
     // Cập nhật UI ngay lập tức
     const items = [...cart.items];
     items[index].quantity = newQuantity;
     setCart({ ...cart, items });
-    
+
     // Clear timeout cũ nếu có
     if (updateTimeoutRef.current) {
       clearTimeout(updateTimeoutRef.current);
     }
-    
+
     // Đợi 500ms sau khi người dùng ngừng thay đổi mới gọi API
     updateTimeoutRef.current = setTimeout(() => {
-      fetch(`http://localhost:8081/api/user/cart/update/${item.cartItemId}?quantity=${newQuantity}`, {
+      fetch(`${URL_BACKEND}/api/user/cart/update/${item.cartItemId}?quantity=${newQuantity}`, {
         method: "PUT",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
       })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          console.log("Quantity updated successfully");
-          // Cập nhật số lượng giỏ hàng trong header
-          updateCartCount();
-        }
-      })
-      .catch((err) => {
-        console.error("Error updating quantity:", err);
-        // Nếu có lỗi, reload lại giỏ hàng từ server
-        fetch("http://localhost:8081/api/user/cart/view", {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            console.log("Quantity updated successfully");
+            // Cập nhật số lượng giỏ hàng trong header
+            updateCartCount();
+          }
         })
-          .then((res) => res.json())
-          .then((data: ApiResponse) => {
-            if (data.success) setCart(data.cart);
+        .catch((err) => {
+          console.error("Error updating quantity:", err);
+          // Nếu có lỗi, reload lại giỏ hàng từ server
+          fetch(`${URL_BACKEND}/api/user/cart/view`, {
+            method: "GET",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+            },
           })
-          .catch((reloadErr) => {
-            console.error("Error reloading cart:", reloadErr);
-          });
-      });
+            .then((res) => res.json())
+            .then((data: ApiResponse) => {
+              if (data.success) setCart(data.cart);
+            })
+            .catch((reloadErr) => {
+              console.error("Error reloading cart:", reloadErr);
+            });
+        });
     }, 500);
   };
 
@@ -119,111 +121,111 @@ const Cart: React.FC = () => {
 
   const removeProduct = (cartItemId: number) => {
     console.log("Removing item with ID:", cartItemId);
-    
+
     if (!cart) return;
-    
+
     // Cập nhật UI ngay lập tức để trải nghiệm mượt mà
     const updatedItems = cart.items.filter((item) => item.cartItemId !== cartItemId);
     setCart({ ...cart, items: updatedItems });
     setSelectedItems(prev => prev.filter(id => id !== cartItemId));
-    
+
     // Gọi API để xóa trong database
-    fetch(`http://localhost:8081/api/user/cart/remove/${cartItemId}`, {
+    fetch(`${URL_BACKEND}/api/user/cart/remove/${cartItemId}`, {
       method: "DELETE",
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-      }, 
+      },
     })
-    .then((res) => {
-      console.log("Delete response status:", res.status);
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      return res.json();
-    })
-    .then((data) => {
-      console.log("Delete response data:", data);
-      if (data.success) {
-        // Cập nhật số lượng giỏ hàng trong header
-        updateCartCount();
-      }
-    })
-    .catch((err) => {
-      console.error("Error removing product:", err);
-      // Nếu API lỗi, reload lại giỏ hàng từ server
-      fetch("http://localhost:8081/api/user/cart/view", {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
+      .then((res) => {
+        console.log("Delete response status:", res.status);
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
       })
-        .then((res) => res.json())
-        .then((data: ApiResponse) => {
-          if (data.success) setCart(data.cart);
+      .then((data) => {
+        console.log("Delete response data:", data);
+        if (data.success) {
+          // Cập nhật số lượng giỏ hàng trong header
+          updateCartCount();
+        }
+      })
+      .catch((err) => {
+        console.error("Error removing product:", err);
+        // Nếu API lỗi, reload lại giỏ hàng từ server
+        fetch(`${URL_BACKEND}/api/user/cart/view`, {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
         })
-        .catch((reloadErr) => {
-          console.error("Error reloading cart:", reloadErr);
-        });
-    });
+          .then((res) => res.json())
+          .then((data: ApiResponse) => {
+            if (data.success) setCart(data.cart);
+          })
+          .catch((reloadErr) => {
+            console.error("Error reloading cart:", reloadErr);
+          });
+      });
   };
 
   const clearCart = () => {
     if (!cart) return;
-    
+
     // Cập nhật UI ngay lập tức
     setCart({ ...cart, items: [] });
     setSelectedItems([]);
-    
+
     // Gọi API để xóa trong database
-    fetch(`http://localhost:8081/api/user/cart/remove-all`, {
+    fetch(`${URL_BACKEND}/api/user/cart/remove-all`, {
       method: "DELETE",
-      credentials: "include",  
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
     })
-    .then((res) => {
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      return res.json();
-    })
-    .then((data) => {
-      if (data.success) {
-        // Cập nhật số lượng giỏ hàng trong header
-        updateCartCount();
-      }
-    })
-    .catch((err) => {
-      console.error("Error clearing cart:", err);
-      // Nếu API lỗi, reload lại giỏ hàng từ server
-      fetch("http://localhost:8081/api/user/cart/view", {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
       })
-        .then((res) => res.json())
-        .then((data: ApiResponse) => {
-          if (data.success) setCart(data.cart);
+      .then((data) => {
+        if (data.success) {
+          // Cập nhật số lượng giỏ hàng trong header
+          updateCartCount();
+        }
+      })
+      .catch((err) => {
+        console.error("Error clearing cart:", err);
+        // Nếu API lỗi, reload lại giỏ hàng từ server
+        fetch(`${URL_BACKEND}/api/user/cart/view`, {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
         })
-        .catch((reloadErr) => {
-          console.error("Error reloading cart:", reloadErr);
-        });
-    });
+          .then((res) => res.json())
+          .then((data: ApiResponse) => {
+            if (data.success) setCart(data.cart);
+          })
+          .catch((reloadErr) => {
+            console.error("Error reloading cart:", reloadErr);
+          });
+      });
   };
 
-  
+
   // Tính tổng tiền của các sản phẩm ĐƯỢC CHỌN
   const selectedTotalPrice = cart
     ? cart.items
-        .filter(item => selectedItems.includes(item.cartItemId))
-        .reduce((sum, item) => sum + item.quantity * (item.price - item.discountprice), 0)
+      .filter(item => selectedItems.includes(item.cartItemId))
+      .reduce((sum, item) => sum + item.quantity * (item.price - item.discountprice), 0)
     : 0;
-  
+
   const shippingFee = selectedTotalPrice > 0 ? 30000 : 0;
   const updateTotalPrice = selectedTotalPrice + shippingFee;
 
@@ -248,7 +250,7 @@ const Cart: React.FC = () => {
           <div className="row no-gutters slider-text align-items-end justify-content-center">
             <div className="col-md-9 mb-5 text-center">
               <p className="breadcrumbs mb-0">
-                <span className="mr-2"><a href="index.html">Trang Chủ <i className="fa fa-chevron-right"></i></a></span> 
+                <span className="mr-2"><a href="index.html">Trang Chủ <i className="fa fa-chevron-right"></i></a></span>
                 <span>Cửa hàng <i className="fa fa-chevron-right"></i></span>
               </p>
               <h2 className="mb-0 bread">Giỏ Hàng</h2>
@@ -384,15 +386,15 @@ const Cart: React.FC = () => {
               </div>
               <p className="text-center">
                 {selectedItems.length > 0 ? (
-                  <a 
+                  <a
                     href={`/sportify/cart/checkout/items?ids=${selectedItems.join(',')}`}
                     className="btn btn-primary py-3 px-4"
                   >
                     Thanh toán ({selectedItems.length} sản phẩm)
                   </a>
                 ) : (
-                  <button 
-                    className="btn btn-secondary py-3 px-4" 
+                  <button
+                    className="btn btn-secondary py-3 px-4"
                     disabled
                     style={{ cursor: 'not-allowed' }}
                   >

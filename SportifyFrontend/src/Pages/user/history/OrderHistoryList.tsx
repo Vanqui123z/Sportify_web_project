@@ -28,7 +28,8 @@ const OrderList: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:8081/api/user/order/historyList",{
+    const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
+    fetch(`${URL_BACKEND}/api/user/order/historyList`, {
       method: "GET",
       credentials: "include",
       headers: {

@@ -1,3 +1,4 @@
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 import React, { useEffect, useState } from "react";
 
 interface Voucher {
@@ -22,17 +23,17 @@ const VoucherPage: React.FC = () => {
 
   // Fetch vouchers
   useEffect(() => {
-    fetch("http://localhost:8081/rest/vouchers/getAll")
+    fetch(`${URL_BACKEND}/rest/vouchers/getAll`)
       .then(res => res.json())
       .then(data => setVouchers(data));
   }, []);
 
   // Filter handler
   const handleFilter = () => {
-    let url = "http://localhost:8081/rest/vouchers/getAll";
-    if (filter === "1") url = "http://localhost:8081/rest/vouchers/fillActive";
-    if (filter === "0") url = "http://localhost:8081/rest/vouchers/fillInActive";
-    if (filter === "2") url = "http://localhost:8081/rest/vouchers/fillWillActive";
+    let url = `${URL_BACKEND}/rest/vouchers/getAll`;
+    if (filter === "1") url = `${URL_BACKEND}/rest/vouchers/fillActive`;
+    if (filter === "0") url = `${URL_BACKEND}/rest/vouchers/fillInActive`;
+    if (filter === "2") url = `${URL_BACKEND}/rest/vouchers/fillWillActive`;
     fetch(url)
       .then(res => res.json())
       .then(data => setVouchers(data));
@@ -41,14 +42,14 @@ const VoucherPage: React.FC = () => {
   // Refresh handler
   const handleRefresh = () => {
     setFilter("");
-    fetch("http://localhost:8081/rest/vouchers/getAll")
+    fetch(`${URL_BACKEND}/rest/vouchers/getAll`)
       .then(res => res.json())
       .then(data => setVouchers(data));
   };
 
   // Add voucher handler
   const handleAddVoucher = () => {
-    fetch("http://localhost:8081/rest/vouchers/create", {
+    fetch(`${URL_BACKEND}/rest/vouchers/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
@@ -75,7 +76,7 @@ const VoucherPage: React.FC = () => {
   // Edit voucher handler
   const handleEditVoucher = () => {
     if (!form.voucherid) return;
-    fetch(`http://localhost:8081/rest/vouchers/update/${form.voucherid}`, {
+    fetch(`${URL_BACKEND}/rest/vouchers/update/${form.voucherid}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
@@ -101,7 +102,7 @@ const VoucherPage: React.FC = () => {
 
   // Delete voucher handler
   const handleDeleteVoucher = (voucherid: string) => {
-    fetch(`http://localhost:8081/rest/vouchers/delete/${voucherid}`, {
+    fetch(`${URL_BACKEND}/rest/vouchers/delete/${voucherid}`, {
       method: "DELETE",
     })
       .then(res => res.json())

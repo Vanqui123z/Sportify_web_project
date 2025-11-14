@@ -1,8 +1,8 @@
 // API for Profile
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8081';
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8081';
 
 export async function fetchProfile() {
-  const res = await fetch(`${API_BASE}/api/user/profile`, {
+  const res = await fetch(`${URL_BACKEND}/api/user/profile`, {
     method: "GET",
     credentials: "include",
     headers: { "Content-Type": "application/json" }
@@ -12,7 +12,7 @@ export async function fetchProfile() {
 }
 
 export async function saveProfile(formData: FormData) {
-  const res = await fetch(`${API_BASE}/api/user/profile/save-profile`, {
+  const res = await fetch(`${URL_BACKEND}/api/user/profile/save-profile`, {
     method: 'POST',
     credentials: "include",
     body: formData
@@ -22,7 +22,7 @@ export async function saveProfile(formData: FormData) {
 }
 
 export async function changePassword(newPassword: string) {
-  const res = await fetch(`${API_BASE}/api/user/profile/change-password`, {
+  const res = await fetch(`${URL_BACKEND}/api/user/profile/change-password`, {
     method: 'POST',
     credentials: "include",
     headers: { "Content-Type": "application/json" },

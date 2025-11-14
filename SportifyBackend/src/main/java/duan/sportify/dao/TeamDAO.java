@@ -36,7 +36,7 @@ public interface TeamDAO extends JpaRepository<Teams, Integer> {
 			+ "			FROM teams LEFT JOIN teamdetails ON teams.teamid = teamdetails.teamid\r\n"
 			+ "	LEFT JOIN sporttype ON  teams.sporttypeid =sporttype.sporttypeid\r\n"
 			+ "	LEFT JOIN users ON teams.username = users.username\r\n"
-			+ "            where nameteam like %:searchText%\r\n"
+			+ "            where nameteam like CONCAT('%', :searchText, '%')\r\n"
 			+ "						GROUP BY teams.teamid;", nativeQuery = true)
 	List<Object[]> SearchTeam(@Param("searchText") String searchText);
 
@@ -63,8 +63,8 @@ public interface TeamDAO extends JpaRepository<Teams, Integer> {
 	Teams findTeamUser(String username);
 
 	// search in admin
-	@Query(value = "SELECT * FROM teams WHERE (:nameteam IS NULL OR nameteam LIKE %:nameteam%) AND (:sporttypeid IS NULL OR sporttypeid LIKE %:sporttypeid%)", nativeQuery = true)
-	List<Teams> searchTeamAdmin(@Param("nameteam") Optional<String> nameteam,
-			@Param("sporttypeid") Optional<String> sporttypeid);
+	    @Query(value = "SELECT * FROM teams WHERE (:nameteam IS NULL OR nameteam LIKE CONCAT('%', :nameteam, '%')) AND (:sporttypeid IS NULL OR sporttypeid LIKE CONCAT('%', :sporttypeid, '%'))", nativeQuery = true)
+	    List<Teams> searchTeamAdmin(@Param("nameteam") Optional<String> nameteam,
+		    @Param("sporttypeid") Optional<String> sporttypeid);
 
 }

@@ -1,10 +1,10 @@
-import { type FC, useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import getImageUrl from "../../../helper/getImageUrl";
+import { type FC, useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import HeroSection from "../../../components/user/Hero";
-import GroupChat from "./GroupChat";
+import getImageUrl from "../../../helper/getImageUrl";
 import { useNotification } from "../../../helper/NotificationContext";
+import GroupChat from "./GroupChat";
 
 // Types based on the API response structure
 type WaitingListItem = {
@@ -76,6 +76,7 @@ type TeamDetailResponse = {
 	success: boolean;
 };
 
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 const TeamDetail: FC<{ teamIdProp?: string }> = ({ teamIdProp }) => {
 	const params = useParams<{ teamId?: string }>();
 	const navigate = useNavigate();
@@ -99,7 +100,7 @@ const TeamDetail: FC<{ teamIdProp?: string }> = ({ teamIdProp }) => {
 
 		try {
 			setLoading(true);
-			const response = await axios.get(`http://localhost:8081/api/user/team/teamdetail/${teamId}`, {
+			const response = await axios.get(`${URL_BACKEND}/api/user/team/teamdetail/${teamId}`, {
 				withCredentials: true
 			});
 
@@ -130,7 +131,7 @@ const TeamDetail: FC<{ teamIdProp?: string }> = ({ teamIdProp }) => {
 		if (!confirm(confirmMessage)) return;
 
 		try {
-			const response = await axios.get(`http://localhost:8081/api/user/team/teamdetail/${teamId}/exit`, {
+			const response = await axios.get(`${URL_BACKEND}/api/user/team/teamdetail/${teamId}/exit`, {
 				withCredentials: true
 			});
 
@@ -149,7 +150,7 @@ const TeamDetail: FC<{ teamIdProp?: string }> = ({ teamIdProp }) => {
 	const handleAccept = async (username: string) => {
 		try {
 			const response = await axios.post(
-				`http://localhost:8081/api/user/team/teamdetail/xacnhan`,
+				`${URL_BACKEND}/api/user/team/teamdetail/xacnhan`,
 				{
 					teamId: parseInt(teamId),
 					username: username
@@ -171,7 +172,7 @@ const TeamDetail: FC<{ teamIdProp?: string }> = ({ teamIdProp }) => {
 	const handleReject = async (username: string) => {
 		try {
 			const response = await axios.post(
-				`http://localhost:8081/api/user/team/teamdetail/tuchoi`,
+				`${URL_BACKEND}/api/user/team/teamdetail/tuchoi`,
 				{
 					teamId: parseInt(teamId),
 					username: username
@@ -195,7 +196,7 @@ const TeamDetail: FC<{ teamIdProp?: string }> = ({ teamIdProp }) => {
 
 		try {
 			const response = await axios.post(
-				`http://localhost:8081/api/user/team/teamdetail/kick`,
+				`${URL_BACKEND}/api/user/team/teamdetail/kick`,
 				{
 					teamId: parseInt(teamId),
 					username: username
@@ -219,7 +220,7 @@ const TeamDetail: FC<{ teamIdProp?: string }> = ({ teamIdProp }) => {
 
 		try {
 			const response = await axios.post(
-				`http://localhost:8081/api/user/team/teamdetail/phongdoitruong`,
+				`${URL_BACKEND}/api/user/team/teamdetail/phongdoitruong`,
 				{
 					teamId: parseInt(teamId),
 					username: username

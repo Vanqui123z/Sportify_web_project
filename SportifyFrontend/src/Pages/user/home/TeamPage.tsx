@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
-import getImageUrl from "../../../helper/getImageUrl";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import HeroSection from "../../../components/user/Hero";
+import getImageUrl from "../../../helper/getImageUrl";
 import { useNotification } from "../../../helper/NotificationContext";
 
 
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 interface SportType {
   sporttypeid: string;
   categoryname: string;
@@ -60,17 +61,18 @@ const TeamPage: React.FC = () => {
   const handleEnterTeam = async (team: TeamItem) => {
     console.log("Entering team:", team);
     try {
-      const response = await fetch(`http://localhost:8081/api/user/team/teamdetail/${team.id}`,{
+      const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
+      const response = await fetch(`${URL_BACKEND}/api/user/team/teamdetail/${team.id}`, {
         method: "GET",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
       });
-       
+
       const data = await response.json();
 
       if (data.success && data.role) {
         // ✅ User là owner → chuyển hướng đến trang quản lý team
-        navigate(`/sportify/team/detailteam/${team.id}`); 
+        navigate(`/sportify/team/detailteam/${team.id}`);
       }
       else {
         // ❌ Các trường hợp khác → hiện thông báo
@@ -99,7 +101,7 @@ const TeamPage: React.FC = () => {
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
-    
+
     // Validate team name (nameteam - max 50 characters, required)
     if (!formData.newNameteam) {
       newErrors.newNameteam = "Tên nhóm không được để trống";
@@ -195,17 +197,17 @@ const TeamPage: React.FC = () => {
     data.append("newQuantity", formData.newQuantity);
     data.append("newSporttypeid", formData.newSporttypeid);
     data.append("newDescriptions", formData.newDescriptions);
-    
+
     try {
-      const res = await fetch("http://localhost:8081/api/user/team/createTeam", {
+      const res = await fetch(`${URL_BACKEND}/api/user/team/createTeam`, {
         method: "POST",
         body: data,
         credentials: "include",
       });
       const result = await res.json();
-      
+
       if (!result.success) throw new Error(result.message);
-      
+
       addNotification(`Đã tạo đội ${formData.newNameteam} thành công`, "success");
       setShowModal(false);
       fetchTeams(); // Reload
@@ -253,7 +255,7 @@ const TeamPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("http://localhost:8081/api/user/team", {
+      const res = await fetch(`${URL_BACKEND}/api/user/team`, {
         method: "GET",
         credentials: "include",
       });
@@ -279,7 +281,7 @@ const TeamPage: React.FC = () => {
       // Lưu vào state
       setAllTeams(parsedAllTeams);
       setMyTeams(parsedMyTeams);
-      
+
       // Hiển thị teams dựa trên mode hiện tại
       if (showMyTeamsOnly) {
         setTeams(parsedMyTeams);
@@ -316,7 +318,7 @@ const TeamPage: React.FC = () => {
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Nếu đang ở chế độ My Team, không cho phép search
     if (showMyTeamsOnly) {
       addNotification("Vui lòng chuyển về chế độ 'Tất cả đội' để sử dụng tìm kiếm", "warning");
@@ -325,7 +327,7 @@ const TeamPage: React.FC = () => {
 
     if (searchText.trim()) {
       // Tìm kiếm trong allTeams theo tên
-      const filteredTeams = allTeams.filter(team => 
+      const filteredTeams = allTeams.filter(team =>
         team.name.toLowerCase().includes(searchText.toLowerCase())
       );
       setTeams(filteredTeams);
@@ -352,18 +354,18 @@ const TeamPage: React.FC = () => {
           <div className="row">
             {/* Search Form */}
             <form onSubmit={handleSearchSubmit} className="mb-0 d-flex justify-content-center col-md-12">
-              <input 
+              <input
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
                 name="searchText"
-                className="form-control me-2 col-6" 
+                className="form-control me-2 col-6"
                 type="search"
-                placeholder="Tìm kiếm theo tên" 
+                placeholder="Tìm kiếm theo tên"
                 aria-label="Search"
                 disabled={showMyTeamsOnly}
               />
-              <button 
-                className="btn btn-success col-2" 
+              <button
+                className="btn btn-success col-2"
                 type="submit"
                 disabled={showMyTeamsOnly}
               >
@@ -389,19 +391,19 @@ const TeamPage: React.FC = () => {
                   <div>
                     <h4 className="product-select">Lọc theo môn thể thao</h4>
                     <div className="dropdown filter">
-                      <button 
+                      <button
                         className={`btn dropdown-toggle col-md-8 mb-3 ${showMyTeamsOnly ? 'btn-secondary' : 'btn-success'}`}
-                        type="button" 
-                        id="dropdownMenuButton" 
+                        type="button"
+                        id="dropdownMenuButton"
                         data-toggle="dropdown"
-                        aria-haspopup="true" 
+                        aria-haspopup="true"
                         aria-expanded="false"
                         disabled={showMyTeamsOnly}
                       >
                         Lọc
                       </button>
                       <div className="dropdown-menu filter-item" aria-labelledby="dropdownMenuButton">
-                        <button 
+                        <button
                           type="button"
                           className="dropdown-item"
                           onClick={() => handleFilter(null)}
@@ -422,14 +424,14 @@ const TeamPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="d-flex">
-                    <button 
+                    <button
                       className={`btn ${showMyTeamsOnly ? 'btn-secondary' : 'btn-outline-secondary'} col-auto pt-2 pb-2 mr-2`}
                       type="button"
                       onClick={handleToggleMyTeams}
                     >
                       {showMyTeamsOnly ? 'Tất cả đội' : 'My Team'}
                     </button>
-                    <button className="btn btn-success col-auto pt-2 pb-2" 
+                    <button className="btn btn-success col-auto pt-2 pb-2"
                       type="button"
                       onClick={() => setShowModal(true)}>
                       Tạo đội
@@ -459,20 +461,20 @@ const TeamPage: React.FC = () => {
                         <form className="row" onSubmit={handleSubmit}>
                           <div className="col-md-6 form-group">
                             <label>Tên nhóm:</label>
-                            <input 
+                            <input
                               type="text"
-                              className="form-control" 
+                              className="form-control"
                               name="newNameteam"
-                              value={formData.newNameteam} 
+                              value={formData.newNameteam}
                               onChange={handleChange}
                             />
                             {errors.newNameteam && <div className="error-message text-danger">{errors.newNameteam}</div>}
                           </div>
                           <div className="col-md-6 form-group">
                             <label>Ảnh đại diện:</label>
-                            <input 
+                            <input
                               type="file"
-                              className="form-control" 
+                              className="form-control"
                               name="newAvatar"
                               onChange={handleFileChange}
                             />
@@ -480,31 +482,31 @@ const TeamPage: React.FC = () => {
                           </div>
                           <div className="col-md-6 form-group">
                             <label>Số liên hệ:</label>
-                            <input 
+                            <input
                               type="text"
-                              className="form-control" 
+                              className="form-control"
                               name="newContact"
-                              value={formData.newContact} 
+                              value={formData.newContact}
                               onChange={handleChange}
                             />
                             {errors.newContact && <div className="error-message text-danger">{errors.newContact}</div>}
                           </div>
                           <div className="col-md-6 form-group">
                             <label>Số Lượng:</label>
-                            <input 
+                            <input
                               type="number"
-                              className="form-control" 
+                              className="form-control"
                               name="newQuantity"
-                              value={formData.newQuantity} 
+                              value={formData.newQuantity}
                               onChange={handleChange}
                             />
                             {errors.newQuantity && <div className="error-message text-danger">{errors.newQuantity}</div>}
                           </div>
                           <div className="form-group col-md-6">
                             <label>Môn thể thao:</label>
-                            <select 
+                            <select
                               style={{ width: '100%' }}
-                              className="custom-select form-control" 
+                              className="custom-select form-control"
                               name="newSporttypeid"
                               value={formData.newSporttypeid}
                               onChange={handleChange}
@@ -518,11 +520,11 @@ const TeamPage: React.FC = () => {
                           </div>
                           <div className="col-md-6 form-group">
                             <label>Mô tả:</label>
-                            <textarea 
-                              className="form-control" 
+                            <textarea
+                              className="form-control"
                               name="newDescriptions"
                               rows={4}
-                              value={formData.newDescriptions} 
+                              value={formData.newDescriptions}
                               onChange={handleChange}
                             />
                           </div>
@@ -542,7 +544,7 @@ const TeamPage: React.FC = () => {
                 {!loading && teams.map(team => (
                   <div key={team.id} className="col-lg-6 d-flex align-items-stretch">
                     <div className="blog-entry d-md-flex">
-                      <img 
+                      <img
                         className="block-20 img bg-dark block-19"
                         src={team.avatar ? getImageUrl(team.avatar) : "/user/images/default.png"}
                         alt=""
@@ -578,7 +580,7 @@ const TeamPage: React.FC = () => {
                           </p>
                         </div>
                         <div className="submit-section align-self-end mt-auto">
-                          <button 
+                          <button
                             className="btn btn-success"
                             onClick={() => handleEnterTeam(team)}
                           >

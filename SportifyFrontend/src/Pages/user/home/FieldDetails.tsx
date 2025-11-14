@@ -1,10 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import getImageUrl from "../../../helper/getImageUrl";
-import HeroSection from "../../../components/user/Hero"; // Thêm import
-import { fetchFieldDetail } from '../../../service/user/home/fieldApi';
-import { PosthandlePermanentBookingData } from '../../../service/user/home/fieldApi';
 import CommentComponent from "../../../components/user/CommentComponent";
+import HeroSection from "../../../components/user/Hero"; // Thêm import
+import getImageUrl from "../../../helper/getImageUrl";
+import { fetchFieldDetail, PosthandlePermanentBookingData } from '../../../service/user/home/fieldApi';
 
 interface SportType {
     sporttypeid: string;
@@ -53,7 +52,7 @@ const DetailFields: React.FC = () => {
     const [fixedWeekdays, setFixedWeekdays] = useState<string[]>([]); // ['2', '4', ...]
     const [fixedShifts, setFixedShifts] = useState<{ [key: string]: string }>({}); // { '2': '1', '4': '2' }
     // favorite
-     const [liked, setLiked] = useState(false);
+    const [liked, setLiked] = useState(false);
 
 
     const weekdays = [
@@ -186,8 +185,9 @@ const DetailFields: React.FC = () => {
         if (!mainField) return;
 
         try {
+            const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
             const response = await fetch(
-                `http://localhost:8081/api/sportify/field/detail/check?fieldid=${mainField.fieldid}&dateInput=${date}`,
+                `${URL_BACKEND}/api/sportify/field/detail/check?fieldid=${mainField.fieldid}&dateInput=${date}`,
                 { method: 'POST' }
             );
 
@@ -218,51 +218,51 @@ const DetailFields: React.FC = () => {
 
 
     //favorite
-const toggleFavorite = async () => {
-  if (loading) return;
-  setLoading(true);
+    const toggleFavorite = async () => {
+        if (loading) return;
+        setLoading(true);
 
-  try {
-    let response;
+        try {
+            let response;
 
-    if (!liked) {
-      // Thêm vào danh sách yêu thích
-      response = await fetch(`http://localhost:8081/api/user/favorite/${idField}`, {
-        method: 'POST',
-        credentials: 'include'
-      });
+            if (!liked) {
+                // Thêm vào danh sách yêu thích
+                response = await fetch(`http://localhost:8081/api/user/favorite/${idField}`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
 
-      if (response.ok) {
-        setLiked(true);
-        alert("✅ Đã thêm vào danh sách yêu thích!");
-      } else if (response.status === 409) {
-        alert("⚠️ Mục này đã có trong danh sách yêu thích!");
-      } else {
-        throw new Error("Không thể thêm vào danh sách yêu thích.");
-      }
+                if (response.ok) {
+                    setLiked(true);
+                    alert("✅ Đã thêm vào danh sách yêu thích!");
+                } else if (response.status === 409) {
+                    alert("⚠️ Mục này đã có trong danh sách yêu thích!");
+                } else {
+                    throw new Error("Không thể thêm vào danh sách yêu thích.");
+                }
 
-    } else {
-      // Xóa khỏi danh sách yêu thích
-      response = await fetch(`http://localhost:8081/api/user/favorite/${idField}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
+            } else {
+                // Xóa khỏi danh sách yêu thích
+                response = await fetch(`http://localhost:8081/api/user/favorite/${idField}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
 
-      if (response.ok) {
-        setLiked(false);
-        alert("❎ Đã xóa khỏi danh sách yêu thích!");
-      } else {
-        throw new Error("Không thể xóa khỏi danh sách yêu thích.");
-      }
-    }
+                if (response.ok) {
+                    setLiked(false);
+                    alert("❎ Đã xóa khỏi danh sách yêu thích!");
+                } else {
+                    throw new Error("Không thể xóa khỏi danh sách yêu thích.");
+                }
+            }
 
-  } catch (error) {
-    console.error("Lỗi khi xử lý yêu thích:", error);
-    alert("🚫 Lỗi khi cập nhật danh sách yêu thích. Vui lòng thử lại!");
-  } finally {
-    setLoading(false);
-  }
-};
+        } catch (error) {
+            console.error("Lỗi khi xử lý yêu thích:", error);
+            alert("🚫 Lỗi khi cập nhật danh sách yêu thích. Vui lòng thử lại!");
+        } finally {
+            setLoading(false);
+        }
+    };
 
 
 
@@ -478,9 +478,9 @@ const toggleFavorite = async () => {
                         </div>
                         <div>
                             <h5 className="font-weight-bold" style={{ fontFamily: 'Arial, sans-serif' }}>
-                                    Đánh giá về sân :
-                                </h5>
-                        <CommentComponent fieldId={mainField.fieldid} type="field" />
+                                Đánh giá về sân :
+                            </h5>
+                            <CommentComponent fieldId={mainField.fieldid} type="field" />
                         </div>
                     </div>
                 </div>

@@ -40,7 +40,8 @@ const LichSuDatSan: React.FC = () => {
   const [listbooking, setListBooking] = useState<BookingInfo[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:8081/api/user/field/profile/historybooking",{
+    const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
+    fetch(`${URL_BACKEND}/api/user/field/profile/historybooking`, {
       method: "GET",
       credentials: "include",
       headers: {
@@ -118,9 +119,9 @@ const LichSuDatSan: React.FC = () => {
           }
         `}
       </style>
-      
+
       <section className="hero-wrap hero-wrap-2"
-        style={{backgroundImage: "url('/user/images/backgroundField.gif')"}}
+        style={{ backgroundImage: "url('/user/images/backgroundField.gif')" }}
         data-stellar-background-ratio="0.5">
         <div className="overlay"></div>
       </section>
@@ -138,7 +139,7 @@ const LichSuDatSan: React.FC = () => {
               <span>Hiển thị 20 phiếu đặt sân gần nhất</span>
             </h3>
           </div>
-          
+
           {listbooking.map((booking, idx) => (
             <div key={idx} className="card col-12 mb-3" style={{ borderRadius: 10 }}>
               <h6 className="card-header d-flex justify-content-between align-items-center">
@@ -169,7 +170,7 @@ const LichSuDatSan: React.FC = () => {
                   <h5 className="card-title text-success font-weight-bold">{booking.fieldName}</h5>
                   <p><b>Loại đặt sân:</b> {bookingTypeLabel(booking.bookingType)}</p>
                   <p>
-                    <b>Ngày bắt đầu:</b> {formatDate(booking.startDate)}<br/>
+                    <b>Ngày bắt đầu:</b> {formatDate(booking.startDate)}<br />
                     <b>Ngày kết thúc:</b> {formatDate(booking.endDate)}
                   </p>
                   {booking.dayOfWeeks && (
@@ -180,8 +181,8 @@ const LichSuDatSan: React.FC = () => {
                   <p>
                     <b>Tổng tiền:</b>{" "}
                     <span className="text-danger font-weight-bold">{formatCurrency(booking.bookingPrice)}</span>
-                    <a 
-                      style={{ float: "right" }} 
+                    <a
+                      style={{ float: "right" }}
                       href={`/sportify/field/profile/historybooking/detail?bookingId=${booking.bookingId}&bookingPrice=${booking.bookingPrice}`}
                     >
                       <button type="button" className="btn btn-outline-info">

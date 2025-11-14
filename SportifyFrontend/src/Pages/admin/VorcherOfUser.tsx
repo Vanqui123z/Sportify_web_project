@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 import BootstrapModal from '../../components/admin/BootstrapModal';
 
 interface Voucher {
@@ -37,14 +38,14 @@ const VoucherOfUser: React.FC<VoucherOfUserProps> = ({ username, ButtonAdd }) =>
     useEffect(() => {
         if (username) {
             // Fetch user's vouchers
-            axios.get(`http://localhost:8081/api/user/voucher-of-user?username=${username}`, 
+            axios.get(`${URL_BACKEND}/api/user/voucher-of-user?username=${username}`,
                 { withCredentials: true }
             )
-            .then(res => setUserVouchers(res.data))
-            .catch(err => console.error('Error fetching user vouchers:', err));
+                .then(res => setUserVouchers(res.data))
+                .catch(err => console.error('Error fetching user vouchers:', err));
 
             // Fetch all available vouchers
-            axios.get('http://localhost:8081/rest/vouchers/getAll')
+            axios.get(`${URL_BACKEND}/rest/vouchers/getAll`)
                 .then(res => setAllVouchers(res.data))
                 .catch(err => console.error('Error fetching vouchers:', err));
         }
@@ -57,11 +58,11 @@ const VoucherOfUser: React.FC<VoucherOfUserProps> = ({ username, ButtonAdd }) =>
                 quantity: voucherForm.quantity,
                 startDate: voucherForm.start_date,
                 endDate: voucherForm.end_date,
-                voucherid: voucherForm.voucherid, 
+                voucherid: voucherForm.voucherid,
                 username: username
             };
             console.log("voucherData", voucherData);
-            const response = await axios.post('http://localhost:8081/api/user/voucher-of-user/add', voucherData, {
+            const response = await axios.post(`${URL_BACKEND}/api/user/voucher-of-user/add`, voucherData, {
                 withCredentials: true
             });
             console.log('Add voucher response:', response.data);
@@ -83,7 +84,7 @@ const VoucherOfUser: React.FC<VoucherOfUserProps> = ({ username, ButtonAdd }) =>
     const handleRevokeVoucher = async (id: number) => {
         if (window.confirm('Are you sure you want to revoke this voucher?')) {
             try {
-                await axios.delete(`http://localhost:8081/api/user/voucher-of-user/delete/${id}`, {
+                await axios.delete(`${URL_BACKEND}/api/user/voucher-of-user/delete/${id}`, {
                     withCredentials: true
                 });
                 setUserVouchers(prevVouchers => prevVouchers.filter(voucher => voucher.id !== id));
@@ -132,7 +133,7 @@ const VoucherOfUser: React.FC<VoucherOfUserProps> = ({ username, ButtonAdd }) =>
                                 <td>{new Date(item.endDate).toLocaleDateString()}</td>
                                 {ButtonAdd && (
                                     <td>
-                                        <button 
+                                        <button
                                             className="btn btn-danger btn-sm"
                                             onClick={() => handleRevokeVoucher(item.id)}
                                         >

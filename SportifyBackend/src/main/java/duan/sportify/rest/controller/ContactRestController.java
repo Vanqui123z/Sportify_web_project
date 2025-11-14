@@ -1,6 +1,5 @@
 package duan.sportify.rest.controller;
 
-
 import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
@@ -15,20 +14,15 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import duan.sportify.GlobalExceptionHandler;
-import duan.sportify.dao.CategoryDAO;
 import duan.sportify.dao.ContactDAO;
-import duan.sportify.entities.Categories;
 import duan.sportify.entities.Contacts;
 import duan.sportify.utils.ErrorResponse;
-import javax.validation.Valid;
+
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/rest/contacts/")
@@ -39,34 +33,38 @@ public class ContactRestController {
 	ContactDAO contactDAO;
 	@Autowired
 	duan.sportify.service.ContactService contactService;
-	
+
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
 		return GlobalExceptionHandler.handleValidationException(ex);
 	}
+
 	@GetMapping("getAll")
-	public ResponseEntity<List<Contacts>> getAll(Model model){
+	public ResponseEntity<List<Contacts>> getAll(Model model) {
 		return ResponseEntity.ok(contactDAO.findAll());
 	}
+
 	@GetMapping("get/{id}")
 	public ResponseEntity<Contacts> getOne(@PathVariable("id") String id) {
-		if(!contactDAO.existsById(id)) {
+		if (!contactDAO.existsById(id)) {
 			return ResponseEntity.notFound().build();
 		}
 		return ResponseEntity.ok(contactDAO.findById(id).get());
 	}
-	
+
 	@DeleteMapping("delete/{id}")
 	public ResponseEntity<?> delete(@PathVariable("id") String id) {
-		if(!contactDAO.existsById(id)) {
+		if (!contactDAO.existsById(id)) {
 			return ResponseEntity.status(404).body(java.util.Map.of("message", "Contact not found"));
 		}
 		contactService.deleteById(id);
 		return ResponseEntity.ok(java.util.Map.of("message", "Contact deleted successfully"));
 	}
+
 	// search
 	@GetMapping("search")
-	public ResponseEntity<List<Contacts>> search(@RequestParam("datecontact") Date datecontact, @RequestParam("category") Optional<String> category){
+	public ResponseEntity<List<Contacts>> search(@RequestParam("datecontact") Date datecontact,
+			@RequestParam("category") Optional<String> category) {
 		return ResponseEntity.ok(contactDAO.findByDatecontact(datecontact, category));
 	}
 }

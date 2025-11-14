@@ -19,11 +19,11 @@ public interface ProductDAO extends JpaRepository<Products, Integer> {
 	List<Products> findByName(String searchText);
 
 	// truy vấn tìm kiếm theo tên, loại hàng, trạng thái
-	@Query(value = "SELECT * FROM products " + "WHERE (:productname IS NULL OR productname LIKE %:productname%) "
-			+ "AND (:productstatus IS NULL OR productstatus = :productstatus) "
-			+ "AND (:categoryid IS NULL OR categoryid = :categoryid)", nativeQuery = true)
-	List<Products> searchProductAdmin(@Param("productname") Optional<String> productname, @Param("categoryid") Optional<Integer> categoryid,
-			@Param("productstatus") Optional<Integer> productstatus);
+	    @Query(value = "SELECT * FROM products " + "WHERE (:productname IS NULL OR productname LIKE CONCAT('%', :productname, '%')) "
+		    + "AND (:productstatus IS NULL OR productstatus = :productstatus) "
+		    + "AND (:categoryid IS NULL OR categoryid = :categoryid)", nativeQuery = true)
+	    List<Products> searchProductAdmin(@Param("productname") Optional<String> productname, @Param("categoryid") Optional<Integer> categoryid,
+		    @Param("productstatus") Optional<Integer> productstatus);
 
 	@Query(value = "select * from products where productstatus = 1", nativeQuery = true)
 	List<Products> findProductActive();

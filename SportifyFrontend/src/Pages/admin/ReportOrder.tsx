@@ -1,5 +1,6 @@
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 import React, { useEffect, useState } from "react";
-import { OrderStatusRadarChart, OrderRevenueBarChart } from "../../components/admin/Chart";
+import { OrderRevenueBarChart, OrderStatusRadarChart } from "../../components/admin/Chart";
 
 const months = [
   "01", "02", "03", "04", "05", "06",
@@ -20,12 +21,12 @@ const ReportOrderPage: React.FC = () => {
 
   // Fetch years and orders on mount
   useEffect(() => {
-    fetch("http://localhost:8081/rest/reportOrder/getYearOrder")
+    fetch(`${URL_BACKEND}/rest/reportOrder/getYearOrder`)
       .then(res => res.json())
       .then(data => setYears(data.map((y: string[]) => y[0])));
-    
+
     // Fetch all orders
-    fetch("http://localhost:8081/sportify/rest/orders")
+    fetch(`${URL_BACKEND}/sportify/rest/orders`)
       .then(res => res.json())
       .then(data => setOrders(data))
       .catch(err => console.error("Error fetching orders:", err));
@@ -34,22 +35,22 @@ const ReportOrderPage: React.FC = () => {
   // Fetch report data when year/month/type/mode changes
   useEffect(() => {
     if (type === "doanhThu" && mode === "month" && year && month) {
-      fetch(`http://localhost:8081/rest/reportOrder/rpDoanhThuOrderTrongThang?year=${year}&month=${month}`)
+      fetch(`${URL_BACKEND}/rest/reportOrder/rpDoanhThuOrderTrongThang?year=${year}&month=${month}`)
         .then(res => res.json())
         .then(setRpDTThang);
     }
     if (type === "doanhThu" && mode === "year" && year) {
-      fetch(`http://localhost:8081/rest/reportOrder/rpDoanhThuOrderTrongNam?year=${year}`)
+      fetch(`${URL_BACKEND}/rest/reportOrder/rpDoanhThuOrderTrongNam?year=${year}`)
         .then(res => res.json())
         .then(setRpDTNam);
     }
     if (type === "soLuong" && mode === "month" && year && month) {
-      fetch(`http://localhost:8081/rest/reportOrder/rpSoLuongOrderTrongThang?year=${year}&month=${month}`)
+      fetch(`${URL_BACKEND}/rest/reportOrder/rpSoLuongOrderTrongThang?year=${year}&month=${month}`)
         .then(res => res.json())
         .then(setRpSLThang);
     }
     if (type === "soLuong" && mode === "year" && year) {
-      fetch(`http://localhost:8081/rest/reportOrder/rpSoLuongOrderTrongNam?year=${year}`)
+      fetch(`${URL_BACKEND}/rest/reportOrder/rpSoLuongOrderTrongNam?year=${year}`)
         .then(res => res.json())
         .then(setRpSLNam);
     }
@@ -62,7 +63,7 @@ const ReportOrderPage: React.FC = () => {
     if (excelType === "DTThang") url = `/rest/reportOrder/downloadExcelDTOrderThang?year=${year}&month=${month}`;
     if (excelType === "SLNam") url = `/rest/reportOrder/downloadExcelSLOrderNam?year=${year}`;
     if (excelType === "SLThang") url = `/rest/reportOrder/downloadExcelSLOrderThang?year=${year}&month=${month}`;
-    window.open("http://localhost:8081" + url, "_blank");
+    window.open(URL_BACKEND + url, "_blank");
   };
 
   return (

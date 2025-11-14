@@ -1,6 +1,8 @@
 // Notification Service for handling notifications
 import { useNotification } from "../../helper/NotificationContext";
 
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
+
 // Tạo thông báo từ client
 export const createNotification = (message: string, type: "success" | "error" | "info" | "warning") => {
   // Lấy hàm addNotification từ context
@@ -14,13 +16,13 @@ export const sendNotificationToServer = async (message: string, type: string) =>
     const formData = new FormData();
     formData.append('message', message);
     formData.append('type', type);
-    
-    const response = await fetch('http://localhost:8081/api/notifications/create', {
+
+    const response = await fetch(`${URL_BACKEND}/api/notifications/create`, {
       method: 'POST',
       credentials: 'include',
       body: formData
     });
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error sending notification to server:', error);
@@ -32,6 +34,6 @@ export const sendNotificationToServer = async (message: string, type: string) =>
 export const checkForNewNotifications = async () => {
   // Implement logic để kiểm tra thông báo mới từ server
   // Ví dụ:
-  // const response = await fetch('http://localhost:8081/api/notifications/check', ...);
+  // const response = await fetch(`${URL_BACKEND}/api/notifications/check`, ...);
   // return await response.json();
 };

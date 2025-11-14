@@ -1,5 +1,6 @@
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 import React, { useEffect, useState } from "react";
-import { translateWeatherCondition, translateHolidayName } from "../../helper/Translate";
+import { translateHolidayName, translateWeatherCondition } from "../../helper/Translate";
 
 interface BookingForecast {
   fieldId: number;
@@ -37,17 +38,17 @@ const AiSupportPage: React.FC = () => {
 
   useEffect(() => {
     // Fetch booking forecasts
-    fetch("http://localhost:8081/api/forecast/next-week")
+    fetch(`${URL_BACKEND}/api/forecast/next-week`)
       .then(res => res.json())
       .then(data => setBookingForecasts(data));
 
     // Fetch weather
-    fetch("http://localhost:8081/api/forecast/weather")
+    fetch(`${URL_BACKEND}/api/forecast/weather`)
       .then(res => res.json())
       .then(data => setWeather(data));
 
     // Fetch holidays
-    fetch("http://localhost:8081/api/forecast/holiday")
+    fetch(`${URL_BACKEND}/api/forecast/holiday`)
       .then(res => res.json())
       .then(data => setHolidays(data));
   }, []);
@@ -161,9 +162,9 @@ const AiSupportPage: React.FC = () => {
                 <h5 className="card-title mb-0">Ngày Lễ Sắp Tới</h5>
               </div>
               <div className="card-body">
-               {holidays.length === 0 ? (
+                {holidays.length === 0 ? (
                   <p>Không có ngày lễ nào trong tuần sắp tới.</p>
-                ) : ( <div className="timeline">
+                ) : (<div className="timeline">
                   {holidays.map((holiday, index) => (
                     <div key={index} className="alert alert-info">
                       <h6 className="mb-1">{translateHolidayName(holiday.summary)}</h6>

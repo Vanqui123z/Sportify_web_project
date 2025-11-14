@@ -1,6 +1,8 @@
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
+
 export async function getCartQuantity(): Promise<number> {
   try {
-    const res = await fetch("http://localhost:8081/api/user/cart/view", {
+    const res = await fetch(`${URL_BACKEND}/api/user/cart/view`, {
       method: "GET",
       credentials: "include",
       headers: {

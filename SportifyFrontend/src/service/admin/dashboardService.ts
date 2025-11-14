@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8081/rest/dashboard';
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
+const API_BASE_URL = `${URL_BACKEND}/rest/dashboard`;
 
 export interface DashboardSummary {
   linecharts_b: number[][];

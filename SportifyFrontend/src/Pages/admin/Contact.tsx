@@ -1,3 +1,4 @@
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 import React, { useEffect, useState } from "react";
 
 interface Contact {
@@ -25,7 +26,7 @@ const ContactPage: React.FC = () => {
 
   // Fetch all contacts
   useEffect(() => {
-    fetch("http://localhost:8081/rest/contacts/getAll")
+    fetch(`${URL_BACKEND}/rest/contacts/getAll`)
       .then(res => res.json())
       .then(data => setContacts(data));
   }, []);
@@ -35,7 +36,7 @@ const ContactPage: React.FC = () => {
     const params = new URLSearchParams();
     if (search.searchDate) params.append("datecontact", search.searchDate);
     if (search.searchCate) params.append("category", search.searchCate);
-    fetch(`http://localhost:8081/rest/contacts/search?${params}`)
+    fetch(`${URL_BACKEND}/rest/contacts/search?${params}`)
       .then(res => res.json())
       .then(data => setContacts(data));
   };
@@ -43,7 +44,7 @@ const ContactPage: React.FC = () => {
   // Refresh handler
   const handleRefresh = () => {
     setSearch({ searchDate: "", searchCate: "" });
-    fetch("http://localhost:8081/rest/contacts/getAll")
+    fetch(`${URL_BACKEND}/rest/contacts/getAll`)
       .then(res => res.json())
       .then(data => setContacts(data));
   };
@@ -57,7 +58,7 @@ const ContactPage: React.FC = () => {
 
   // Delete contact handler
   const handleDeleteContact = (contactid: string) => {
-    fetch(`http://localhost:8081/rest/contacts/delete/${contactid}`, {
+    fetch(`${URL_BACKEND}/rest/contacts/delete/${contactid}`, {
       method: "DELETE",
     })
       .then(res => res.json())

@@ -19,7 +19,7 @@ public interface SportTypeDAO extends JpaRepository<Sporttype, String>{
 	@Query(value="SELECT * FROM sporttype where categoryname like '%?1%'",nativeQuery = true)
 	List<Sporttype> findSporttypeByNameAdmin(@RequestParam("name") String name);
 	// search Sporttype in admin
-	@Query(value = "select * FROM sporttype\r\n"
-			+ "WHERE (categoryname LIKE %:categoryname% OR :categoryname IS NULL)", nativeQuery = true)
-	List<Sporttype> searchSport(@Param("categoryname") Optional<String> categoryname);
+	    @Query(value = "select * FROM sporttype\r\n"
+		    + "WHERE (categoryname LIKE CONCAT('%', :categoryname, '%') OR :categoryname IS NULL)", nativeQuery = true)
+	    List<Sporttype> searchSport(@Param("categoryname") Optional<String> categoryname);
 }

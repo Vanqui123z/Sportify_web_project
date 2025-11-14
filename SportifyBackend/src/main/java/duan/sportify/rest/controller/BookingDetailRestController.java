@@ -13,18 +13,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import duan.sportify.GlobalExceptionHandler;
 import duan.sportify.DTO.booking.BookingDetailDTO;
-import duan.sportify.dao.BookingDAO;
 import duan.sportify.dao.BookingDetailDAO;
 import duan.sportify.entities.Bookingdetails;
-import duan.sportify.entities.Bookings;
-import duan.sportify.entities.Field;
-import duan.sportify.entities.PermanentBooking;
-import duan.sportify.entities.Shifts;
 import duan.sportify.service.BookingService;
 import duan.sportify.service.FieldService;
 import duan.sportify.service.ShiftService;
@@ -44,12 +38,14 @@ public class BookingDetailRestController {
 	FieldService fieldService;
 	@Autowired
 	BookingService bookingService;
+
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
 		return GlobalExceptionHandler.handleValidationException(ex);
 	}
+
 	@GetMapping("{bookingid}")
-    public ResponseEntity<Map<String, Object>> getBookingDetails(@PathVariable("bookingid") Integer bookingid) {
+	public ResponseEntity<Map<String, Object>> getBookingDetails(@PathVariable("bookingid") Integer bookingid) {
 		List<BookingDetailDTO> permanentBookings = bookingService.getBookingDetail(bookingid);
 
 		List<Bookingdetails> bookingDetail = bookingDetailDAO.detailBooking(bookingid);
@@ -58,4 +54,4 @@ public class BookingDetailRestController {
 		response.put("bookingDetail", bookingDetail);
 		return ResponseEntity.ok(response);
 	}
-    }
+}

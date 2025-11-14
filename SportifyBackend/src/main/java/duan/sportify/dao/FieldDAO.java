@@ -47,12 +47,12 @@ public interface FieldDAO extends JpaRepository<Field, Integer> {
 	List<Field> findAllActive();
 
 	// search team in admin
-	@Query(value = "select * FROM field\r\n"
-			+ "WHERE (namefield LIKE %:namefield% OR :namefield IS NULL)\r\n"
-			+ "AND (sporttypeid like %:sporttypeid% OR :sporttypeid IS NULL)\r\n"
-			+ "and (status = :status OR :status IS NULL);", nativeQuery = true)
-	List<Field> searchFieldAdmin(@Param("namefield") Optional<String> namefield,
-			@Param("sporttypeid") Optional<String> sporttypeid, @Param("status") Optional<Integer> status);
+	    @Query(value = "select * FROM field\r\n"
+		    + "WHERE (namefield LIKE CONCAT('%', :namefield, '%') OR :namefield IS NULL)\r\n"
+		    + "AND (sporttypeid like CONCAT('%', :sporttypeid, '%') OR :sporttypeid IS NULL)\r\n"
+		    + "and (status = :status OR :status IS NULL);", nativeQuery = true)
+	    List<Field> searchFieldAdmin(@Param("namefield") Optional<String> namefield,
+		    @Param("sporttypeid") Optional<String> sporttypeid, @Param("status") Optional<Integer> status);
 
 	// dashboard admin
 	@Query(value = "  SELECT COUNT(*) AS total_field\r\n"
@@ -70,7 +70,7 @@ public interface FieldDAO extends JpaRepository<Field, Integer> {
 	@Query(value = "DELETE FROM field WHERE fieldid = :id", nativeQuery = true)
 	void deleteById(Integer id);
 
-	@Query(value = "SELECT * FROM field WHERE namefield LIKE %:name%", nativeQuery = true)
+	@Query(value = "SELECT * FROM field WHERE namefield LIKE CONCAT('%', :name, '%')", nativeQuery = true)
 	Optional<Field> findFieldByName(String name);
 
 	@Query(value = "SELECT f.* FROM field f " +

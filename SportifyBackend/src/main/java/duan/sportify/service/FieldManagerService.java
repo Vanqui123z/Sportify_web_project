@@ -1,39 +1,30 @@
 package duan.sportify.service;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.function.BiFunction;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import duan.sportify.DTO.booking.FieldManagerDetailDTO;
 import duan.sportify.dao.BookingDetailDAO;
-import duan.sportify.entities.PermanentBooking;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class FieldManagerService {
-
-    private final BookingDetailDAO bookingRepo;
     @Autowired
-    private BookingDetailDAO permanentRepo;
+    private final BookingDetailDAO bookingRepo;
 
-    // Helper method to convert java.util.Date to LocalDate
-    private LocalDate convertToLocalDate(Date dateToConvert) {
-        return dateToConvert.toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate();
-    }
+    // private BookingDetailDAO permanentRepo;
+
+    // // Helper method to convert java.util.Date to LocalDate
+    // private LocalDate convertToLocalDate(Date dateToConvert) {
+    // return dateToConvert.toInstant()
+    // .atZone(ZoneId.systemDefault())
+    // .toLocalDate();
+    // }
 
     // Helper method to convert string date to proper format
     private String formatDateString(String date) {
@@ -70,7 +61,8 @@ public class FieldManagerService {
                 Long permanentBookings = ((Number) field[4]).longValue();
                 Long totalBookings = ((Number) field[5]).longValue();
                 if (totalBookings > 0) {
-                    result.add(new FieldManagerDetailDTO(fieldId, fieldName, fieldImage, oneTimeBookings, permanentBookings,
+                    result.add(new FieldManagerDetailDTO(fieldId, fieldName, fieldImage, oneTimeBookings,
+                            permanentBookings,
                             totalBookings));
                 }
             } catch (Exception e) {
@@ -112,8 +104,9 @@ public class FieldManagerService {
 
             if (totalBookings > 0) {
                 result.add(
-                    new FieldManagerDetailDTO(fieldId, fieldName, fieldImage, oneTimeBookings, permanentBookings, totalBookings));
-                }
+                        new FieldManagerDetailDTO(fieldId, fieldName, fieldImage, oneTimeBookings, permanentBookings,
+                                totalBookings));
+            }
         }
         return result;
     }

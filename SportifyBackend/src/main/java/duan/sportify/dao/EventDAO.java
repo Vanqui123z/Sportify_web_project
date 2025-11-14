@@ -63,17 +63,17 @@ public interface EventDAO extends JpaRepository<Eventweb, Integer>{
 //    Page<Eventweb> searchEvents(@Param("keyword") String keyword, Pageable pageable);
     
     // Search theo keyword và sắp xếp theo ngày mới nhất
-    @Query(value = "SELECT * FROM Eventweb " +
-            "WHERE lower(nameevent) LIKE %:keyword% or datestart LIKE %:keyword%" +
+        @Query(value = "SELECT * FROM Eventweb " +
+            "WHERE lower(nameevent) LIKE CONCAT('%', :keyword, '%') or datestart LIKE CONCAT('%', :keyword, '%') " +
             "ORDER BY datestart DESC", nativeQuery = true)
-    Page<Eventweb> searchEvents(@Param("keyword") String keyword, Pageable pageable);
+        Page<Eventweb> searchEvents(@Param("keyword") String keyword, Pageable pageable);
 
     
     // tìm kiếm của admin
-    @Query(value = "select * FROM eventweb\r\n"
-    		+ "WHERE (nameevent LIKE %:nameevent% OR :nameevent IS NULL) "
-    		+ "AND (eventtype like %:eventtype% OR :eventtype IS NULL)", nativeQuery = true)
-    List<Eventweb> searchEventAdmin(@Param("nameevent") Optional<String> nameevent, @Param("eventtype") Optional<String> eventtype);
+        @Query(value = "select * FROM eventweb\r\n"
+            + "WHERE (nameevent LIKE CONCAT('%', :nameevent, '%') OR :nameevent IS NULL) "
+            + "AND (eventtype like CONCAT('%', :eventtype, '%') OR :eventtype IS NULL)", nativeQuery = true)
+        List<Eventweb> searchEventAdmin(@Param("nameevent") Optional<String> nameevent, @Param("eventtype") Optional<String> eventtype);
     
     // tìm loại sự kiện
     @Query("SELECT e FROM Eventweb e WHERE e.eventtype = :eventtype")

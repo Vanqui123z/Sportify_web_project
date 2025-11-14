@@ -1,14 +1,16 @@
 
 // utils/auth.ts
 
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 
 export async function checkLogin(): Promise<{ loggedIn: boolean, username?: string, role?: string }> {
   try {
-    const response = await fetch("http://localhost:8081/api/user/rest/security/authentication", {
+    const response = await fetch(`${URL_BACKEND}/api/user/rest/security/authentication`, {
       method: "GET",
-      credentials: "include" 
+      credentials: "include"
     });
-    
+    console.log("checkLogin response:", `${URL_BACKEND}/api/user/rest/security/authentication`);
+
     if (!response.ok) {
       return { loggedIn: false };
     }

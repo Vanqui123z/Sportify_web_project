@@ -1,5 +1,6 @@
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 import React, { useEffect, useState } from "react";
-import { BookingStatusRadarChart, BookingRevenueBarChart } from "../../components/admin/Chart";
+import { BookingRevenueBarChart, BookingStatusRadarChart } from "../../components/admin/Chart";
 
 const months = [
   "01", "02", "03", "04", "05", "06",
@@ -18,12 +19,12 @@ const ReportBookingPage: React.FC = () => {
 
   // Fetch years on mount
   useEffect(() => {
-    fetch("http://localhost:8081/rest/reportBooking/getYearBooking")
+    fetch(`${URL_BACKEND}/rest/reportBooking/getYearBooking`)
       .then(res => res.json())
       .then(data => setYears(data.map((y: string[]) => y[0])));
-    
+
     // Fetch all bookings
-    fetch("http://localhost:8081/rest/bookings/getAll")
+    fetch(`${URL_BACKEND}/rest/bookings/getAll`)
       .then(res => res.json())
       .then(data => setBookings(data));
   }, []);
@@ -31,20 +32,20 @@ const ReportBookingPage: React.FC = () => {
   // Fetch report data when year/month changes
   useEffect(() => {
     if (year && month) {
-      fetch(`http://localhost:8081/rest/reportBooking/rpDoanhThuBookingTrongThang?year=${year}&month=${month}`)
+      fetch(`${URL_BACKEND}/rest/reportBooking/rpDoanhThuBookingTrongThang?year=${year}&month=${month}`)
         .then(res => res.json())
         .then(setRpDTThang);
 
-      fetch(`http://localhost:8081/rest/reportBooking/rpSoLuongBookingTrongThang?year=${year}&month=${month}`)
+      fetch(`${URL_BACKEND}/rest/reportBooking/rpSoLuongBookingTrongThang?year=${year}&month=${month}`)
         .then(res => res.json())
         .then(setRpSLThang);
     }
     if (year) {
-      fetch(`http://localhost:8081/rest/reportBooking/rpDoanhThuBookingTrongNam?year=${year}`)
+      fetch(`${URL_BACKEND}/rest/reportBooking/rpDoanhThuBookingTrongNam?year=${year}`)
         .then(res => res.json())
         .then(setRpDTNam);
 
-      fetch(`http://localhost:8081/rest/reportBooking/rpSoLuongBookingTrongNam?year=${year}`)
+      fetch(`${URL_BACKEND}/rest/reportBooking/rpSoLuongBookingTrongNam?year=${year}`)
         .then(res => res.json())
         .then(setRpSLNam);
     }
@@ -57,7 +58,7 @@ const ReportBookingPage: React.FC = () => {
     if (type === "DTThang") url = `/rest/reportBooking/downloadExcelDTBookingThang?year=${year}&month=${month}`;
     if (type === "SLNam") url = `/rest/reportBooking/downloadExcelSLBookingNam?year=${year}`;
     if (type === "SLThang") url = `/rest/reportBooking/downloadExcelSLBookingThang?year=${year}&month=${month}`;
-    window.open("http://localhost:8081" + url, "_blank");
+    window.open(URL_BACKEND + url, "_blank");
   };
 
   return (
@@ -270,4 +271,3 @@ const ReportBookingPage: React.FC = () => {
 };
 
 export default ReportBookingPage;
-      

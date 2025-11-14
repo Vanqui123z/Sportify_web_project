@@ -1,6 +1,7 @@
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 // API for TeamPage
 export async function fetchTeamDetail(teamId: number) {
-  const res = await fetch(`http://localhost:8081/api/user/team/teamdetail/${teamId}`, {
+  const res = await fetch(`${URL_BACKEND}/api/user/team/teamdetail/${teamId}`, {
     method: "GET",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
@@ -9,7 +10,7 @@ export async function fetchTeamDetail(teamId: number) {
 }
 
 export async function createTeam(data: FormData) {
-  const res = await fetch("http://localhost:8081/api/user/team/createTeam", {
+  const res = await fetch(`${URL_BACKEND}/api/user/team/createTeam`, {
     method: "POST",
     body: data,
     credentials: "include",
@@ -18,7 +19,7 @@ export async function createTeam(data: FormData) {
 }
 
 export async function fetchTeams() {
-  const res = await fetch("http://localhost:8081/api/user/team", {
+  const res = await fetch(`${URL_BACKEND}/api/user/team`, {
     method: "GET",
     credentials: "include",
   });

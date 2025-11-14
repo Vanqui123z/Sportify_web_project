@@ -15,9 +15,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
-import java.util.regex.*;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

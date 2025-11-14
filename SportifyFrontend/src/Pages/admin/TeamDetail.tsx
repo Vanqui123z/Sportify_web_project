@@ -1,3 +1,4 @@
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -18,7 +19,7 @@ const TeamDetailPage: React.FC = () => {
 
   useEffect(() => {
     if (teamid) {
-      fetch(`http://localhost:8081/rest/teams/${teamid}`)
+      fetch(`${URL_BACKEND}/rest/teams/${teamid}`)
         .then(res => res.json())
         .then(data => setTeamMembers(data));
     }

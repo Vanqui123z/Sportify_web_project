@@ -1,13 +1,14 @@
 // API functions for HomePage
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 export async function fetchHomeData(username?: string) {
   // Tạo URL với query parameter nếu có username
-  const mainUrl = username 
-    ? `http://localhost:8081/api/sportify?username=${encodeURIComponent(username)}`
-    : "http://localhost:8081/api/sportify";
-    
+  const mainUrl = username
+    ? `${URL_BACKEND}/api/sportify?username=${encodeURIComponent(username)}`
+    : `${URL_BACKEND}/api/sportify`;
+
   const [mainResponse, eventResponse] = await Promise.all([
     fetch(mainUrl),
-    fetch("http://localhost:8081/api/sportify/event")
+    fetch(`${URL_BACKEND}/api/sportify/event`)
   ]);
   if (!mainResponse.ok) throw new Error(`Main API error: ${mainResponse.status}`);
   if (!eventResponse.ok) throw new Error(`Event API error: ${eventResponse.status}`);

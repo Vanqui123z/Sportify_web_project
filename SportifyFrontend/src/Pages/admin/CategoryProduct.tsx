@@ -1,3 +1,4 @@
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 import React, { useEffect, useState } from "react";
 
 interface Category {
@@ -20,7 +21,7 @@ const CategoryProductPage: React.FC = () => {
 
   // Fetch all categories
   useEffect(() => {
-    fetch("http://localhost:8081/rest/categories/getAll")
+    fetch(`${URL_BACKEND}/rest/categories/getAll`)
       .then(res => res.json())
       .then(data => setCategories(data));
   }, []);
@@ -29,7 +30,7 @@ const CategoryProductPage: React.FC = () => {
   const handleSearch = () => {
     const params = new URLSearchParams();
     if (searchName) params.append("categoryname", searchName);
-    fetch(`http://localhost:8081/rest/categories/search?${params}`)
+    fetch(`${URL_BACKEND}/rest/categories/search?${params}`)
       .then(res => res.json())
       .then(data => setCategories(data));
   };
@@ -37,14 +38,14 @@ const CategoryProductPage: React.FC = () => {
   // Refresh handler
   const handleRefresh = () => {
     setSearchName("");
-    fetch("http://localhost:8081/rest/categories/getAll")
+    fetch(`${URL_BACKEND}/rest/categories/getAll`)
       .then(res => res.json())
       .then(data => setCategories(data));
   };
 
   // Add category handler
   const handleAddCategory = () => {
-    fetch("http://localhost:8081/rest/categories/create", {
+    fetch(`${URL_BACKEND}/rest/categories/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
@@ -71,7 +72,7 @@ const CategoryProductPage: React.FC = () => {
   // Edit category handler
   const handleEditCategory = () => {
     if (!form.categoryid) return;
-    fetch(`http://localhost:8081/rest/categories/update/${form.categoryid}`, {
+    fetch(`${URL_BACKEND}/rest/categories/update/${form.categoryid}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
@@ -97,7 +98,7 @@ const CategoryProductPage: React.FC = () => {
 
   // Delete category handler
   const handleDeleteCategory = (categoryid: number) => {
-    fetch(`http://localhost:8081/rest/categories/delete/${categoryid}`, {
+    fetch(`${URL_BACKEND}/rest/categories/delete/${categoryid}`, {
       method: "DELETE",
     })
       .then(res => res.json())

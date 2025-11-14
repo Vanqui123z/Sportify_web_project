@@ -1,18 +1,19 @@
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 // API functions for FieldPage and FieldDetails
 export async function fetchFieldList() {
-  const res = await fetch("http://localhost:8081/api/sportify/field");
+  const res = await fetch(`${URL_BACKEND}/api/sportify/field`);
   if (!res.ok) throw new Error('Failed to fetch fields');
   return res.json();
 }
 
 export async function fetchFieldDetail(idField: any) {
-  const res = await fetch(`http://localhost:8081/api/sportify/field/detail/${idField}`);
+  const res = await fetch(`${URL_BACKEND}/api/sportify/field/detail/${idField}`);
   if (!res.ok) throw new Error('Failed to fetch field detail');
   return res.json();
 }
 
 export async function PosthandlePermanentBookingData(idField: any, bookingData: any) {
-  const res = await fetch(`http://localhost:8081/api/user/field/permanent-booking/${idField}`, {
+  const res = await fetch(`${URL_BACKEND}/api/user/field/permanent-booking/${idField}`, {
     method: 'POST',
     credentials: 'include',
     headers: {
