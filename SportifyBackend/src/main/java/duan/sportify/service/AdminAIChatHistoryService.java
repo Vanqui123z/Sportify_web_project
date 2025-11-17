@@ -1,7 +1,8 @@
 package duan.sportify.service;
 
+import duan.sportify.Repository.AdminAIChatHistoryRepository;
 import duan.sportify.entities.AdminAIChatHistory;
-import duan.sportify.repositories.AdminAIChatHistoryRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +17,8 @@ public class AdminAIChatHistoryService {
     /**
      * Lưu tin nhắn vào cơ sở dữ liệu
      */
-    public AdminAIChatHistory saveMessage(String adminId, String message, String response, String role, String messageData) {
+    public AdminAIChatHistory saveMessage(String adminId, String message, String response, String role,
+            String messageData) {
         AdminAIChatHistory history = new AdminAIChatHistory(adminId, message, response, role, messageData);
         return repository.save(history);
     }
