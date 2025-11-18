@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import '../../styles/Comment.css';
+import { useEffect, useRef, useState } from 'react';
 import getImageUrl from '../../helper/getImageUrl';
-
+import '../../styles/Comment.css';
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 interface Review {
   reviewId: number;
   productId?: number;
@@ -84,12 +84,12 @@ const Comment = ({ productId, fieldId, type }: CommentProps) => {
 
   const fetchReviews = async () => {
     if (!entityId) return;
-    
+
     try {
       // Use the proper parameter name based on type
       const idParam = type === 'product' ? `productId=${entityId}` : `fieldId=${entityId}`;
-      const response = await axios.get(`http://localhost:8081/api/user/reviews?${idParam}&type=${type}`, { withCredentials: true });
-      
+      const response = await axios.get(`${URL_BACKEND}/api/user/reviews?${idParam}&type=${type}`, { withCredentials: true });
+      console.log("Fetch reviews response:", URL_BACKEND);
       if (response.data.success) {
         setReviews(response.data.reviews);
         setStats(response.data.stats);
@@ -106,18 +106,18 @@ const Comment = ({ productId, fieldId, type }: CommentProps) => {
       // Use the proper parameter name based on type
       const idParam = type === 'product' ? `productId=${entityId}` : `fieldId=${entityId}`;
       const response = await axios.get(
-        `http://localhost:8081/api/user/reviews/user/${username}/entity?${idParam}&type=${type}`, { withCredentials: true }
+        `${URL_BACKEND}/api/user/reviews/user/${username}/entity?${idParam}&type=${type}`, { withCredentials: true }
       );
 
       if (response.data.success) {
         setHasUserReview(response.data.hasReview);
         if (response.data.hasReview && response.data.review) {
           setUserReview(response.data.review);
-          
+
           // Pre-fill form with existing review data
           setNewReviewRating(response.data.review.rating);
           setNewReviewComment(response.data.review.comment || '');
-          
+
           // Load existing images
           if (response.data.review.images) {
             try {
@@ -139,24 +139,24 @@ const Comment = ({ productId, fieldId, type }: CommentProps) => {
 
   const fetchFilteredReviews = async () => {
     if (!entityId) return;
-    
+
     try {
       let url;
       const idParam = type === 'product' ? `productId=${entityId}` : `fieldId=${entityId}`;
-      
+
       if (activeRating !== null) {
         // Use the rating endpoint
-        url = `http://localhost:8081/api/user/reviews/rating/${activeRating}?${idParam}&type=${type}`, { withCredentials: true };
+        url = `${URL_BACKEND}/api/user/reviews/rating/${activeRating}?${idParam}&type=${type}`, { withCredentials: true };
       } else if (activeFilter !== 'all') {
         // Map internal filter names to API filter names
-        const apiFilter = activeFilter === 'withComments' ? 'with_comments' : 
-                          activeFilter === 'withImages' ? 'with_images' : 'all';
-                          
+        const apiFilter = activeFilter === 'withComments' ? 'with_comments' :
+          activeFilter === 'withImages' ? 'with_images' : 'all';
+
         // Use the filtered endpoint for other filters
-        url = `http://localhost:8081/api/user/reviews/filtered?${idParam}&type=${type}&filter=${apiFilter}`, { withCredentials: true };
+        url = `${URL_BACKEND}/api/user/reviews/filtered?${idParam}&type=${type}&filter=${apiFilter}`, { withCredentials: true };
       } else {
         // Default: get all reviews
-        url = `http://localhost:8081/api/user/reviews?${idParam}&type=${type}`;
+        url = `${URL_BACKEND}/api/user/reviews?${idParam}&type=${type}`;
       }
 
       const response = await axios.get(url, { withCredentials: true });
@@ -210,7 +210,7 @@ const Comment = ({ productId, fieldId, type }: CommentProps) => {
         alert('Thiếu thông tin ID sản phẩm hoặc sân');
         return;
       }
-      
+
       formData.append('type', type);
       formData.append('customerName', username);
       formData.append('rating', newReviewRating.toString());
@@ -222,11 +222,11 @@ const Comment = ({ productId, fieldId, type }: CommentProps) => {
       });
 
       let response;
-      
+
       // For new reviews
       if (!hasUserReview) {
         response = await axios.post(
-          `http://localhost:8081/api/user/reviews/create`,
+          `${URL_BACKEND}/api/user/reviews/create`,
           formData,
           {
             withCredentials: true,
@@ -247,7 +247,7 @@ const Comment = ({ productId, fieldId, type }: CommentProps) => {
       // For updating existing reviews
       else if (userReview) {
         response = await axios.put(
-          `http://localhost:8081/api/user/reviews/${userReview.reviewId}?type=${type}`,
+          `${URL_BACKEND}/api/user/reviews/${userReview.reviewId}?type=${type}`,
           formData,
           {
             withCredentials: true,
@@ -276,7 +276,7 @@ const Comment = ({ productId, fieldId, type }: CommentProps) => {
       setEditReviewId(userReview.reviewId);
       setEditReviewRating(userReview.rating);
       setEditReviewComment(userReview.comment || '');
-      
+
       // Load existing images
       if (userReview.images) {
         try {
@@ -288,7 +288,7 @@ const Comment = ({ productId, fieldId, type }: CommentProps) => {
           console.error("Error parsing image URLs:", e);
         }
       }
-      
+
       setIsEditModalOpen(true);
     }
   };
@@ -339,7 +339,7 @@ const Comment = ({ productId, fieldId, type }: CommentProps) => {
 
     try {
       const formData = new FormData();
-      
+
       if (type === 'product' && productId) {
         formData.append('productId', productId.toString());
       } else if (type === 'field' && fieldId) {
@@ -348,7 +348,7 @@ const Comment = ({ productId, fieldId, type }: CommentProps) => {
         alert('Thiếu thông tin ID sản phẩm hoặc sân');
         return;
       }
-      
+
       formData.append('type', type);
       formData.append('customerName', username);
       formData.append('rating', editReviewRating.toString());
@@ -360,7 +360,7 @@ const Comment = ({ productId, fieldId, type }: CommentProps) => {
       });
 
       const response = await axios.put(
-        `http://localhost:8081/api/user/reviews/${editReviewId}?type=${type}`,
+        `${URL_BACKEND}/api/user/reviews/${editReviewId}?type=${type}`,
         formData,
         {
           withCredentials: true,
@@ -404,7 +404,7 @@ const Comment = ({ productId, fieldId, type }: CommentProps) => {
     try {
       // Updated to match API documentation - delete using reviewId and type
       const response = await axios.delete(
-        `http://localhost:8081/api/user/reviews/${userReview.reviewId}?type=${type}`,
+        `${URL_BACKEND}/api/user/reviews/${userReview.reviewId}?type=${type}`,
         { withCredentials: true }
       );
 
@@ -446,10 +446,10 @@ const Comment = ({ productId, fieldId, type }: CommentProps) => {
     // Reset rating and comment
     setNewReviewRating(0);
     setNewReviewComment('');
-    
+
     // Reset images state
     setNewReviewImages([]);
-    
+
     // Clear image preview URLs and revoke object URLs to prevent memory leaks
     imagePreviewUrls.forEach(url => {
       // Only revoke URLs that are object URLs (not API URLs)
@@ -458,7 +458,7 @@ const Comment = ({ productId, fieldId, type }: CommentProps) => {
       }
     });
     setImagePreviewUrls([]);
-    
+
     // Reset the file input if it exists
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -480,7 +480,6 @@ const Comment = ({ productId, fieldId, type }: CommentProps) => {
     return new Date(dateString).toLocaleString();
   };
 
-  console.log("userReview:", userReview);
   return (
     <div className="comment-container">
       {/* SECTION 1: RATING SUMMARY */}
@@ -617,8 +616,8 @@ const Comment = ({ productId, fieldId, type }: CommentProps) => {
       <div className="reviews-list">
         {reviews.length === 0 ? (
           <div className="no-reviews">
-            {activeFilter !== 'all' || activeRating !== null ? 
-              `Không tìm thấy đánh giá nào ${activeRating ? `với ${activeRating} sao` : ''} ${activeFilter !== 'all' ? (activeFilter === 'withComments' ? 'có bình luận' : 'có hình ảnh') : ''}` 
+            {activeFilter !== 'all' || activeRating !== null ?
+              `Không tìm thấy đánh giá nào ${activeRating ? `với ${activeRating} sao` : ''} ${activeFilter !== 'all' ? (activeFilter === 'withComments' ? 'có bình luận' : 'có hình ảnh') : ''}`
               : 'Chưa có đánh giá nào cho sản phẩm này'}
           </div>
         ) : (
@@ -646,16 +645,16 @@ const Comment = ({ productId, fieldId, type }: CommentProps) => {
                       <div className="review-date">{formatDate(review.createdAt || review.updatedAt)}</div>
                     </div>
                     {/* Action buttons shown only for the user's own review */}
-                {username && review.username.toLowerCase() === username.toLowerCase() && (
-                  <div className="review-actions">
-                    <button className="edit-review-btn small-btn" onClick={openEditModal}>
-                      <i className="fa fa-pencil"></i> Sửa
-                    </button>
-                    <button className="delete-review-btn small-btn" onClick={openDeleteConfirm}>
-                      <i className="fa fa-trash"></i> Xóa
-                    </button>
-                  </div>
-                )}
+                    {username && review.username.toLowerCase() === username.toLowerCase() && (
+                      <div className="review-actions">
+                        <button className="edit-review-btn small-btn" onClick={openEditModal}>
+                          <i className="fa fa-pencil"></i> Sửa
+                        </button>
+                        <button className="delete-review-btn small-btn" onClick={openDeleteConfirm}>
+                          <i className="fa fa-trash"></i> Xóa
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   <div className="review-content">
@@ -697,7 +696,7 @@ const Comment = ({ productId, fieldId, type }: CommentProps) => {
               <h3>Chỉnh sửa đánh giá</h3>
               <button className="close-modal" onClick={closeEditModal}>✕</button>
             </div>
-            
+
             <form onSubmit={handleSubmitEditReview} className="edit-review-form">
               <div className="rating-selector">
                 <p>Đánh giá của bạn:</p>

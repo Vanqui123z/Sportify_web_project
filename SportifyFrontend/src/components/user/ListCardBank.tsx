@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 import "../../styles/ListCard.css";
 import SavedCards from './SaveCardBank';
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
+
 
 // Constants
-const API_PAYMENT_BASE = 'http://localhost:8081/api/user/payment-methods';
+const API_PAYMENT_BASE = `${URL_BACKEND}/api/user/payment-methods`;
 
 // Interfaces
 interface CardData {
@@ -33,7 +35,7 @@ interface ListCardBankProps {
     showDeleteButton?: boolean; // Optional flag to show/hide delete button
     showDefaultButton?: boolean; // Optional flag to show/hide set default button
     selectedCardId?: string; // ID of the currently selected card
-    onCardSelect?: (cardId: string) => void; 
+    onCardSelect?: (cardId: string) => void;
 }
 
 // Hàm dùng chung để lấy danh sách ngân hàng từ VNPAY API
@@ -78,8 +80,8 @@ async function fetchBanksFromVNPay(): Promise<BankData[]> {
     }
 }
 
-const ListCardBank: React.FC<ListCardBankProps> = ({ 
-    username, 
+const ListCardBank: React.FC<ListCardBankProps> = ({
+    username,
     showDeleteButton = true, // Default to showing delete button
     showDefaultButton = true, // Default to showing set default button
     selectedCardId,
@@ -158,8 +160,8 @@ const ListCardBank: React.FC<ListCardBankProps> = ({
             }));
 
             setCards(updatedCards);
-            
-       
+
+
         } catch (err) {
             console.error('Failed to set default card:', err);
             setError('Không thể đặt thẻ làm mặc định. Vui lòng thử lại sau.');
@@ -189,9 +191,9 @@ const ListCardBank: React.FC<ListCardBankProps> = ({
             // Update local state
             const updatedCards = cards.filter(card => card.id !== cardId);
             setCards(updatedCards);
-            
+
             // Notify parent component if callback provided
-          
+
         } catch (err) {
             console.error('Failed to delete card:', err);
             setError('Không thể xóa thẻ. Vui lòng thử lại sau.');

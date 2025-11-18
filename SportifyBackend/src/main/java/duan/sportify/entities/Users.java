@@ -7,6 +7,7 @@ package duan.sportify.entities;
 import java.io.Serializable;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -89,27 +90,27 @@ public class Users implements Serializable {
 
     // --- ENTITY LINKS ( RELATIONSHIP )
     @JsonIgnore
-    @OneToMany(mappedBy = "users")
+    @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Teamdetails> listOfTeamdetails;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "users")
+    @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Orders> listOfOrders;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "users", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Authorized> listOfAuthorized;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "users")
+    @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Bookings> listOfBookings;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "users")
+    @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Teams> listOfTeams;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "username")
+    @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Contacts> listOfContact;
 
 }

@@ -47,7 +47,7 @@ const OrderManager: React.FC = () => {
   const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7));
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState({
+  const [_search, setSearch] = useState({
     productName: "",
     fromDate: "",
   });
@@ -114,11 +114,6 @@ const OrderManager: React.FC = () => {
     }
   };
 
-  // Search handler
-  const handleSearch = () => {
-    // This would require an additional API endpoint for searching
-    console.log("Search with params:", search);
-  };
 
   // Refresh handler
   const handleRefresh = () => {

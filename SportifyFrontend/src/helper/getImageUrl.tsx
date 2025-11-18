@@ -1,5 +1,5 @@
-const  getImageUrl = (image: string | null) => {
-  if (!image) return "/user/images/default.png";
+const getImageUrl = (image: string | null) => {
+  if (!image) return "/user/images/avatar_default.png";
 
   if (image.startsWith("v") || image.includes("/")) {
     // ảnh từ Cloudinary

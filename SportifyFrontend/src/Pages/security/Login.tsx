@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 
 const Login: React.FC = () => {
     const [notification, setNotification] = useState<string | null>(null);
@@ -24,7 +25,7 @@ const Login: React.FC = () => {
         e.preventDefault();
         try {
             const payloadLogin = { username, password };
-            fetch('http://localhost:8081/api/user/login', {
+            fetch(`${URL_BACKEND}/api/user/login`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
@@ -124,7 +125,7 @@ const Login: React.FC = () => {
                                         <a href="/login/forgotpassword" className="text-decoration-none">
                                             <i className="fa fa-key me-1"></i>Quên mật khẩu?
                                         </a>
-                                        <button 
+                                        <button
                                             type="button"
                                             className="btn btn-link text-muted p-0"
                                             onClick={(e) => {
@@ -139,7 +140,7 @@ const Login: React.FC = () => {
                                     <div className="text-center">
                                         <div className="border-top pt-4">
                                             <p className="text-muted mb-0">
-                                                Chưa có tài khoản? 
+                                                Chưa có tài khoản?
                                                 <a href="/register" className="text-decoration-none fw-medium ms-1">
                                                     Đăng ký ngay
                                                 </a>

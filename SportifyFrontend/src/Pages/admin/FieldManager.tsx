@@ -24,12 +24,7 @@ ChartJS.register(
   Legend
 );
 
-// Define types for our data
-interface FieldUsageDTO {
-  fieldId: number;
-  date: string;
-  total: number;
-}
+
 
 interface FieldUsageDetailDTO {
   fieldId: number;
@@ -47,9 +42,9 @@ const FieldManager: React.FC = () => {
   const [dailyDetailData, setDailyDetailData] = useState<FieldUsageDetailDTO[]>([]);
   const [monthlyDetailData, setMonthlyDetailData] = useState<FieldUsageDetailDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [_loading, setLoading] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<'daily' | 'monthly'>('daily');
-  const [search, setSearch] = useState({
+  const [_search, setSearch] = useState({
     fieldName: "",
     fromDate: "",
     toDate: "",
@@ -177,12 +172,12 @@ const FieldManager: React.FC = () => {
     }
   };
 
-  // Format date for display
-  const formatDate = (dateStr: string) => {
-    if (!dateStr) return "";
-    const d = new Date(dateStr);
-    return d.toLocaleDateString("vi-VN");
-  };
+  // // Format date for display
+  // const formatDate = (dateStr: string) => {
+  //   if (!dateStr) return "";
+  //   const d = new Date(dateStr);
+  //   return d.toLocaleDateString("vi-VN");
+  // };
 
   // Helper function for rendering table rows
   const renderTableRows = (data: FieldUsageDetailDTO[]) => {

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import CheckOTP from './CheckOTP';
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 
 const ForgetPass: React.FC = () => {
 	const [fpUsername, setFpUsername] = useState('');
@@ -22,7 +23,7 @@ const ForgetPass: React.FC = () => {
 		try {
 			setLoading(true);
 			const payload = { username: fpUsername.trim(), email: fpEmail.trim() };
-			const res = await fetch('http://localhost:8081/api/user/forgotpassword', {
+			const res = await fetch(`${URL_BACKEND}/api/user/forgotpassword`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(payload),
@@ -140,13 +141,13 @@ const ForgetPass: React.FC = () => {
 
 								{showCheckOTP && (
 									<div className="border-top pt-4">
-										<CheckOTP 
-											username={fpUsername} 
-											email={fpEmail} 
+										<CheckOTP
+											username={fpUsername}
+											email={fpEmail}
 											onSuccess={() => {
 												setMessage('Xác thực thành công! Vui lòng kiểm tra email để đặt lại mật khẩu.');
 												setShowCheckOTP(false);
-											}} 
+											}}
 										/>
 									</div>
 								)}

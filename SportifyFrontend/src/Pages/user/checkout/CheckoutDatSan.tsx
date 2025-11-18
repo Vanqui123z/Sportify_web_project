@@ -77,10 +77,9 @@ const CheckoutDatSan: React.FC = () => {
   const [shifts, setShifts] = useState<{ dayOfWeek: number; shiftId: number }[]>([]);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [discountCode, setDiscountCode] = useState('');
   const [showCardList, setShowCardList] = useState(false);
   const [selectedCardId, setSelectedCardId] = useState<string | undefined>(undefined);
-  const [userVouchers, setUserVouchers] = useState<UserVoucher[]>([]);
+  const [_userVouchers, setUserVouchers] = useState<UserVoucher[]>([]);
   const [voucherOfUserId, setVoucherOfUserId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -137,55 +136,6 @@ const CheckoutDatSan: React.FC = () => {
     } else {
       setError('');
       setNote(val);
-    }
-  };
-
-  const handleApplyDiscount = async (e: React.MouseEvent) => {
-    e.preventDefault();
-
-    if (!discountCode) {
-      alert('Vui lòng chọn voucher!');
-      return;
-    }
-
-    if (appliedCode === discountCode) {
-      alert(`Mã "${discountCode}" đã được áp dụng rồi!`);
-      return;
-    }
-
-    try {
-      const res = await fetch(
-        `${URL_BACKEND}/api/user/order/cart/voucher?voucherId=${encodeURIComponent(discountCode)}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ discountPercent: 0 }),
-        }
-      );
-
-      if (!res.ok) throw new Error(`API trả về lỗi ${res.status}`);
-
-      const data = await res.json();
-      const discountPercent = data?.discountPercent ?? 0;
-      const voucherMsg = data?.voucherMsg || "";
-
-      if (discountPercent > 0) {
-        setAppliedCode(discountCode);
-        const newThanhtien = tamtinh * (1 - discountPercent / 100);
-        setThanhtien(newThanhtien);
-        setAmount(Math.round(newThanhtien * 0.3));
-        alert(voucherMsg || `Mã giảm giá "${discountCode}" đã được áp dụng! Bạn được giảm ${discountPercent}%`);
-      } else {
-        setAppliedCode(null);
-        setThanhtien(tamtinh);
-        setAmount(Math.round(tamtinh * 0.3));
-        alert(voucherMsg || `Mã giảm giá "${discountCode}" không hợp lệ hoặc đã hết hạn.`);
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Có lỗi xảy ra khi áp dụng mã giảm giá!");
-      setAppliedCode(null);
     }
   };
 
@@ -247,11 +197,6 @@ const CheckoutDatSan: React.FC = () => {
     }
   }, [tamtinh]);
 
-  const handleVoucherApplied = (discountPercent: number) => {
-    const newThanhtien = tamtinh * (1 - discountPercent / 100);
-    setThanhtien(newThanhtien);
-    setAmount(Math.round(newThanhtien * 0.3));
-  };
 
   if (!field) return <div>Loading...</div>;
   return (

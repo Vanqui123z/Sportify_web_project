@@ -1,11 +1,13 @@
 import React, { useRef, useState } from "react";
-import AIChatInputWithMedia from "../Others/AIChatInputWithMedia";
-import "../../styles/GroupChat.css";
 import "../../styles/AIChatbox.css";
 import "../../styles/AIChatInputWithMedia.css";
+import "../../styles/GroupChat.css";
+import AIChatInputWithMedia from "../Others/AIChatInputWithMedia";
+// Use VITE_BACKEND_URL for backend API calls
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 
-type Message = { 
-  role: "user" | "bot" | "typing"; 
+type Message = {
+  role: "user" | "bot" | "typing";
   text?: string;
   unknownData?: any;
   infoNeededData?: any;
@@ -31,34 +33,34 @@ const TypingIndicator: React.FC = () => {
  */
 const cleanMarkdownFormatting = (text: string): string => {
   if (!text) return "";
-  
+
   // Loại bỏ các dòng ngang Markdown (---, ___, ***)
   text = text.replace(/^(---|__|___|\*\*\*)(\s|$)/gm, "\n");
-  
+
   // Loại bỏ các header Markdown (###, ##, #)
   text = text.replace(/^#+\s+/gm, "");
-  
+
   // Loại bỏ bold formatting (**text** hoặc __text__)
   text = text.replace(/\*\*(.+?)\*\*/g, "$1");
   text = text.replace(/__(.+?)__/g, "$1");
-  
+
   // Loại bỏ italic formatting (*text* hoặc _text_)
   text = text.replace(/\*(.+?)\*/g, "$1");
   text = text.replace(/_(.+?)_/g, "$1");
-  
+
   // Loại bỏ backticks (code formatting)
   text = text.replace(/`(.+?)`/g, "$1");
-  
+
   // Loại bỏ highlight/emphasis (~~text~~)
   text = text.replace(/~~(.+?)~~/g, "$1");
-  
+
   // Loại bỏ các bullet points Markdown (-, *, +) nhưng giữ lại content
   text = text.replace(/^\s*[\-\*\+]\s+/gm, "• ");
-  
+
   // Dọn sạch khoảng trắng thừa
   text = text.replace(/\n\n\n+/g, "\n\n");
   text = text.trim();
-  
+
   return text;
 };
 
@@ -111,7 +113,7 @@ const AdminAIChatbox: React.FC = () => {
       }
       setIsLoaded(true);
     };
-    
+
     loadInitialMessages();
   }, []);
 
@@ -125,11 +127,11 @@ const AdminAIChatbox: React.FC = () => {
   // Load chat history from database
   const loadChatHistoryFromDatabase = async () => {
     if (!adminId) return; // Wait until adminId is set
-    
+
     try {
-      const res = await fetch(`http://localhost:8081/sportify/rest/ai/admin/history/get-history?adminId=${encodeURIComponent(adminId)}`);
+      const res = await fetch(`${URL_BACKEND}/sportify/rest/ai/admin/history/get-history?adminId=${encodeURIComponent(adminId)}`);
       const data = await res.json();
-      
+
       if (data.status === "success" && data.data && data.data.length > 0) {
         // Convert database format to frontend format
         const dbMessages = data.data.map((item: any) => {
@@ -147,7 +149,7 @@ const AdminAIChatbox: React.FC = () => {
             };
           }
         });
-        
+
         // Load from database only if localStorage is empty
         setMessages(dbMessages);
       }
@@ -159,9 +161,9 @@ const AdminAIChatbox: React.FC = () => {
   // Save message to database
   const saveMessageToDatabase = async (msg: string, response: any, role: string) => {
     if (!adminId) return; // Wait until adminId is set
-    
+
     try {
-      await fetch("http://localhost:8081/sportify/rest/ai/admin/history/save", {
+      await fetch(`${URL_BACKEND}/sportify/rest/ai/admin/history/save`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -190,7 +192,7 @@ const AdminAIChatbox: React.FC = () => {
   const appendBotMessage = (responseData: any) => {
     // Remove typing indicator first
     setIsLoading(false);
-    
+
     // Parse the response based on its structure
     if (typeof responseData === 'string') {
       setMessages((msgs) => [...msgs, { role: "bot", text: responseData }]);
@@ -220,31 +222,31 @@ const AdminAIChatbox: React.FC = () => {
     appendUserMessage(msg);
     // Save user message to database
     await saveMessageToDatabase(msg, null, "user");
-    
+
     // setInput("");  // input state not currently used in this component
     setIsLoading(true);
-    
+
     try {
       // Prepare FormData if there are attachments
       const formData = new FormData();
       formData.append("message", msg.trim());
-      
+
       // Add files to FormData
       attachments.forEach((file) => {
         formData.append("files", file);
       });
 
       // Sử dụng endpoint admin-chat cho AI trợ lý admin
-      const res = await fetch("http://localhost:8081/sportify/rest/ai/admin-chat", {
+      const res = await fetch(`${URL_BACKEND}/sportify/rest/ai/admin-chat`, {
         method: "POST",
         body: attachments.length > 0 ? formData : JSON.stringify({ message: msg }),
-        headers: attachments.length > 0 
-          ? undefined 
+        headers: attachments.length > 0
+          ? undefined
           : { "Content-Type": "application/json" },
       });
       const data = await res.json();
       console.log("Admin Chat Response:", data);
-      
+
       if (data && data.reply) {
         // Nếu reply là HTML, hiển thị nó trực tiếp
         if (typeof data.reply === 'string' && data.reply.includes('<')) {
@@ -282,18 +284,18 @@ const AdminAIChatbox: React.FC = () => {
         </div>
       );
     }
-    
+
     if (message.role === "typing") {
       return <TypingIndicator key={index} />;
     }
-    
+
     // Bot responses
     if (message.text) {
       // Nếu text chứa HTML, hiển thị dưới dạng HTML
       if (message.text.includes('<')) {
         return (
-          <div 
-            key={index} 
+          <div
+            key={index}
             className="ai-msg ai-bot"
           >
             <div
@@ -326,7 +328,7 @@ const AdminAIChatbox: React.FC = () => {
         </div>
       );
     }
-    
+
     if (message.unknownData) {
       const cleanedMessage = cleanMarkdownFormatting(message.unknownData.message);
       return (
@@ -337,7 +339,7 @@ const AdminAIChatbox: React.FC = () => {
         </div>
       );
     }
-    
+
     if (message.infoNeededData) {
       const cleanedMessage = cleanMarkdownFormatting(message.infoNeededData.message);
       return (
@@ -348,7 +350,7 @@ const AdminAIChatbox: React.FC = () => {
         </div>
       );
     }
-    
+
     return null;
   };
 
@@ -364,8 +366,8 @@ const AdminAIChatbox: React.FC = () => {
       </div>
       <div
         className="ai-chat-panel"
-        style={{ 
-          display: open ? "flex" : "none", 
+        style={{
+          display: open ? "flex" : "none",
           flexDirection: "column",
           width: isMaximized ? "100%" : "450px",
           height: isMaximized ? "100%" : "600px",
@@ -426,7 +428,7 @@ const AdminAIChatbox: React.FC = () => {
               </div>
               <div className="ai-quick-replies">
                 {quickReplies.map((reply, i) => (
-                  <button 
+                  <button
                     key={i}
                     className="ai-quick-reply"
                     onClick={() => ask(reply)}

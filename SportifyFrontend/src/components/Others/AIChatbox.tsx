@@ -1,13 +1,15 @@
 import React, { useRef, useState } from "react";
-import CustomCard from "../user/CustomCard";
-import AIChatInputWithMedia from "./AIChatInputWithMedia";
-import "../../styles/GroupChat.css";
+import getImageUrl from "../../helper/getImageUrl";
 import "../../styles/AIChatbox.css";
 import "../../styles/AIChatInputWithMedia.css";
-import getImageUrl from "../../helper/getImageUrl";
+import "../../styles/GroupChat.css";
+import CustomCard from "../user/CustomCard";
+import AIChatInputWithMedia from "./AIChatInputWithMedia";
+// Use VITE_BACKEND_URL for backend API calls
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 
-type Message = { 
-  role: "user" | "bot" | "typing"; 
+type Message = {
+  role: "user" | "bot" | "typing";
   text?: string;
   fieldData?: any;
   shiftData?: any;
@@ -59,14 +61,6 @@ interface BookingResponse {
   message: string;
 }
 
-interface UnknownResponse {
-  action: string;
-  message: string;
-}
-
-interface InfoNeededResponse {
-  message: string;
-}
 
 // Product interfaces
 interface Category {
@@ -140,7 +134,7 @@ const AvailableShifts: React.FC<{ data: AvailableShiftsResponse }> = ({ data }) 
     <div className="ai-shifts-container">
       <div className="fw-bold mb-2">{data.message}</div>
       <div className="text-muted mb-2">Sân: {data.fieldName} - Ngày: {data.date}</div>
-      
+
       <div className="ai-shifts-list">
         {data.availableShifts.map(shift => (
           <div key={shift.shiftid} className="ai-shift-card">
@@ -160,12 +154,12 @@ const ShiftGroups: React.FC<{ data: any }> = ({ data }) => {
   if (data.availableShifts) {
     return <AvailableShifts data={data} />;
   }
-  
+
   return (
     <div>
       <div className="fw-bold mb-2">{data.message}</div>
       <div className="text-muted mb-2">Sân: {data.fieldName} - Ngày: {data.date}</div>
-      
+
       {data.availableShiftGroups?.map((group: any, index: number) => (
         <div key={index} className="ai-shift-group">
           <div className="fw-bold mb-2">Nhóm ca {index + 1}:</div>
@@ -336,7 +330,7 @@ const OrderProduct: React.FC<{ data: OrderProductResponse }> = ({ data }) => {
 const TypingIndicator: React.FC = () => {
   return (
     <div className="ai-typing-container">
-        <div className="ai-typing-bubble">
+      <div className="ai-typing-bubble">
         <div className="typing-dots">
           <span className="dot"></span>
           <span className="dot"></span>
@@ -393,7 +387,7 @@ const AIChatbox: React.FC = () => {
       }
       setIsLoaded(true);
     };
-    
+
     loadInitialMessages();
   }, []);
 
@@ -407,11 +401,11 @@ const AIChatbox: React.FC = () => {
   // Load chat history from database
   const loadChatHistoryFromDatabase = async () => {
     if (!userId) return; // Wait until userId is set
-    
+
     try {
-      const res = await fetch(`http://localhost:8081/sportify/rest/ai/history/get-history?userId=${encodeURIComponent(userId)}`);
+      const res = await fetch(`${URL_BACKEND}/sportify/rest/ai/history/get-history?userId=${encodeURIComponent(userId)}`);
       const data = await res.json();
-      
+
       if (data.status === "success" && data.data && data.data.length > 0) {
         // Convert database format to frontend format
         const dbMessages = data.data.map((item: any) => {
@@ -429,7 +423,7 @@ const AIChatbox: React.FC = () => {
             };
           }
         });
-        
+
         // Load from database only if localStorage is empty
         setMessages(dbMessages);
       }
@@ -441,9 +435,9 @@ const AIChatbox: React.FC = () => {
   // Save message to database
   const saveMessageToDatabase = async (msg: string, response: any, role: string) => {
     if (!userId) return; // Wait until userId is set
-    
+
     try {
-      await fetch("http://localhost:8081/sportify/rest/ai/history/save", {
+      await fetch(`${URL_BACKEND}/sportify/rest/ai/history/save`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -472,43 +466,56 @@ const AIChatbox: React.FC = () => {
   const appendBotMessage = (responseData: any) => {
     // Remove typing indicator first
     setIsLoading(false);
-    
-    // Parse the response based on its structure
+
+    // Nếu response là string, xử lý riêng
     if (typeof responseData === 'string') {
       setMessages((msgs) => [...msgs, { role: "bot", text: responseData }]);
       return;
     }
 
-    // Handle different response types
-    if (responseData.fields) {
-      // Fields response
-      setMessages((msgs) => [...msgs, { role: "bot", fieldData: responseData }]);
-    } else if (responseData.availableShifts || responseData.availableShiftGroups) {
-      // Shifts response - handle both formats
-      setMessages((msgs) => [...msgs, { role: "bot", shiftData: responseData }]);
-    } else if (responseData.redirectUrl && responseData.fieldName) {
-      // Booking response
-      setMessages((msgs) => [...msgs, { role: "bot", bookingData: responseData }]);
-    } else if (responseData.products) {
-      // Product list response
-      setMessages((msgs) => [...msgs, { role: "bot", productListData: responseData }]);
-    } else if (responseData.product && !responseData.redirectUrl) {
-      // Single product response
-      setMessages((msgs) => [...msgs, { role: "bot", singleProductData: responseData }]);
-    } else if (responseData.product && responseData.redirectUrl) {
-      // Order product response
-      setMessages((msgs) => [...msgs, { role: "bot", orderProductData: responseData }]);
-    } else if (responseData.action === "UNKNOWN") {
-      // Unknown response
-      setMessages((msgs) => [...msgs, { role: "bot", unknownData: responseData }]);
-    } else if (responseData.message && !responseData.action) {
-      // Info needed response
-      setMessages((msgs) => [...msgs, { role: "bot", infoNeededData: responseData }]);
-    } else {
-      // Default case
-      setMessages((msgs) => [...msgs, { role: "bot", text: JSON.stringify(responseData) }]);
+    // Xác định loại message
+    let newMessage: any = { role: "bot" };
+
+    switch (true) {
+      case !!responseData.fields:
+        newMessage.fieldData = responseData;
+        break;
+
+      case !!responseData.availableShifts || !!responseData.availableShiftGroups:
+        newMessage.shiftData = responseData;
+        break;
+
+      case !!responseData.redirectUrl && !!responseData.fieldName:
+        newMessage.bookingData = responseData;
+        break;
+
+      case !!responseData.products:
+        newMessage.productListData = responseData;
+        break;
+
+      case !!responseData.product && !responseData.redirectUrl:
+        newMessage.singleProductData = responseData;
+        break;
+
+      case !!responseData.product && !!responseData.redirectUrl:
+        newMessage.orderProductData = responseData;
+        break;
+
+      case responseData.action === "UNKNOWN":
+        newMessage.unknownData = responseData;
+        break;
+
+      case !!responseData.message && !responseData.action:
+        newMessage.infoNeededData = responseData;
+        break;
+
+      default:
+        newMessage.text = JSON.stringify(responseData);
     }
+
+    setMessages((msgs) => [...msgs, newMessage]);
   };
+
 
   const ask = async (msg: string, attachments: File[] = []) => {
     // Validate message is not empty
@@ -520,31 +527,31 @@ const AIChatbox: React.FC = () => {
     appendUserMessage(msg);
     // Save user message to database
     await saveMessageToDatabase(msg, null, "user");
-    
+
     // setInput("");  // input state not currently used in this component
     setIsLoading(true);
-    
+
     try {
       // Prepare FormData if there are attachments
       const formData = new FormData();
       formData.append("message", msg.trim());
-      
+
       // Add files to FormData
       attachments.forEach((file) => {
         formData.append("files", file);
       });
 
       // Sử dụng endpoint product-chat cho AI thân thiện + gợi ý sản phẩm
-      const res = await fetch("http://localhost:8081/sportify/rest/ai/product-chat", {
+      const res = await fetch(`${URL_BACKEND}/sportify/rest/ai/product-chat`, {
         method: "POST",
         body: attachments.length > 0 ? formData : JSON.stringify({ message: msg }),
-        headers: attachments.length > 0 
-          ? undefined 
+        headers: attachments.length > 0
+          ? undefined
           : { "Content-Type": "application/json" },
       });
       const data = await res.json();
       console.log("Product Chat Response:", data);
-      
+
       if (data && data.reply) {
         // Nếu reply là HTML, hiển thị nó trực tiếp
         if (typeof data.reply === 'string' && data.reply.includes('<')) {
@@ -575,6 +582,12 @@ const AIChatbox: React.FC = () => {
 
   // Render a message based on its type
   const renderMessage = (message: Message, index: number) => {
+    const renderBotContent = (content: React.ReactNode, extraClass = "") => (
+      <div key={index} className={`ai-msg ai-bot ${extraClass}`}>
+        <div className="ai-msg-content">{content}</div>
+      </div>
+    );
+
     if (message.role === "user") {
       return (
         <div key={index} className="ai-msg ai-user">
@@ -582,34 +595,26 @@ const AIChatbox: React.FC = () => {
         </div>
       );
     }
-    
+
     if (message.role === "typing") {
       return <TypingIndicator key={index} />;
     }
-    
+
     // Bot responses
     if (message.text) {
-      // Nếu text chứa HTML, hiển thị dưới dạng HTML
-      if (message.text.includes('<')) {
+      if (message.text.includes("<")) {
         return (
-          <div 
-            key={index} 
-            className="ai-msg ai-bot"
-          >
+          <div key={index} className="ai-msg ai-bot">
             <div
               className="ai-msg-content ai-html-content"
               dangerouslySetInnerHTML={{ __html: message.text }}
               onClick={(e) => {
                 const target = e.target as HTMLElement;
-                if (target.tagName === 'A') {
-                  const href = target.getAttribute('href');
+                if (target.tagName === "A") {
+                  const href = target.getAttribute("href");
                   if (href) {
-                    // Nếu là absolute URL hoặc relative URL
-                    if (href.startsWith('/')) {
-                      window.location.href = href;
-                    } else if (href.startsWith('http')) {
-                      window.open(href, '_blank');
-                    }
+                    if (href.startsWith("/")) window.location.href = href;
+                    else if (href.startsWith("http")) window.open(href, "_blank");
                     e.preventDefault();
                   }
                 }
@@ -618,63 +623,18 @@ const AIChatbox: React.FC = () => {
           </div>
         );
       }
-      return (
-        <div key={index} className="ai-msg ai-bot">
-          <div className="ai-msg-content">{message.text}</div>
-        </div>
-      );
+      return renderBotContent(message.text);
     }
-    
-    if (message.fieldData) {
-      return (
-        <div key={index} className="ai-msg ai-bot">
-          <div className="ai-msg-content">
-            <FieldList fields={message.fieldData.fields} />
-          </div>
-        </div>
-      );
-    }
-    
-    if (message.shiftData) {
-      return (
-        <div key={index} className="ai-msg ai-bot">
-          <div className="ai-msg-content">
-            <ShiftGroups data={message.shiftData} />
-          </div>
-        </div>
-      );
-    }
-    
-    if (message.bookingData) {
-      return (
-        <div key={index} className="ai-msg ai-bot">
-          <div className="ai-msg-content">
-            <BookingInfo data={message.bookingData} />
-          </div>
-        </div>
-      );
-    }
-    
-    if (message.unknownData) {
-      return (
-        <div key={index} className="ai-msg ai-bot ai-unknown">
-          <div className="ai-msg-content">
-            {message.unknownData.message}
-          </div>
-        </div>
-      );
-    }
-    
-    if (message.infoNeededData) {
-      return (
-        <div key={index} className="ai-msg ai-bot ai-info-needed">
-          <div className="ai-msg-content">
-            {message.infoNeededData.message}
-          </div>
-        </div>
-      );
-    }
-    
+
+    if (message.fieldData) return renderBotContent(<FieldList fields={message.fieldData.fields} />);
+    if (message.shiftData) return renderBotContent(<ShiftGroups data={message.shiftData} />);
+    if (message.bookingData) return renderBotContent(<BookingInfo data={message.bookingData} />);
+    if (message.productListData) return renderBotContent(<ProductList data={message.productListData} />);
+    if (message.singleProductData) return renderBotContent(<SingleProduct data={message.singleProductData} />);
+    if (message.orderProductData) return renderBotContent(<OrderProduct data={message.orderProductData} />);
+    if (message.unknownData) return renderBotContent(message.unknownData.message, "ai-unknown");
+    if (message.infoNeededData) return renderBotContent(message.infoNeededData.message, "ai-info-needed");
+
     return null;
   };
 
@@ -730,7 +690,7 @@ const AIChatbox: React.FC = () => {
               </div>
               <div className="ai-quick-replies">
                 {quickReplies.map((reply, i) => (
-                  <button 
+                  <button
                     key={i}
                     className="ai-quick-reply"
                     onClick={() => ask(reply)}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 
 type Props = {
 	username?: string;
@@ -27,7 +28,7 @@ const CheckOTP: React.FC<Props> = ({ username, email, onSuccess }) => {
 			if (username) payload.username = username;
 			if (email) payload.email = email;
 
-			const res = await fetch('http://localhost:8081/api/sportify/checkOTP', {
+			const res = await fetch(`${URL_BACKEND}/api/sportify/checkOTP`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(payload),

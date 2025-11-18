@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { validateSignup } from '../../helper/validateSignup';
-
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 export default function Register() {
 	// Signup fields required by API
 	const [firstnameSignUp, setFirstnameSignUp] = useState('');
@@ -82,7 +82,7 @@ export default function Register() {
 			};
 
 			console.log('Signup payload:', payload);
-			const res = await fetch('http://localhost:8081/api/sportify/signup/process', {
+			const res = await fetch(`${URL_BACKEND}/api/sportify/signup/process`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(payload),
@@ -117,12 +117,12 @@ export default function Register() {
 									<div className="row g-3">
 										<div className="col-md-6">
 											<div className="form-floating">
-												<input 
-													className="form-control" 
+												<input
+													className="form-control"
 													id="username"
-													value={usernameSignUp} 
-													onChange={e => handleSignupChange('username', e.target.value)} 
-													placeholder="Tên đăng nhập" 
+													value={usernameSignUp}
+													onChange={e => handleSignupChange('username', e.target.value)}
+													placeholder="Tên đăng nhập"
 													required
 												/>
 												<label htmlFor="username">
@@ -132,13 +132,13 @@ export default function Register() {
 										</div>
 										<div className="col-md-6">
 											<div className="form-floating">
-												<input 
-													className="form-control" 
+												<input
+													className="form-control"
 													id="password"
 													type="password"
-													value={passwordSignUp} 
-													onChange={e => handleSignupChange('passwords', e.target.value)} 
-													placeholder="Mật khẩu" 
+													value={passwordSignUp}
+													onChange={e => handleSignupChange('passwords', e.target.value)}
+													placeholder="Mật khẩu"
 													required
 												/>
 												<label htmlFor="password">
@@ -148,12 +148,12 @@ export default function Register() {
 										</div>
 										<div className="col-md-6">
 											<div className="form-floating">
-												<input 
-													className="form-control" 
+												<input
+													className="form-control"
 													id="firstname"
-													value={firstnameSignUp} 
-													onChange={e => handleSignupChange('firstname', e.target.value)} 
-													placeholder="Họ" 
+													value={firstnameSignUp}
+													onChange={e => handleSignupChange('firstname', e.target.value)}
+													placeholder="Họ"
 													required
 												/>
 												<label htmlFor="firstname">
@@ -163,12 +163,12 @@ export default function Register() {
 										</div>
 										<div className="col-md-6">
 											<div className="form-floating">
-												<input 
-													className="form-control" 
+												<input
+													className="form-control"
 													id="lastname"
-													value={lastnameSignUp} 
-													onChange={e => handleSignupChange('lastname', e.target.value)} 
-													placeholder="Tên" 
+													value={lastnameSignUp}
+													onChange={e => handleSignupChange('lastname', e.target.value)}
+													placeholder="Tên"
 													required
 												/>
 												<label htmlFor="lastname">
@@ -178,13 +178,13 @@ export default function Register() {
 										</div>
 										<div className="col-md-6">
 											<div className="form-floating">
-												<input 
-													className="form-control" 
+												<input
+													className="form-control"
 													id="phone"
 													type="tel"
-													value={phoneSignUp} 
-													onChange={e => handleSignupChange('phone', e.target.value)} 
-													placeholder="Số điện thoại" 
+													value={phoneSignUp}
+													onChange={e => handleSignupChange('phone', e.target.value)}
+													placeholder="Số điện thoại"
 													required
 												/>
 												<label htmlFor="phone">
@@ -194,13 +194,13 @@ export default function Register() {
 										</div>
 										<div className="col-md-6">
 											<div className="form-floating">
-												<input 
-													className="form-control" 
+												<input
+													className="form-control"
 													id="email"
 													type="email"
-													value={emailSignUp} 
-													onChange={e => handleSignupChange('email', e.target.value)} 
-													placeholder="Email" 
+													value={emailSignUp}
+													onChange={e => handleSignupChange('email', e.target.value)}
+													placeholder="Email"
 													required
 												/>
 												<label htmlFor="email">
@@ -210,12 +210,12 @@ export default function Register() {
 										</div>
 										<div className="col-md-8">
 											<div className="form-floating">
-												<input 
-													className="form-control" 
+												<input
+													className="form-control"
 													id="address"
-													value={addressSignUp} 
-													onChange={e => handleSignupChange('address', e.target.value)} 
-													placeholder="Địa chỉ" 
+													value={addressSignUp}
+													onChange={e => handleSignupChange('address', e.target.value)}
+													placeholder="Địa chỉ"
 													required
 												/>
 												<label htmlFor="address">
@@ -225,10 +225,10 @@ export default function Register() {
 										</div>
 										<div className="col-md-4">
 											<div className="form-floating">
-												<select 
-													className="form-select" 
+												<select
+													className="form-select"
 													id="gender"
-													value={genderSignUp ? 'true' : 'false'} 
+													value={genderSignUp ? 'true' : 'false'}
 													onChange={e => handleSignupChange('gender', e.target.value === 'true')}
 												>
 													<option value="false">Nữ</option>
@@ -250,7 +250,7 @@ export default function Register() {
 									<div className="text-center mt-4">
 										<div className="border-top pt-4">
 											<p className="text-muted mb-0">
-												Đã có tài khoản? 
+												Đã có tài khoản?
 												<a href="/login" className="text-decoration-none fw-medium ms-1">
 													Đăng nhập ngay
 												</a>

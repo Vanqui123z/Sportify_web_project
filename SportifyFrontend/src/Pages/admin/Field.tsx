@@ -589,11 +589,6 @@ const FieldPage: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="mt-4 text-end">
-              <button type="button" className="btn btn-primary" onClick={handleEditField}>
-                Chỉnh sửa sân thể thao
-              </button>
-            </div>
           </form>
         </BootstrapModal>
         {/* Toast/Notification */}

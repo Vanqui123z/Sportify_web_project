@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import FullCalendar from '@fullcalendar/react';
+import React, { useEffect, useState } from 'react';
 import Modal from 'react-modal';
 import generateBookingDate from '../../helper/generateBookingDate';
+// Use VITE_BACKEND_URL for backend API calls
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 
 // Custom styles for Modal with better responsive design
 const customStyles = {
@@ -68,30 +70,30 @@ const BookingCalendar: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
-  
+
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
         setError('');
         setLoading(true);
-        const res = await fetch('http://localhost:8081/api/rest/calander/');
+        const res = await fetch(`${URL_BACKEND}/api/rest/calander/`);
         if (!res.ok) {
           throw new Error('Không thể tải dữ liệu lịch');
         }
         const data: BookingEvent[] = await res.json();
         let allEvents: any[] = [];
-        
+
         data.forEach((item) => {
           // Handle different booking types
-          if(item.type === "ONCE"){
-            const titileBookingDisplay = `ID: ${item.bookingId} || ${item.start.slice(11,16)} - ${item.end.slice(11,16)}`;
+          if (item.type === "ONCE") {
+            const titileBookingDisplay = `ID: ${item.bookingId} || ${item.start.slice(11, 16)} - ${item.end.slice(11, 16)}`;
             allEvents.push({
               id: item.bookingId.toString(),
               title: titileBookingDisplay,
               start: item.start,
               end: item.end,
-              extendedProps: { 
+              extendedProps: {
                 type: item.type,
                 className: 'regular-booking'
               },
@@ -99,21 +101,21 @@ const BookingCalendar: React.FC = () => {
               borderColor: '#47b754',
             });
           }
-          
-          if(item.type === "PERMANENT"){
+
+          if (item.type === "PERMANENT") {
             // Generate all dates for permanent bookings
             const permanentBookings = generateBookingDate(item.bookingId, item.start, item.end, item.dayOfWeek!);
             console.log("permanentBookings", permanentBookings);
-            
+
             // Create a separate event for each date in the permanent booking
             permanentBookings.forEach((booking) => {
-              const titileBookingDisplay = `ID: ${booking.bookingId} || ${booking.start.slice(11,16)} - ${booking.end.slice(11,16)}`;
+              const titileBookingDisplay = `ID: ${booking.bookingId} || ${booking.start.slice(11, 16)} - ${booking.end.slice(11, 16)}`;
               allEvents.push({
                 id: booking.bookingId.toString(),
                 title: titileBookingDisplay,
                 start: booking.start,
                 end: booking.end,
-                extendedProps: { 
+                extendedProps: {
                   type: "PERMANENT",
                   className: 'permanent-booking'
                 },
@@ -123,7 +125,7 @@ const BookingCalendar: React.FC = () => {
             });
           }
         });
-        
+
         setEvents(allEvents);
       } catch (err) {
         setError('Lỗi khi tải dữ liệu lịch đặt sân');
@@ -140,9 +142,9 @@ const BookingCalendar: React.FC = () => {
     setLoading(true);
     setModalIsOpen(true);
     setError('');
-     const bookingId = Number(info.event.id);
+    const bookingId = Number(info.event.id);
     try {
-      const res = await fetch(`http://localhost:8081/api/rest/calander/${bookingId}`);
+      const res = await fetch(`${URL_BACKEND}/api/rest/calander/${bookingId}`);
       if (!res.ok) {
         throw new Error('Không thể tải chi tiết đặt sân');
       }
@@ -238,7 +240,7 @@ const BookingCalendar: React.FC = () => {
                 customButtons={{
                   todayButton: {
                     text: 'Hôm nay',
-                    click: function() {
+                    click: function () {
                       const calendarApi = document.querySelector('.fc')?.querySelector('.fc-today-button');
                       if (calendarApi) {
                         (calendarApi as HTMLElement).click();
@@ -277,7 +279,7 @@ const BookingCalendar: React.FC = () => {
               <div className="modal-header bg-success text-white border-0" style={{ backgroundColor: '#55ce63' }}>
                 <h5 className="modal-title">
                   <i className="bi bi-info-circle me-2"></i>
-                  Chi tiết đặt sân {bookingDetail.bookingType === 'PERMANENT' && 
+                  Chi tiết đặt sân {bookingDetail.bookingType === 'PERMANENT' &&
                     <span className="badge bg-info ms-2">Đặt cố định</span>}
                 </h5>
                 <button
@@ -356,7 +358,7 @@ const BookingCalendar: React.FC = () => {
                                 </span>
                               </div>
                             </div>
-                              <div className="col-sm-6 mb-2">
+                            <div className="col-sm-6 mb-2">
                               <small className="text-muted">Tên sân:</small>
                               <div>
                                 <span >
@@ -364,7 +366,7 @@ const BookingCalendar: React.FC = () => {
                                 </span>
                               </div>
                             </div>
-                            
+
                             <div className="col-sm-6 mb-2">
                               <small className="text-muted">Trạng thái:</small>
                               <div>
@@ -412,7 +414,7 @@ const BookingCalendar: React.FC = () => {
                                 <small className="text-muted">Đến ngày:</small>
                                 <div className="fw-bold text-success" style={{ color: '#55ce63' }}>{bookingDetail.endDate}</div>
                               </div>
-                              
+
                             </div>
                           ) : (
                             <div>

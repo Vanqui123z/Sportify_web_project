@@ -1,4 +1,5 @@
 export default function Footer() {
+
   return (
     <>
       {/* Footer */}
@@ -89,13 +90,13 @@ export default function Footer() {
           <div className="container">
             <div className="row">
               <div className="col-md-12">
-                 <p className="mb-0 text-center" style={{ color: "rgba(255, 255, 255, .5)" }}>
-                   Bản quyền &copy; {new Date().getFullYear()} Bảo lưu mọi quyền | Mẫu này được thực hiện{" "}
-                   <i className="fa fa-heart color-danger" aria-hidden="true"></i> bởi{" "}
-                   <a href="/sportify/about" target="_blank">
-                     Team Ngọc Và Quí
-                   </a>
-                 </p>
+                <p className="mb-0 text-center" style={{ color: "rgba(255, 255, 255, .5)" }}>
+                  Bản quyền &copy; {new Date().getFullYear()} Bảo lưu mọi quyền | Mẫu này được thực hiện{" "}
+                  <i className="fa fa-heart color-danger" aria-hidden="true"></i> bởi{" "}
+                  <a href="/sportify/about" target="_blank">
+                    Team Ngọc Và Quí
+                  </a>
+                </p>
               </div>
             </div>
           </div>

@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { useEffect, useRef, useState } from 'react';
 import '../../styles/Comment.css';
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 
 interface Review {
   reviewId: number;
@@ -43,7 +44,7 @@ const Comment = ({ productId, currentUser }: CommentProps) => {
   const [activeRating, setActiveRating] = useState<number | null>(null);
   const [userReview, setUserReview] = useState<Review | null>(null);
   const [hasUserReview, setHasUserReview] = useState<boolean>(false);
-  
+
   // Review form states
   const [newReviewRating, setNewReviewRating] = useState<number>(0);
   const [newReviewComment, setNewReviewComment] = useState<string>('');
@@ -68,7 +69,7 @@ const Comment = ({ productId, currentUser }: CommentProps) => {
 
   const fetchReviews = async () => {
     try {
-      const response = await axios.get(`http://localhost:8081/api/reviews/product/${productId}`);
+      const response = await axios.get(`${URL_BACKEND}/api/reviews/product/${productId}`);
       if (response.data.success) {
         setReviews(response.data.reviews);
         setStats(response.data.stats);
@@ -80,12 +81,12 @@ const Comment = ({ productId, currentUser }: CommentProps) => {
 
   const fetchUserReview = async () => {
     if (!currentUser?.username) return;
-    
+
     try {
       const response = await axios.get(
-        `http://localhost:8081/api/reviews/product/${productId}/user/${currentUser.username}`
+        `${URL_BACKEND}/api/reviews/product/${productId}/user/${currentUser.username}`
       );
-      
+
       if (response.data.success) {
         setHasUserReview(response.data.hasReview);
         if (response.data.hasReview) {
@@ -99,11 +100,11 @@ const Comment = ({ productId, currentUser }: CommentProps) => {
 
   const fetchFilteredReviews = async () => {
     try {
-      let url = `http://localhost:8081/api/reviews/product/${productId}/filtered?filter=${activeFilter}`;
+      let url = `${URL_BACKEND}/api/reviews/product/${productId}/filtered?filter=${activeFilter}`;
       if (activeRating) {
         url += `&rating=${activeRating}`;
       }
-      
+
       const response = await axios.get(url);
       if (response.data.success) {
         setReviews(response.data.reviews);
@@ -123,23 +124,23 @@ const Comment = ({ productId, currentUser }: CommentProps) => {
 
   const handleSubmitReview = async (event: React.FormEvent) => {
     event.preventDefault();
-    
+
     if (!currentUser || !newReviewRating) return;
-    
+
     try {
       // For new reviews
       if (!hasUserReview) {
         const formData = new FormData();
         formData.append('rating', newReviewRating.toString());
         formData.append('comment', newReviewComment);
-        
+
         // Add images if any
         newReviewImages.forEach(image => {
           formData.append('images', image);
         });
-        
+
         const response = await axios.post(
-          `http://localhost:8081/api/reviews/product/${productId}`,
+          `${URL_BACKEND}/api/reviews/product/${productId}`,
           formData,
           {
             headers: {
@@ -147,27 +148,27 @@ const Comment = ({ productId, currentUser }: CommentProps) => {
             }
           }
         );
-        
+
         if (response.data.success) {
           setUserReview(response.data.review);
           setHasUserReview(true);
           resetForm();
           fetchReviews(); // Refresh reviews
         }
-      } 
+      }
       // For updating existing reviews
       else if (userReview) {
         const formData = new FormData();
         formData.append('rating', newReviewRating.toString());
         formData.append('comment', newReviewComment);
-        
+
         // Add images if any
         newReviewImages.forEach(image => {
           formData.append('images', image);
         });
-        
+
         const response = await axios.put(
-          `http://localhost:8081/api/reviews/${userReview.reviewId}`,
+          `${URL_BACKEND}/api/reviews/${userReview.reviewId}`,
           formData,
           {
             headers: {
@@ -175,7 +176,7 @@ const Comment = ({ productId, currentUser }: CommentProps) => {
             }
           }
         );
-        
+
         if (response.data.success) {
           setUserReview(response.data.review);
           resetForm();
@@ -189,12 +190,12 @@ const Comment = ({ productId, currentUser }: CommentProps) => {
 
   const handleDeleteReview = async () => {
     if (!userReview) return;
-    
+
     try {
       const response = await axios.delete(
-        `http://localhost:8081/api/reviews/${userReview.reviewId}`
+        `${URL_BACKEND}/api/reviews/${userReview.reviewId}`
       );
-      
+
       if (response.data.success) {
         setUserReview(null);
         setHasUserReview(false);
@@ -208,10 +209,10 @@ const Comment = ({ productId, currentUser }: CommentProps) => {
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
-    
+
     const newFiles = Array.from(files);
     setNewReviewImages(prev => [...prev, ...newFiles]);
-    
+
     // Create preview URLs
     const newImageUrls = newFiles.map(file => URL.createObjectURL(file));
     setImagePreviewUrls(prev => [...prev, ...newImageUrls]);
@@ -219,7 +220,7 @@ const Comment = ({ productId, currentUser }: CommentProps) => {
 
   const removeImage = (index: number) => {
     setNewReviewImages(prev => prev.filter((_, i) => i !== index));
-    
+
     // Also remove the preview URL and revoke it to free memory
     const urlToRemove = imagePreviewUrls[index];
     URL.revokeObjectURL(urlToRemove);
@@ -267,10 +268,10 @@ const Comment = ({ productId, currentUser }: CommentProps) => {
           </div>
           <div className="total-reviews">{stats?.totalReviews || 0} đánh giá</div>
         </div>
-        
+
         <div className="rating-filters">
-          <button 
-            className={`filter-btn ${activeFilter === 'all' && activeRating === null ? 'active' : ''}`} 
+          <button
+            className={`filter-btn ${activeFilter === 'all' && activeRating === null ? 'active' : ''}`}
             onClick={() => {
               handleFilterClick('all');
               handleRatingFilterClick(null);
@@ -278,10 +279,10 @@ const Comment = ({ productId, currentUser }: CommentProps) => {
           >
             Tất cả
           </button>
-          
+
           {[5, 4, 3, 2, 1].map((rating) => (
-            <button 
-              key={rating} 
+            <button
+              key={rating}
               className={`filter-btn ${activeRating === rating ? 'active' : ''}`}
               onClick={() => {
                 handleRatingFilterClick(rating);
@@ -291,8 +292,8 @@ const Comment = ({ productId, currentUser }: CommentProps) => {
               {rating} Sao ({stats?.ratingDistribution[rating] || 0})
             </button>
           ))}
-          
-          <button 
+
+          <button
             className={`filter-btn ${activeFilter === 'withComments' ? 'active' : ''}`}
             onClick={() => {
               handleFilterClick('withComments');
@@ -301,8 +302,8 @@ const Comment = ({ productId, currentUser }: CommentProps) => {
           >
             Có Bình luận ({stats?.reviewsWithComments || 0})
           </button>
-          
-          <button 
+
+          <button
             className={`filter-btn ${activeFilter === 'withImages' ? 'active' : ''}`}
             onClick={() => {
               handleFilterClick('withImages');
@@ -323,8 +324,8 @@ const Comment = ({ productId, currentUser }: CommentProps) => {
               <p>Đánh giá của bạn:</p>
               <div className="star-rating">
                 {[1, 2, 3, 4, 5].map((star) => (
-                  <span 
-                    key={star} 
+                  <span
+                    key={star}
                     className={`star ${star <= newReviewRating ? 'active' : ''}`}
                     onClick={() => setNewReviewRating(star)}
                   >
@@ -333,36 +334,36 @@ const Comment = ({ productId, currentUser }: CommentProps) => {
                 ))}
               </div>
             </div>
-            
+
             <div className="review-textarea">
-              <textarea 
-                value={newReviewComment} 
+              <textarea
+                value={newReviewComment}
                 onChange={(e) => setNewReviewComment(e.target.value)}
                 placeholder="Hãy chia sẻ cảm nhận của bạn về sản phẩm..."
                 rows={4}
               ></textarea>
             </div>
-            
+
             <div className="image-upload">
               <div className="upload-btn" onClick={() => fileInputRef.current?.click()}>
                 <i className="upload-icon">📷</i>
                 <span>Thêm ảnh</span>
               </div>
-              <input 
-                type="file" 
+              <input
+                type="file"
                 ref={fileInputRef}
-                multiple 
-                accept="image/*" 
-                onChange={handleImageUpload} 
+                multiple
+                accept="image/*"
+                onChange={handleImageUpload}
                 style={{ display: 'none' }}
               />
-              
+
               {imagePreviewUrls.length > 0 && (
                 <div className="image-previews">
                   {imagePreviewUrls.map((url, index) => (
                     <div key={index} className="image-preview-item">
                       <img src={url} alt={`Preview ${index}`} />
-                      <button 
+                      <button
                         type="button"
                         className="remove-image-btn"
                         onClick={() => removeImage(index)}
@@ -374,15 +375,15 @@ const Comment = ({ productId, currentUser }: CommentProps) => {
                 </div>
               )}
             </div>
-            
+
             <div className="form-actions">
               <button type="submit" className="submit-review-btn">
                 {hasUserReview ? 'Cập nhật đánh giá' : 'Gửi đánh giá'}
               </button>
-              
+
               {hasUserReview && (
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="delete-review-btn"
                   onClick={handleDeleteReview}
                 >
@@ -405,13 +406,13 @@ const Comment = ({ productId, currentUser }: CommentProps) => {
                 <div className="reviewer-avatar">
                   <div className="avatar-placeholder">👤</div>
                 </div>
-                
+
                 <div className="reviewer-info">
                   <div className="reviewer-name">{review.customerName}</div>
                   <div className="review-rating">
                     {[1, 2, 3, 4, 5].map((star) => (
-                      <span 
-                        key={star} 
+                      <span
+                        key={star}
                         className={`star ${star <= review.rating ? 'active' : ''}`}
                       >
                         ★
@@ -421,10 +422,10 @@ const Comment = ({ productId, currentUser }: CommentProps) => {
                   <div className="review-date">{formatDate(review.createdAt || review.updatedAt)}</div>
                 </div>
               </div>
-              
+
               <div className="review-content">
                 <div className="review-comment">{review.comment}</div>
-                
+
                 {review.images && (
                   <div className="review-images">
                     {parseImageUrls(review.images).map((imageUrl, index) => (
@@ -435,11 +436,11 @@ const Comment = ({ productId, currentUser }: CommentProps) => {
                   </div>
                 )}
               </div>
-              
+
               {review.sellerReplyContent && (
                 <div className="seller-reply">
                   <div className="seller-reply-header">
-                    <strong>Phản hồi của Shop:</strong> 
+                    <strong>Phản hồi của Shop:</strong>
                     {review.sellerReplyAdminName && <span> {review.sellerReplyAdminName}</span>}
                     {review.sellerReplyDate && <span className="reply-date"> - {formatDate(review.sellerReplyDate)}</span>}
                   </div>

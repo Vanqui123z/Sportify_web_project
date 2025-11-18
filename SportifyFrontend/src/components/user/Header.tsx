@@ -1,10 +1,12 @@
 
-import { useContext, useState, useEffect } from "react";
-import ConfirmModal from "./Modal";
-import { AuthContext } from "../../helper/AuthContext";
+import { useContext, useEffect, useState } from "react";
 import { ShoppingCart } from "react-feather";
+import { AuthContext } from "../../helper/AuthContext";
 import { useCart } from "../../helper/useCartCount";
+import ConfirmModal from "./Modal";
 import NotificationDropdown from "./NotificationDropdown";
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
+
 
 export default function Header() {
 
@@ -22,7 +24,7 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch("http://localhost:8081/api/user/logoff/success", {
+      const response = await fetch(`${URL_BACKEND}/api/user/logoff/success`, {
         method: "POST",
         credentials: "include",
       });
@@ -85,7 +87,7 @@ export default function Header() {
                           </div>
                         </a>
                       </div>
-                      
+
                       {/* icon thông báo */}
                       <div className="me-4">
                         <NotificationDropdown />

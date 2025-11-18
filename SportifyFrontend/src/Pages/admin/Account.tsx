@@ -295,7 +295,7 @@ const AccountPage: React.FC = () => {
                       <td>{idx + 1}</td>
                       <td>
                         <div className="d-flex align-items-center">
-                          <img alt="" src={getImageUrl(item.image)} className="rounded-circle me-2" style={{ width: 40, height: 40, objectFit: "cover" }} />
+                          <img alt="" src={getImageUrl(item.image) || "https://via.placeholder.com/40"} className="rounded-circle me-2" style={{ width: 40, height: 40, objectFit: "cover" }} />
                           <div>
                             <div>{item.firstname + " " + item.lastname}</div>
                             <small className="text-muted">{item.username}</small>

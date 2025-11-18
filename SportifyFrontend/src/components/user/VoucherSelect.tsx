@@ -23,17 +23,19 @@ interface VoucherSelectProps {
   onApply?: (discountCode: string | null, newThanhtien: number, voucherOfUserId: number | null) => void;
 }
 
+// Use VITE_BACKEND_URL for backend API calls
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 const VoucherSelect: React.FC<VoucherSelectProps> = ({ username, tamtinh, onVoucherApplied, onApply }) => {
   const [userVouchers, setUserVouchers] = useState<UserVoucher[]>([]);
   const [voucherOfUserId, setVoucherOfUserId] = useState<number | null>(null);
   const [discountCode, setDiscountCode] = useState('');
-  const [appliedCode, setAppliedCode] = useState<string | null>(null);
+  const [_appliedCode, setAppliedCode] = useState<string | null>(null);
   const [selectedVoucher, setSelectedVoucher] = useState<UserVoucher | null>(null);
 
   console.log("voucherOfUserId", voucherOfUserId);
   useEffect(() => {
     if (username) {
-      fetch(`http://localhost:8081/api/user/voucher-of-user?username=${username}`, {
+      fetch(`${URL_BACKEND}/api/user/voucher-of-user?username=${username}`, {
         credentials: 'include'
       })
         .then(res => res.json())
@@ -95,7 +97,7 @@ const VoucherSelect: React.FC<VoucherSelectProps> = ({ username, tamtinh, onVouc
 
     try {
       const res = await fetch(
-        `http://localhost:8081/api/user/order/cart/voucher?voucherId=${encodeURIComponent(discountCode)}`,
+        `${URL_BACKEND}/api/user/order/cart/voucher?voucherId=${encodeURIComponent(discountCode)}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -113,7 +115,7 @@ const VoucherSelect: React.FC<VoucherSelectProps> = ({ username, tamtinh, onVouc
       if (discountPercent > 0) {
         setAppliedCode(discountCode);
         setVoucherOfUserId(currentVoucherId);
-        
+
         if (tamtinh && onApply) {
           const newThanhtien = tamtinh * (1 - discountPercent / 100);
           onApply(discountCode, newThanhtien, currentVoucherId);
@@ -147,20 +149,20 @@ const VoucherSelect: React.FC<VoucherSelectProps> = ({ username, tamtinh, onVouc
   return (
     <div>
       <label>Mã giảm giá:</label>
-      <select 
-        value={discountCode} 
+      <select
+        value={discountCode}
         onChange={handleSelectChange}
         className="form-control"
       >
         <option value="">Chọn voucher</option>
         <option value="none">Không voucher</option>
         {userVouchers.map((uv) => (
-          <option 
-            key={uv.id} 
+          <option
+            key={uv.id}
             value={uv.voucherid.voucherid}
             data-voucher-of-user-id={uv.id}
           >
-            {uv.voucherid.voucherid} - Giảm {uv.voucherid.discountpercent}% 
+            {uv.voucherid.voucherid} - Giảm {uv.voucherid.discountpercent}%
             (Còn {uv.quantity} lượt) - HSD: {new Date(uv.endDate).toLocaleDateString()}
           </option>
         ))}
