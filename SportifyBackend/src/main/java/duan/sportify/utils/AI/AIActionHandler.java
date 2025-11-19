@@ -8,18 +8,21 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import duan.sportify.service.ShiftService;
 import org.springframework.stereotype.Component;
 
+import com.google.api.client.util.Value;
+
 import duan.sportify.entities.Field;
+import duan.sportify.entities.Products;
 import duan.sportify.entities.Shifts;
 import duan.sportify.service.FieldService;
-import duan.sportify.entities.Products;
 import duan.sportify.service.ProductService;
+import duan.sportify.service.ShiftService;
 
 @Component
 public class AIActionHandler {
-
+    @Value("${backend.url}")
+    private String BACKEND_URL;
     private final ShiftService shiftService;
 
     private final FieldService fieldService; // service thật của bạn
@@ -347,7 +350,7 @@ public class AIActionHandler {
 
         // ✅ Tạo URL chuyển hướng
         String bookingUrl = String.format(
-                "http://localhost:8081/api/user/field/booking/%d?shiftid=%d&dateselect=%s",
+                BACKEND_URL + "/api/user/field/booking/%d?shiftid=%d&dateselect=%s",
                 idField, shiftId, date);
 
         // ✅ Trả về redirect (frontend hoặc Spring có thể dùng trực tiếp)
@@ -501,7 +504,7 @@ public class AIActionHandler {
         }
         Products product = products.get(0);
 
-        String checkoutUrl = "http://localhost:8081/api/user/cart/add/" + product.getProductid() + "?quantity="
+        String checkoutUrl = BACKEND_URL + "/api/user/cart/add/" + product.getProductid() + "?quantity="
                 + quantity;
         return Map.of(
                 "message", "Đang chuyển đến trang đặt hàng...",

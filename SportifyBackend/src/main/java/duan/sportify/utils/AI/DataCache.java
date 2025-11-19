@@ -1,21 +1,26 @@
 package duan.sportify.utils.AI;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 public class DataCache {
-
+    @Value("${backend.url}")
+    private static String BACKEND_URL;
     private final RestTemplate restTemplate = new RestTemplate();
     private static final ObjectMapper mapper = new ObjectMapper();
 
@@ -28,10 +33,9 @@ public class DataCache {
     @Value("${gemini.api.key}")
     private String googleApiKey;
 
-    private static final String GEMINI_BASE_URL =
-        "https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=";
+    private static final String GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=";
 
-    private static final String LOCAL_API = "http://localhost:8081/sportify/rest/ai/getAllData";
+    private static final String LOCAL_API = BACKEND_URL + "/sportify/rest/ai/getAllData";
 
     /**
      * Gọi API Gemini để tạo embedding cho một đoạn text/json
@@ -47,13 +51,10 @@ public class DataCache {
             String url = GEMINI_BASE_URL + googleApiKey;
 
             Map<String, Object> requestBody = Map.of(
-                "model", "models/text-embedding-004",
-                "content", Map.of(
-                    "parts", List.of(
-                        Map.of("text", text)
-                    )
-                )
-            );
+                    "model", "models/text-embedding-004",
+                    "content", Map.of(
+                            "parts", List.of(
+                                    Map.of("text", text))));
 
             org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -64,7 +65,8 @@ public class DataCache {
             Map<String, Object> result = mapper.readValue(response, Map.class);
 
             Map<String, Object> embedding = (Map<String, Object>) result.get("embedding");
-            if (embedding == null) throw new RuntimeException("Không tìm thấy embedding trong phản hồi");
+            if (embedding == null)
+                throw new RuntimeException("Không tìm thấy embedding trong phản hồi");
 
             List<Double> values = (List<Double>) embedding.get("values");
             float[] vector = new float[values.size()];
@@ -77,7 +79,7 @@ public class DataCache {
 
         } catch (Exception e) {
             System.err.println("⚠️ Lỗi khi gọi Gemini API: " + e.getMessage());
-            return new float[]{text.hashCode() % 1000, text.length()};
+            return new float[] { text.hashCode() % 1000, text.length() };
         }
     }
 
@@ -88,7 +90,8 @@ public class DataCache {
         try {
             System.out.println("🔄 Đang tải dữ liệu từ API nội bộ...");
             String json = restTemplate.getForObject(LOCAL_API, String.class);
-            if (json == null) throw new RuntimeException("Không nhận được dữ liệu từ API!");
+            if (json == null)
+                throw new RuntimeException("Không nhận được dữ liệu từ API!");
 
             Map<String, Object> apiData = mapper.readValue(json, Map.class);
             cachedData = apiData;
@@ -99,16 +102,18 @@ public class DataCache {
 
             for (String key : List.of("fields", "events", "products", "favorites")) {
                 List<Map<String, Object>> items = (List<Map<String, Object>>) apiData.get(key);
-                if (items == null) continue;
+                if (items == null)
+                    continue;
 
                 for (Map<String, Object> item : items) {
                     futures.add(executor.submit(() -> {
                         try {
                             String itemJson = mapper.writeValueAsString(item);
-                            String id = key + "_" + (item.get("fieldId") != null ? item.get("fieldId") :
-                                                     item.get("eventId") != null ? item.get("eventId") :
-                                                     item.get("productId") != null ? item.get("productId") :
-                                                     UUID.randomUUID());
+                            String id = key + "_"
+                                    + (item.get("fieldId") != null ? item.get("fieldId")
+                                            : item.get("eventId") != null ? item.get("eventId")
+                                                    : item.get("productId") != null ? item.get("productId")
+                                                            : UUID.randomUUID());
                             embeddingMap.put(id, getEmbedding(itemJson));
                         } catch (Exception ex) {
                             ex.printStackTrace();
@@ -117,9 +122,9 @@ public class DataCache {
                 }
             }
             // Chờ tất cả embedding hoàn thành
-            for (Future<?> f : futures) f.get();
+            for (Future<?> f : futures)
+                f.get();
             executor.shutdown();
-
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -164,7 +169,7 @@ public class DataCache {
                 }
             }
         }
-        
+
         return cachedData;
     }
 }
