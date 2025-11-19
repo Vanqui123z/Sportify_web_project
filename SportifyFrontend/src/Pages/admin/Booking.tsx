@@ -1,7 +1,7 @@
-const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import ListCardBank from "../../components/user/ListCardBank";
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 
 interface User {
   username: string;
@@ -246,7 +246,7 @@ const BookingPage: React.FC = () => {
         setShowCardConfirm(false);
         setShowEdit(false);
         // Refresh booking list
-        await axios.get("http://localhost:8081/rest/bookings/getAll").then(res => setBookings(res.data));
+        await axios.get(`${URL_BACKEND}/rest/bookings/getAll`).then(res => setBookings(res.data));
       }
     } catch (error) {
       alert("Có lỗi xảy ra khi hoàn tiền!");

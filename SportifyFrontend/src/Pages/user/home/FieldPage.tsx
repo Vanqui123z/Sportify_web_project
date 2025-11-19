@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { fetchFieldList } from '../../../service/user/home/fieldApi';
-import Loader from "../../../components/user/Loader";
-import getImageUrl from "../../../helper/getImageUrl";
 import HeroSection from "../../../components/user/Hero";
+import Loader from "../../../components/user/Loader";
 import NearestFieldFinder from "../../../components/user/NearestFieldFinder";
+import getImageUrl from "../../../helper/getImageUrl";
+import { fetchFieldList } from '../../../service/user/home/fieldApi';
 import "../../../styles/NearestFieldFinder.css";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 type Category = {
   sporttypeid: string;
   categoryname: string;
@@ -32,7 +33,7 @@ export default function FieldPage() {
 
   const [selectedCategory, setSelectedCategory] = useState<string>("tatca");
   const [sortOrder, setSortOrder] = useState<"" | "asc" | "desc">("");
-  
+
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
@@ -40,19 +41,19 @@ export default function FieldPage() {
     const latitude = searchParams.get('latitude');
     const longitude = searchParams.get('longitude');
     const categoryParam = searchParams.get('categorySelect') || 'tatca';
-    
+
     if (latitude && longitude) {
       // This is a nearest fields search
       // setIsNearestSearch(true);  // Not currently used
       setSelectedCategory(categoryParam);
-      
+
       // Fetch nearest fields data
       console.log('Đang gọi API tìm sân gần nhất với tọa độ:', latitude, longitude, 'và loại sân:', categoryParam);
       // Kiểm tra lại tọa độ trước khi gọi API
       // Đảm bảo tọa độ phù hợp với Việt Nam
       let validLatitude = parseFloat(latitude || "0");
       let validLongitude = Math.abs(parseFloat(longitude || "0")); // Đảm bảo longitude dương
-      
+
       // Kiểm tra xem tọa độ có nằm trong khu vực Việt Nam hay không
       if (validLatitude < 8 || validLatitude > 23 || validLongitude < 102 || validLongitude > 109) {
         console.log('Tọa độ nằm ngoài Việt Nam:', validLatitude, validLongitude);
@@ -60,11 +61,11 @@ export default function FieldPage() {
         validLatitude = 10.7769;
         validLongitude = 106.7;
       }
-      
+
       console.log('Đang gọi API với tọa độ đã kiểm tra:', validLatitude, validLongitude);
-      
+
       // Thêm tham số maxDistance để mở rộng phạm vi tìm kiếm
-      fetch(`/api/sportify/field/nearest?latitude=${validLatitude}&longitude=${validLongitude}&categorySelect=${categoryParam}&limit=50&maxDistance=25`)
+      fetch(`${BACKEND_URL}/api/sportify/field/nearest?latitude=${validLatitude}&longitude=${validLongitude}&categorySelect=${categoryParam}&limit=50&maxDistance=25`)
         .then(response => {
           console.log('Trạng thái phản hồi:', response.status);
           if (!response.ok) {
@@ -78,15 +79,12 @@ export default function FieldPage() {
           setFieldList(data.fieldList || []);
           setFieldList(data.fieldList || []);
           setFieldDistances(data.fieldDistances || {});
-          console.log('Số sân tìm thấy:', (data.fieldList || []).length);
-          
+
           if ((data.fieldList || []).length === 0) {
-            console.log('Không tìm thấy sân nào gần vị trí của bạn trong bán kính tìm kiếm.');
             setError("Không tìm thấy sân nào gần vị trí của bạn trong bán kính tìm kiếm. Vui lòng thử lại sau hoặc chọn một khu vực khác.");
           }
         })
         .catch(err => {
-          console.error("Lỗi khi lấy dữ liệu sân gần nhất:", err);
           setError(err.message || "Không thể tìm sân gần nhất. Vui lòng thử lại sau.");
         })
         .finally(() => setLoading(false));
@@ -103,7 +101,7 @@ export default function FieldPage() {
   }, [searchParams]);
 
   if (loading) return <Loader />;
-  
+
   // Hiển thị thông báo lỗi nếu có
   if (error) {
     return (
@@ -177,11 +175,10 @@ export default function FieldPage() {
                       key={c.sporttypeid}
                       type="button"
                       style={{ fontSize: '18px' }}
-                      className={`list-group-item list-group-item-action ${
-                        c.sporttypeid === selectedCategory 
-                          ? 'active bg-success text-white' 
-                          : ''
-                      }`}
+                      className={`list-group-item list-group-item-action ${c.sporttypeid === selectedCategory
+                        ? 'active bg-success text-white'
+                        : ''
+                        }`}
                       onClick={() => setSelectedCategory(c.sporttypeid)}
                     >
                       {c.categoryname}
@@ -234,10 +231,10 @@ export default function FieldPage() {
                             className="img"
                             src={getImageUrl(e.image)}
                             alt="Image"
-                            style={{ 
-                              width: '100%', 
-                              height: '100%', 
-                              objectFit: 'cover' 
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover'
                             }}
                           />
                         </div>
@@ -263,7 +260,7 @@ export default function FieldPage() {
                             </div>
                           </div>
                           <h3 className="heading mb-2">
-                            <a 
+                            <a
                               href={`/sportify/field/detail/${e.fieldid}`}
                               className="text-decoration-none text-dark"
                               style={{ fontSize: '1.5rem', fontWeight: '600' }}
@@ -281,7 +278,7 @@ export default function FieldPage() {
                                 display: 'inline-flex',
                                 alignItems: 'center'
                               }}>
-                                <i className="fa fa-location-arrow" style={{ marginRight: '4px' }}></i> 
+                                <i className="fa fa-location-arrow" style={{ marginRight: '4px' }}></i>
                                 {fieldDistances[e.fieldid]}
                               </span>
                             )}

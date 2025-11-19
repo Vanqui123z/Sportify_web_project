@@ -1,4 +1,3 @@
-const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -7,6 +6,7 @@ import { over } from "stompjs";
 import { checkLogin } from "../../../helper/checkLogin";
 import "../../../styles/GroupChat.css";
 
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 let stompClient: any = null;
 
 export default function GroupChat() {

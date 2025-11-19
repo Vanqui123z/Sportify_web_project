@@ -129,9 +129,6 @@ public class FootballPredictionService {
             match.put("riskLevel", aiAnalysis.get("riskLevel"));
             match.put("alternativeRecommendation", aiAnalysis.get("alternativeRecommendation"));
 
-            System.out.println("🧠 AI Enhanced: " + homeTeam + " vs " + awayTeam + " (" + aiAnalysis.get("confidence")
-                    + "% confidence)");
-
         } catch (Exception e) {
             System.err.println("Error enhancing match with AI: " + e.getMessage());
         }

@@ -1,21 +1,26 @@
 package duan.sportify.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import duan.sportify.dao.AuthorizedDAO;
+import duan.sportify.dao.UserDAO;
+import duan.sportify.entities.Authorized;
+import duan.sportify.entities.Users;
 import duan.sportify.service.AuthorizedService;
 import duan.sportify.service.UserService;
-import duan.sportify.dao.UserDAO;
-import duan.sportify.dao.AuthorizedDAO;
-import duan.sportify.entities.Users;
-
-import duan.sportify.entities.Authorized;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
-import javax.servlet.http.HttpSession;
 
 @RestController
 
@@ -29,8 +34,8 @@ public class SecurityController {
 	@Autowired
 	AuthorizedDAO authorizedDAO;
 
-	 @Autowired
-    private AuthorizedService authorizedService;
+	@Autowired
+	private AuthorizedService authorizedService;
 
 	List<Users> listUser = new ArrayList<>();
 
@@ -79,7 +84,6 @@ public class SecurityController {
 		resp.put("message", "Không có quyền truy xuất!");
 		return resp;
 	}
-
 
 	@RequestMapping("api/user/logoff/success")
 	public Map<String, Object> logoffSuccess(HttpSession session) {
@@ -137,7 +141,6 @@ public class SecurityController {
 		return resp;
 	}
 
-
 	@PostMapping("api/user/login")
 	@ResponseBody
 	public Map<String, Object> login(@RequestBody Map<String, String> payload, HttpSession session) {
@@ -163,22 +166,22 @@ public class SecurityController {
 	}
 
 	@GetMapping("api/user/rest/security/authentication")
-  public Map<String, Object> getAuthentication(HttpSession session) {
-        Map<String, Object> resp = new HashMap<>();
-        String username = (String) session.getAttribute("username");
+	public Map<String, Object> getAuthentication(HttpSession session) {
+		Map<String, Object> resp = new HashMap<>();
+		String username = (String) session.getAttribute("username");
+		System.out.println("username in session: " + username);
+		if (username != null) {
+			resp.put("loggedIn", true);
+			resp.put("username", username);
 
-        if (username != null) {
-            resp.put("loggedIn", true);
-            resp.put("username", username);
+			// Lấy roles từ AuthorizedService
+			Authorized roles = authorizedService.findAllAuthorized(username);
+			resp.put("roles", roles);
+		} else {
+			resp.put("loggedIn", false);
+		}
 
-            // Lấy roles từ AuthorizedService
-            Authorized roles = authorizedService.findAllAuthorized(username);
-            resp.put("roles", roles);
-        } else {
-            resp.put("loggedIn", false);
-        }
-
-        return resp;
-    }
+		return resp;
+	}
 
 }

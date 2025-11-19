@@ -4,7 +4,7 @@ import CommentComponent from "../../../components/user/CommentComponent";
 import HeroSection from "../../../components/user/Hero"; // Thêm import
 import getImageUrl from "../../../helper/getImageUrl";
 import { fetchFieldDetail, PosthandlePermanentBookingData } from '../../../service/user/home/fieldApi';
-
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 interface SportType {
     sporttypeid: string;
     categoryname: string;
@@ -150,7 +150,7 @@ const DetailFields: React.FC = () => {
         fetchData();
         const checkFavoriteStatus = async () => {
             try {
-                const response = await fetch(`http://localhost:8081/api/user/favorite/check?fieldId=${idField}`, {
+                const response = await fetch(`${BACKEND_URL}/api/user/favorite/check?fieldId=${idField}`, {
                     method: 'GET',
                     credentials: 'include'
                 });
@@ -227,7 +227,7 @@ const DetailFields: React.FC = () => {
 
             if (!liked) {
                 // Thêm vào danh sách yêu thích
-                response = await fetch(`http://localhost:8081/api/user/favorite/${idField}`, {
+                response = await fetch(`${BACKEND_URL}/api/user/favorite/${idField}`, {
                     method: 'POST',
                     credentials: 'include'
                 });
@@ -243,7 +243,7 @@ const DetailFields: React.FC = () => {
 
             } else {
                 // Xóa khỏi danh sách yêu thích
-                response = await fetch(`http://localhost:8081/api/user/favorite/${idField}`, {
+                response = await fetch(`${BACKEND_URL}/api/user/favorite/${idField}`, {
                     method: 'DELETE',
                     credentials: 'include'
                 });

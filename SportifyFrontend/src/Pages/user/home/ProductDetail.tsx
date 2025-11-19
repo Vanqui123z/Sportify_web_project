@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { fetchProductDetail, addProductToCart } from '../../../service/user/home/productApi';
 import { useParams } from 'react-router-dom';
-import HeroSection from "../../../components/user/Hero";
 import CommentComponent from '../../../components/user/CommentComponent';
+import HeroSection from "../../../components/user/Hero";
 import { useNotification } from '../../../helper/NotificationContext';
 import { useCart } from '../../../helper/useCartCount';
+import { addProductToCart, fetchProductDetail } from '../../../service/user/home/productApi';
 
 interface Product {
   productid: number;
@@ -24,7 +24,7 @@ interface Product {
 }
 
 const ProductDetail: React.FC = () => {
-	const productid = useParams().productid as string;
+  const productid = useParams().productid as string;
   const [product, setProduct] = useState<Product | null>(null);
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [totalPrice, setTotalPrice] = useState<number>(0);
@@ -41,6 +41,7 @@ const ProductDetail: React.FC = () => {
     addProductToCart(productid, addQuantity)
       .then((data) => {
         if (data?.ok) {
+          alert("Thêm sản phẩm vào giỏ hàng thành công!");
           addNotification("Thêm sản phẩm vào giỏ hàng thành công!", "success");
           // Cập nhật số lượng giỏ hàng ngay lập tức
           incrementCartCount(addQuantity);
@@ -136,7 +137,7 @@ const ProductDetail: React.FC = () => {
                   {product.productstatus ? 'Thêm vào giỏ' : 'Hết hàng'}
                 </button>
               </p>
-               <p className="mt-4">
+              <p className="mt-4">
                 <a
                   href='/sportify/cart/view'
                   className="btn btn-success "

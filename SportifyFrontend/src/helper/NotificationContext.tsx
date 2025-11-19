@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { AuthContext } from "./AuthContext";
 
 type NotificationType = "success" | "error" | "info" | "warning";
@@ -24,8 +24,8 @@ interface NotificationContextProps {
 }
 
 const NotificationContext = createContext<NotificationContextProps | undefined>(undefined);
-
-const API_BASE = "/api/notifications";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "";
+const API_BASE = `${BACKEND_URL}/api/user/notifications`;
 const DEFAULT_FETCH_INIT: RequestInit = {
   credentials: "include",
 };
@@ -158,11 +158,11 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         method: "DELETE",
         ...DEFAULT_FETCH_INIT,
       });
-      
+
       if (!res.ok) {
         throw new Error(`Failed to clear notifications (${res.status})`);
       }
-      
+
       setNotifications([]);
     } catch (error) {
       console.error("Error clearing notifications", error);
