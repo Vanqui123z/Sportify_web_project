@@ -78,4 +78,10 @@ public interface FieldDAO extends JpaRepository<Field, Integer> {
 	       "AND f.status = 1 " +
 	       "AND f.latitude IS NOT NULL AND f.longitude IS NOT NULL", nativeQuery = true)
 	List<Field> findActiveFieldsWithCoordinates(@Param("sporttypeId") String sporttypeId);
+
+	// Lấy tất cả sân theo chủ sân
+	@Query(value = "SELECT f.* FROM field f " +
+			"JOIN infor_owner io ON f.owner_id = io.owner_id " +
+			"WHERE io.username = :ownerUsername", nativeQuery = true)
+	List<Field> findByOwnerUsername(@Param("ownerUsername") String ownerUsername);
 }

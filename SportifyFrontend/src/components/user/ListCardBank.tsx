@@ -92,20 +92,21 @@ const ListCardBank: React.FC<ListCardBankProps> = ({
     const [error, setError] = useState<string | null>(null);
     const [banks, setBanks] = useState<Array<BankData>>([]); // Danh sách ngân hàng
 
-    // Check for return from payment process
+    // Check for return from payment process by keeping the card list in sync
     useEffect(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const status = urlParams.get('status');
-        const txnRef = urlParams.get('vnp_TxnRef');
-
-        if (status === 'true' && txnRef) {
-            // Reload cards after successful payment
-            loadCards();
-
-            // Clear the URL parameters after processing
-            window.history.replaceState({}, document.title, window.location.pathname);
+        if (!username) {
+            return;
         }
-    }, []);
+
+        loadCards();
+
+        // Auto-reload cards every 3 seconds for better sync with backend state
+        const interval = setInterval(() => {
+            loadCards();
+        }, 3000);
+
+        return () => clearInterval(interval);
+    }, [username]);
 
     // Load cards from backend
     const loadCards = async () => {

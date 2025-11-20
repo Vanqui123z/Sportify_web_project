@@ -17,8 +17,8 @@ const NearestFieldFinder = ({ className, categorySelect = 'tatca' }: NearestFiel
     setError(null);
     
     if (!navigator.geolocation) {
-      setError("Trình duyệt không hỗ trợ định vị");
-      setLoading(false);
+      setError("Trình duyệt không hỗ trợ định vị. Sử dụng tọa độ mặc định.");
+      useDefaultLocation();
       return;
     }
 
@@ -34,9 +34,8 @@ const NearestFieldFinder = ({ className, categorySelect = 'tatca' }: NearestFiel
         // Kiểm tra tọa độ có nằm trong vùng Việt Nam không
         if (lat < 8 || lat > 23 || fixedLng < 102 || fixedLng > 109) {
           console.log('Cảnh báo: Tọa độ nằm ngoài Việt Nam, dùng tọa độ mặc định TP.HCM');
-          // Sử dụng tọa độ mặc định TP.HCM
-          lat = 10.7769;
-          lng = 106.7;
+          useDefaultLocation();
+          return;
         } else {
           lng = fixedLng; // Sử dụng fixedLng nếu nằm trong phạm vi hợp lệ
         }
@@ -49,10 +48,18 @@ const NearestFieldFinder = ({ className, categorySelect = 'tatca' }: NearestFiel
       },
       (error) => {
         console.error('Lỗi định vị:', error);
-        setError("Không thể lấy vị trí của bạn. Vui lòng cho phép truy cập vị trí trong trình duyệt.");
-        setLoading(false);
+        // Fallback: sử dụng tọa độ mặc định
+        useDefaultLocation();
       }
     );
+  };
+
+  const useDefaultLocation = () => {
+    console.log('Sử dụng tọa độ mặc định TP.HCM');
+    const defaultLat = 10.7769;
+    const defaultLng = 106.7;
+    navigate(`/sportify/field?latitude=${defaultLat}&longitude=${defaultLng}&categorySelect=${categorySelect}`);
+    setLoading(false);
   };
 
   return (
@@ -61,11 +68,12 @@ const NearestFieldFinder = ({ className, categorySelect = 'tatca' }: NearestFiel
         onClick={findNearestFields} 
         disabled={loading}
         className="find-nearest-btn"
+        title="Click để tìm sân gần vị trí của bạn nhất"
       >
         {loading ? "Đang tìm..." : "Tìm sân gần nhất"}
       </button>
       
-      {error && <div className="error-message">{error}</div>}
+      {error && <div className="error-message" style={{fontSize: '0.85rem', marginTop: '0.5rem'}}>{error}</div>}
     </div>
   );
 };

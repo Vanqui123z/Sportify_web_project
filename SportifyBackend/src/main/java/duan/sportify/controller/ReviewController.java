@@ -445,4 +445,29 @@ public class ReviewController {
         response.put("message", "Đã xóa phản hồi của người bán");
         return ResponseEntity.ok(response);
     }
+
+    // Get reviews for owner's fields
+    @GetMapping("/owner/{ownerUsername}")
+    public ResponseEntity<Map<String, Object>> getOwnerReviews(
+            @PathVariable String ownerUsername,
+            HttpServletRequest request) {
+        try {
+            System.out.println("🔍 API /reviews/owner/" + ownerUsername + " - Fetching reviews for owner's fields");
+            List<ProductReview> reviews = fieldReviewService.getReviewsByOwner(ownerUsername);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("reviews", reviews);
+            response.put("count", reviews.size());
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.out.println("❌ Error fetching owner reviews: " + e.getMessage());
+            e.printStackTrace();
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Error fetching owner reviews: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
 }

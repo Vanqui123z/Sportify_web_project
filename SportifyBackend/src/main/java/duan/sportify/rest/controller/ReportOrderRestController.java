@@ -101,7 +101,6 @@ public class ReportOrderRestController {
 			}
 
 			int lastDataRowIndex = dataRowIndex - 1;
-			int startRow = lastDataRowIndex + 2;
 
 			// Thêm dữ liệu vào trang tính (sheet)
 			for (Map.Entry<Integer, Object[]> entry : data.entrySet()) {

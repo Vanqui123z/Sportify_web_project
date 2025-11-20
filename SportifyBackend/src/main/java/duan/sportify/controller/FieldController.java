@@ -39,6 +39,7 @@ import duan.sportify.entities.Authorized;
 import duan.sportify.entities.Bookings;
 import duan.sportify.entities.FavoriteField;
 import duan.sportify.entities.Field;
+import duan.sportify.entities.FieldOwnerRegistration;
 import duan.sportify.entities.Shifts;
 import duan.sportify.entities.Sporttype;
 import duan.sportify.entities.Users;
@@ -92,29 +93,84 @@ public class FieldController {
 			String key = entry.getKey();
 			Object value = entry.getValue();
 
-			// Handle lists that may contain Hibernate proxies
 			if (value instanceof List) {
 				List<?> list = (List<?>) value;
-				if (!list.isEmpty() && list.get(0) instanceof Sporttype) {
-					List<Map<String, Object>> cleanList = new ArrayList<>();
-					for (Object item : list) {
-						Sporttype sporttype = (Sporttype) item;
-						Map<String, Object> cleanItem = new HashMap<>();
-						cleanItem.put("sporttypeid", sporttype.getSporttypeid());
-						cleanItem.put("categoryname", sporttype.getCategoryname());
-						// Add any other properties you need from Sporttype
-						cleanList.add(cleanItem);
+				if (!list.isEmpty()) {
+					Object firstItem = list.get(0);
+
+					if (firstItem instanceof Sporttype) {
+						List<Map<String, Object>> cleanList = new ArrayList<>();
+						for (Object item : list) {
+							Sporttype sporttype = (Sporttype) item;
+							Map<String, Object> cleanItem = new HashMap<>();
+							cleanItem.put("sporttypeid", sporttype.getSporttypeid());
+							cleanItem.put("categoryname", sporttype.getCategoryname());
+							cleanList.add(cleanItem);
+						}
+						result.put(key, cleanList);
+						continue;
 					}
-					result.put(key, cleanList);
-					continue;
+
+					if (firstItem instanceof Field) {
+						List<Map<String, Object>> cleanFields = new ArrayList<>();
+						for (Object item : list) {
+							if (item instanceof Field) {
+								cleanFields.add(mapSingleField((Field) item));
+							}
+						}
+						result.put(key, cleanFields);
+						continue;
+					}
 				}
 			}
 
-			// Add other entries as is
+			if (value instanceof Field) {
+				result.put(key, mapSingleField((Field) value));
+				continue;
+			}
+
 			result.put(key, value);
 		}
 
 		return result;
+	}
+
+	private Map<String, Object> mapSingleField(Field field) {
+		Map<String, Object> fieldMap = new HashMap<>();
+		fieldMap.put("fieldid", field.getFieldid());
+		fieldMap.put("namefield", field.getNamefield());
+		fieldMap.put("descriptionfield", field.getDescriptionfield());
+		fieldMap.put("price", field.getPrice());
+		fieldMap.put("image", field.getImage());
+		fieldMap.put("address", field.getAddress());
+		fieldMap.put("status", field.getStatus());
+		fieldMap.put("sporttypeid", field.getSporttype() != null ? field.getSporttype().getSporttypeid() : null);
+		fieldMap.put("latitude", field.getLatitude());
+		fieldMap.put("longitude", field.getLongitude());
+
+		if (field.getSporttype() != null) {
+			Map<String, Object> sporttypeMap = new HashMap<>();
+			sporttypeMap.put("sporttypeid", field.getSporttype().getSporttypeid());
+			sporttypeMap.put("categoryname", field.getSporttype().getCategoryname());
+			fieldMap.put("sporttype", sporttypeMap);
+		} else {
+			fieldMap.put("sporttype", null);
+		}
+
+		FieldOwnerRegistration owner = field.getOwner();
+		if (owner != null) {
+			Map<String, Object> ownerMap = new HashMap<>();
+			ownerMap.put("ownerId", owner.getOwnerId());
+			ownerMap.put("businessName", owner.getBusinessName());
+			ownerMap.put("phone", owner.getPhone());
+			ownerMap.put("address", owner.getAddress());
+			ownerMap.put("status", owner.getStatus());
+			fieldMap.put("owner", ownerMap);
+		} else {
+			fieldMap.put("owner", null);
+		}
+
+		return fieldMap;
 	}
 
 	// Tìm sân trống theo input: date, sportype, giờ chơi

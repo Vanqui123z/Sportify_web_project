@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import duan.sportify.dao.BookingDAO;
@@ -231,5 +232,43 @@ public class DashboardRestController {
 	@GetMapping("thongKeOrderInDay")
 	public List<Object[]> thongKeOrderInDay(){
 		return orderDAO.thongKeOrderInDay();
+	}
+
+	// ============= OWNER ENDPOINTS =============
+	
+	// API tổng hợp tất cả các thống kê cho owner
+	@GetMapping("summary/owner")
+	public java.util.Map<String, Object> getDashboardSummaryByOwner(
+			@RequestParam String ownerUsername) {
+		java.util.Map<String, Object> summary = new java.util.HashMap<>();
+		summary.put("totalProduct", productDAO.count()); // TODO: filter by owner if needed
+		summary.put("totalField", fieldDAO.findByOwnerUsername(ownerUsername).size());
+		summary.put("totalUser", userDAO.count());
+		summary.put("totalOrderBooking", bookingDAO.sumOrderBooking());
+		summary.put("countBookingInDate", bookingDAO.countBookingInDate());
+		summary.put("countFieldActiving", fieldDAO.countFieldActiving());
+		summary.put("countOrderInDate", orderDAO.countOrderInDate());
+		summary.put("countProductActive", productDAO.countProductActive());
+		return summary;
+	}
+
+	// API tổng hợp tất cả các dữ liệu còn lại cho owner
+	@GetMapping("all-details/owner")
+	public java.util.Map<String, Object> getAllDetailsByOwner(
+			@RequestParam String ownerUsername) {
+		java.util.Map<String, Object> details = new java.util.HashMap<>();
+		details.put("thongkebookingtrongngay", bookingDAO.thongkebookingtrongngay());
+		details.put("danhsach3contact", contactDAO.fill3ContactOnDate());
+		details.put("demLienHeTrongNgay", contactDAO.demLienHeTrongNgay());
+		details.put("tongSoPhieuDatSan2Thang", bookingDAO.tongSoPhieuDatSan2Thang());
+		details.put("tongSoPhieuOrder2Thang", orderDAO.tongSoPhieuOrder2Thang());
+		details.put("tongDoanhThuBooking2Month", bookingDAO.tongDoanhThuBooking2Month());
+		details.put("doanhThuOrder2Month", orderDAO.doanhThuOrder2Month());
+		details.put("top3SanDatNhieu", bookingDetailDAO.top3SanDatNhieu());
+		details.put("top3SanPhamBanNhieu", orderDAO.top3SanPhamBanNhieu());
+		details.put("top5UserDatSan", bookingDetailDAO.top5UserDatSan());
+		details.put("top5UserOrder", orderDAO.top5UserOrder());
+		details.put("thongKeOrderInDay", orderDAO.thongKeOrderInDay());
+		return details;
 	}
 }

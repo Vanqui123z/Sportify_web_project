@@ -1,3 +1,5 @@
+// import { API_ENDPOINTS } from '../../../config/api.config';
+
 // API functions for HomePage
 const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 export async function fetchHomeData(username?: string) {

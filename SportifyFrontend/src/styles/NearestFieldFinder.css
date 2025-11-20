@@ -3,6 +3,15 @@
   margin: 15px 0;
 }
 
+.nearest-field-inline {
+  margin: 0;
+}
+
+.nearest-field-inline .find-nearest-btn {
+  width: 100%;
+  min-height: 44px;
+}
+
 .find-nearest-btn {
   display: flex;
   align-items: center;

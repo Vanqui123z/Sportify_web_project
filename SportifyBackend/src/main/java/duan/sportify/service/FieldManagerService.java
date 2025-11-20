@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 
 import duan.sportify.DTO.booking.FieldManagerDetailDTO;
 import duan.sportify.dao.BookingDetailDAO;
+import duan.sportify.dao.FieldDAO;
+import duan.sportify.entities.Field;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -16,6 +18,9 @@ import lombok.RequiredArgsConstructor;
 public class FieldManagerService {
     @Autowired
     private final BookingDetailDAO bookingRepo;
+    private BookingDetailDAO permanentRepo;
+    @Autowired
+    private FieldDAO fieldDAO;
 
     // private BookingDetailDAO permanentRepo;
 
@@ -42,19 +47,35 @@ public class FieldManagerService {
     /**
      * Get all fields that are active on a specific date with their booking counts
      * 
-     * @param date Format: yyyy-MM-dd or dd/MM/yyyy
+     * @param date          Format: yyyy-MM-dd or dd/MM/yyyy
+     * @param ownerUsername Filter by field owner username (optional)
      * @return List of field usage details including all fields (even those with
      *         zero bookings)
      */
-    public List<FieldManagerDetailDTO> getActiveFieldsByDate(String date) {
+    public List<FieldManagerDetailDTO> getActiveFieldsByDate(String date, String ownerUsername) {
         String formattedDate = formatDateString(date);
         System.out.println("Formatted Date: " + formattedDate);
         List<Object[]> activeFields = bookingRepo.findActiveFieldsByDate(formattedDate);
+
+        // If ownerUsername is provided, get only fields owned by that user
+        List<Integer> ownerFieldIds = new ArrayList<>();
+        if (ownerUsername != null && !ownerUsername.isEmpty()) {
+            List<Field> ownerFields = fieldDAO.findByOwnerUsername(ownerUsername);
+            for (Field field : ownerFields) {
+                ownerFieldIds.add(field.getFieldid());
+            }
+        }
 
         List<FieldManagerDetailDTO> result = new ArrayList<>();
         for (Object[] field : activeFields) {
             try {
                 Integer fieldId = (Integer) field[0];
+
+                // Filter by owner if ownerUsername is provided
+                if (ownerUsername != null && !ownerUsername.isEmpty() && !ownerFieldIds.contains(fieldId)) {
+                    continue;
+                }
+
                 String fieldName = (String) field[1];
                 String fieldImage = (String) field[2];
                 Long oneTimeBookings = ((Number) field[3]).longValue();
@@ -77,11 +98,12 @@ public class FieldManagerService {
      * Get all fields that are active during a specific month with their booking
      * counts
      * 
-     * @param yearMonth Format: yyyy-MM or MM/yyyy
+     * @param yearMonth     Format: yyyy-MM or MM/yyyy
+     * @param ownerUsername Filter by field owner username (optional)
      * @return List of field usage details including all fields (even those with
      *         zero bookings)
      */
-    public List<FieldManagerDetailDTO> getActiveFieldsByMonth(String yearMonth) {
+    public List<FieldManagerDetailDTO> getActiveFieldsByMonth(String yearMonth, String ownerUsername) {
         // Convert MM/yyyy to yyyy-MM if needed
         String formattedYearMonth = yearMonth;
         if (yearMonth.contains("/")) {
@@ -93,9 +115,24 @@ public class FieldManagerService {
 
         List<Object[]> activeFields = bookingRepo.findActiveFieldsByMonth(formattedYearMonth);
 
+        // If ownerUsername is provided, get only fields owned by that user
+        List<Integer> ownerFieldIds = new ArrayList<>();
+        if (ownerUsername != null && !ownerUsername.isEmpty()) {
+            List<Field> ownerFields = fieldDAO.findByOwnerUsername(ownerUsername);
+            for (Field field : ownerFields) {
+                ownerFieldIds.add(field.getFieldid());
+            }
+        }
+
         List<FieldManagerDetailDTO> result = new ArrayList<>();
         for (Object[] field : activeFields) {
             Integer fieldId = (Integer) field[0];
+
+            // Filter by owner if ownerUsername is provided
+            if (ownerUsername != null && !ownerUsername.isEmpty() && !ownerFieldIds.contains(fieldId)) {
+                continue;
+            }
+
             String fieldName = (String) field[1];
             String fieldImage = (String) field[2];
             Long oneTimeBookings = ((Number) field[3]).longValue();

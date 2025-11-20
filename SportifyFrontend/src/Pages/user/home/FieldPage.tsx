@@ -1,15 +1,25 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import HeroSection from "../../../components/user/Hero";
 import Loader from "../../../components/user/Loader";
 import NearestFieldFinder from "../../../components/user/NearestFieldFinder";
 import getImageUrl from "../../../helper/getImageUrl";
 import { fetchFieldList } from '../../../service/user/home/fieldApi';
+import "../../../styles/FieldPage.css";
 import "../../../styles/NearestFieldFinder.css";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 type Category = {
   sporttypeid: string;
   categoryname: string;
+};
+
+type FieldOwner = {
+  ownerId: number;
+  businessName: string;
+  phone?: string;
+  address?: string;
+  status?: string;
 };
 
 type FieldItem = {
@@ -22,6 +32,7 @@ type FieldItem = {
   address: string;
   status: boolean;
   sporttype?: Category;
+  owner?: FieldOwner | null;
 };
 
 export default function FieldPage() {
@@ -34,30 +45,23 @@ export default function FieldPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("tatca");
   const [sortOrder, setSortOrder] = useState<"" | "asc" | "desc">("");
 
+  const [searchOwner, setSearchOwner] = useState<string>("");
+  const [searchAddress, setSearchAddress] = useState<string>("");
+
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    // Check if we're coming from nearest fields search
     const latitude = searchParams.get('latitude');
     const longitude = searchParams.get('longitude');
     const categoryParam = searchParams.get('categorySelect') || 'tatca';
 
     if (latitude && longitude) {
-      // This is a nearest fields search
-      // setIsNearestSearch(true);  // Not currently used
       setSelectedCategory(categoryParam);
-
-      // Fetch nearest fields data
-      console.log('Đang gọi API tìm sân gần nhất với tọa độ:', latitude, longitude, 'và loại sân:', categoryParam);
-      // Kiểm tra lại tọa độ trước khi gọi API
-      // Đảm bảo tọa độ phù hợp với Việt Nam
       let validLatitude = parseFloat(latitude || "0");
-      let validLongitude = Math.abs(parseFloat(longitude || "0")); // Đảm bảo longitude dương
+      let validLongitude = Math.abs(parseFloat(longitude || "0"));
 
-      // Kiểm tra xem tọa độ có nằm trong khu vực Việt Nam hay không
       if (validLatitude < 8 || validLatitude > 23 || validLongitude < 102 || validLongitude > 109) {
-        console.log('Tọa độ nằm ngoài Việt Nam:', validLatitude, validLongitude);
-        console.log('Sử dụng tọa độ mặc định TP.HCM');
+        console.log('Tọa độ nằm ngoài Việt Nam, sử dụng tọa độ mặc định TP.HCM');
         validLatitude = 10.7769;
         validLongitude = 106.7;
       }
@@ -77,19 +81,37 @@ export default function FieldPage() {
           console.log('Dữ liệu nhận được:', data);
           setCates(data.cates || []);
           setFieldList(data.fieldList || []);
-          setFieldList(data.fieldList || []);
           setFieldDistances(data.fieldDistances || {});
 
           if ((data.fieldList || []).length === 0) {
-            setError("Không tìm thấy sân nào gần vị trí của bạn trong bán kính tìm kiếm. Vui lòng thử lại sau hoặc chọn một khu vực khác.");
+            console.log('Không tìm thấy sân nào gần vị trí của bạn. Hiển thị tất cả sân.');
+            fetchFieldList()
+              .then((allData) => {
+                setCates(allData.cates || []);
+                setFieldList(allData.fieldList || []);
+                setError("Không tìm thấy sân gần vị trí của bạn. Đang hiển thị tất cả các sân có sẵn.");
+              })
+              .catch((err) => {
+                console.error("Lỗi khi load danh sách sân backup:", err);
+                setError("Không tìm thấy sân gần vị trí của bạn. Vui lòng thử lại sau.");
+              });
           }
         })
         .catch(err => {
-          setError(err.message || "Không thể tìm sân gần nhất. Vui lòng thử lại sau.");
+          console.error("Lỗi khi lấy dữ liệu sân gần nhất:", err);
+          fetchFieldList()
+            .then((allData) => {
+              setCates(allData.cates || []);
+              setFieldList(allData.fieldList || []);
+              setError("Không thể tìm sân gần nhất. Đang hiển thị tất cả các sân có sẵn.");
+            })
+            .catch((backupErr) => {
+              console.error("Lỗi khi load danh sách sân backup:", backupErr);
+              setError(err.message || "Không thể tìm sân gần nhất. Vui lòng thử lại sau.");
+            });
         })
         .finally(() => setLoading(false));
     } else {
-      // Normal field list fetch
       fetchFieldList()
         .then((data) => {
           setCates(data.cates || []);
@@ -100,8 +122,9 @@ export default function FieldPage() {
     }
   }, [searchParams]);
 
-  if (loading) return <Loader />;
 
+  const hasCategories = useMemo(() => cates && cates.length > 0, [cates]);
+  if (loading) return <Loader />;
   // Hiển thị thông báo lỗi nếu có
   if (error) {
     return (
@@ -120,12 +143,29 @@ export default function FieldPage() {
     );
   }
 
-  // Derived filtered and sorted list
+
   const filtered = fieldList
     .filter((f) => {
       if (!f) return false;
+      // Filter by category
       if (selectedCategory && selectedCategory !== "tatca") {
-        return f.sporttype?.sporttypeid === selectedCategory || f.sporttypeid === selectedCategory;
+        if (f.sporttype?.sporttypeid !== selectedCategory && f.sporttypeid !== selectedCategory) {
+          return false;
+        }
+      }
+      // Filter by owner name
+      if (searchOwner.trim()) {
+        const ownerName = f.owner?.businessName?.toLowerCase() || "";
+        if (!ownerName.includes(searchOwner.toLowerCase())) {
+          return false;
+        }
+      }
+      // Filter by address
+      if (searchAddress.trim()) {
+        const address = f.address?.toLowerCase() || "";
+        if (!address.includes(searchAddress.toLowerCase())) {
+          return false;
+        }
       }
       return true;
     })
@@ -138,6 +178,7 @@ export default function FieldPage() {
   const handleSort = (order: "asc" | "desc" | "") => {
     setSortOrder(order);
   };
+
   return (
     <div>
       <HeroSection
@@ -149,164 +190,163 @@ export default function FieldPage() {
         ]}
       />
       <section className="ftco-section">
-        <div className="container">
-          <div className="row">
-            <div className="col-12 mb-4 pb-2 d-flex flex-column align-items-start">
-              <h4
-                style={{ color: '#187498', fontFamily: 'times-new-roman', fontWeight: 600, paddingLeft: '0px' }}>
-                Tìm kiếm sân trống
-              </h4>
-              <div className="mt-3">
-                <NearestFieldFinder
-                  className="nearest-field-inline"
-                  categorySelect={selectedCategory}
-                />
-              </div>
+        <div className="container-fluid field-container px-3 px-lg-5">
+          {error && (
+            <div className="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+              <i className="fa fa-info-circle me-2"></i>
+              {error}
+              <button type="button" className="btn-close" onClick={() => setError(null)}></button>
+            </div>
+          )}
+          <div className="row g-3 align-items-end mb-4 filter-bar">
+            <div className="col-lg-4 col-md-5 col-sm-12">
+              <label className="form-label fw-semibold text-success mb-2">Tìm sân gần nhất</label>
+              <NearestFieldFinder
+                className="nearest-field-inline w-100"
+                categorySelect={selectedCategory}
+              />
             </div>
 
-            <div className="col-md-3">
-              <div className="sidebar-box ">
-                <div className="list-group">
-                  <h4 className="text-center border-bottom font-weight-bold text-success py-2">
-                    LOẠI SÂN
-                  </h4>
-                  {cates.map((c) => (
-                    <button
-                      key={c.sporttypeid}
-                      type="button"
-                      style={{ fontSize: '18px' }}
-                      className={`list-group-item list-group-item-action ${c.sporttypeid === selectedCategory
-                        ? 'active bg-success text-white'
-                        : ''
-                        }`}
-                      onClick={() => setSelectedCategory(c.sporttypeid)}
-                    >
+            <div className="col-lg-4 col-md-4 col-sm-6">
+              <label className="form-label fw-semibold text-success mb-2">Loại sân</label>
+              <select
+                className="form-select shadow-sm"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+              >
+                {hasCategories ? (
+                  cates.map((c) => (
+                    <option key={c.sporttypeid} value={c.sporttypeid}>
                       {c.categoryname}
-                    </button>
-                  ))}
+                    </option>
+                  ))
+                ) : (
+                  <option value="tatca">Tất cả</option>
+                )}
+              </select>
+            </div>
+
+            <div className="col-lg-4 col-md-3 col-sm-6">
+              <label className="form-label fw-semibold text-success mb-2">Sắp xếp</label>
+              <div className="dropdown w-100">
+                <button
+                  className="btn btn-success w-100 d-flex justify-content-between align-items-center"
+                  type="button"
+                  id="sortDropdown"
+                  data-bs-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  {sortOrder === "asc" && "Giá tăng dần"}
+                  {sortOrder === "desc" && "Giá giảm dần"}
+                  {sortOrder === "" && "Lọc"}
+                  <i className="fa fa-chevron-down ms-2"></i>
+                </button>
+                <div className="dropdown-menu dropdown-menu-end w-100" aria-labelledby="sortDropdown">
+                  <button className="dropdown-item" type="button" onClick={() => handleSort("")}>
+                    Mặc định
+                  </button>
+                  <button className="dropdown-item" type="button" onClick={() => handleSort("asc")}>
+                    Giá tăng dần
+                  </button>
+                  <button className="dropdown-item" type="button" onClick={() => handleSort("desc")}>
+                    Giá giảm dần
+                  </button>
                 </div>
               </div>
             </div>
 
-            <div className="col-md-9">
-              <div className="row mb-4">
-                <div className="col-md-12 d-flex justify-content-end align-items-center">
-                  <div className="dropdown filter">
-                    <button
-                      className="btn btn-success dropdown-toggle"
-                      type="button"
-                      id="dropdownMenuButton"
-                      data-bs-toggle="dropdown"
-                      aria-haspopup="true"
-                      aria-expanded="false"
-                    >
-                      Lọc
-                    </button>
-                    <div className="dropdown-menu dropdown-menu-end filter-item" aria-labelledby="dropdownMenuButton">
-                      <button className="dropdown-item" type="button" onClick={() => handleSort("")}>
-                        Mặc định
-                      </button>
-                      <button className="dropdown-item" type="button" onClick={() => handleSort("asc")}>
-                        Giá tăng dần
-                      </button>
-                      <button className="dropdown-item" type="button" onClick={() => handleSort("desc")}>
-                        Giá giảm dần
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div className="col-lg-4 col-md-6 col-sm-6">
+              <label className="form-label fw-semibold text-success mb-2">Tìm chủ sân</label>
+              <input
+                type="text"
+                className="form-control shadow-sm"
+                placeholder="Nhập tên chủ sân..."
+                value={searchOwner}
+                onChange={(e) => setSearchOwner(e.target.value)}
+              />
+            </div>
 
-              <div className="row d-flex">
-                {filtered.length === 0 ? (
-                  <div className="col-12">
-                    <div className="alert alert-info text-center">Không có sân phù hợp.</div>
-                  </div>
-                ) : (
-                  filtered.map((e) => (
-                    <div key={e.fieldid} className="col-lg-12 d-flex align-items-stretch  mb-3">
-                      <div className="blog-entry d-flex w-100 shadow-sm" style={{ borderRadius: '8px', overflow: 'hidden' }}>
-                        <div style={{ flexShrink: 0, width: '200px', height: '200px' }}>
-                          <img
-                            className="img"
-                            src={getImageUrl(e.image)}
-                            alt="Image"
-                            style={{
-                              width: '100%',
-                              height: '100%',
-                              objectFit: 'cover'
-                            }}
-                          />
-                        </div>
-                        <div className="text p-4 bg-light d-flex flex-column" style={{ flex: 1 }}>
-                          <div className="meta mb-2">
-                            <div>
-                              <span className="text-info">
-                                <i className="fa fa-map-marker mr-2"></i>
-                                {e.address}
-                              </span>
-                              {fieldDistances[e.fieldid] && (
-                                <span className="ml-2 badge bg-info text-white" style={{
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  marginLeft: '10px',
-                                  fontSize: '11px',
-                                  padding: '4px 8px'
-                                }}>
-                                  <i className="fa fa-walking mr-1" style={{ marginRight: '4px' }}></i>
-                                  Cách bạn {fieldDistances[e.fieldid]}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <h3 className="heading mb-2">
-                            <a
-                              href={`/sportify/field/detail/${e.fieldid}`}
-                              className="text-decoration-none text-dark"
-                              style={{ fontSize: '1.5rem', fontWeight: '600' }}
-                            >
-                              {e.namefield}
-                            </a>
-                            {fieldDistances[e.fieldid] && (
-                              <span className="distance-badge ml-2" style={{
-                                backgroundColor: '#4CAF50',
-                                color: 'white',
-                                padding: '3px 8px',
-                                borderRadius: '12px',
-                                fontSize: '12px',
-                                marginLeft: '8px',
-                                display: 'inline-flex',
-                                alignItems: 'center'
-                              }}>
-                                <i className="fa fa-location-arrow" style={{ marginRight: '4px' }}></i>
-                                {fieldDistances[e.fieldid]}
-                              </span>
-                            )}
-                          </h3>
-                          <p className="font-weight-bold mb-2">
-                            Loại sân: {' '}
-                            <span className="text-success">
-                              {e.sporttype?.categoryname}
-                            </span>
-                          </p>
-                          <div className="d-flex align-items-center justify-content-between mt-auto">
-                            <a
-                              href={`/sportify/field/detail/${e.fieldid}`}
-                              className="btn btn-success px-4 py-2"
-                            >
-                              Chọn sân này
-                            </a>
-                            <span className="text-danger font-weight-bold" style={{ fontSize: '1.25rem' }}>
-                              {e.price.toLocaleString()} VND
-                            </span>
-                          </div>
-                        </div>
+            <div className="col-lg-4 col-md-6 col-sm-6">
+              <label className="form-label fw-semibold text-success mb-2">Tìm địa chỉ</label>
+              <input
+                type="text"
+                className="form-control shadow-sm"
+                placeholder="Nhập đường, quận, thành phố..."
+                value={searchAddress}
+                onChange={(e) => setSearchAddress(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="row g-4">
+            {filtered.length === 0 ? (
+              <div className="col-12">
+                <div className="alert alert-info text-center">Không có sân phù hợp.</div>
+              </div>
+            ) : (
+              filtered.map((e) => (
+                <div key={e.fieldid} className="col-lg-4 col-md-6">
+                  <div className="card h-100 shadow-sm border-0 field-card">
+                    <div className="field-card__image-wrapper">
+                      <img
+                        className="img-fluid field-card__image"
+                        src={getImageUrl(e.image)}
+                        alt={e.namefield}
+                      />
+                    </div>
+                    <div className="card-body d-flex flex-column field-card__body">
+                      <div className="small text-muted mb-2 d-flex flex-wrap gap-2 align-items-center">
+                        <span className="text-info"><i className="fa fa-map-marker me-1"></i>{e.address || "Chưa cập nhật"}</span>
+                        {fieldDistances[e.fieldid] && (
+                          <span className="nearest-distance-pill">
+                            <i className="fa fa-location-arrow"></i>
+                            {fieldDistances[e.fieldid]}
+                          </span>
+                        )}
+                      </div>
+                      <h5 className="card-title fw-bold mb-2">
+                        <a
+                          href={`/sportify/field/detail/${e.fieldid}`}
+                          className="text-decoration-none text-dark"
+                        >
+                          {e.namefield}
+                        </a>
+                      </h5>
+                      <p className="mb-3">
+                        <span className="fw-semibold text-success">Chủ sân:</span>{' '}
+                        <span>{e.owner?.businessName || "Đang cập nhật"}</span>
+                      </p>
+                      <p className="mb-3 owner-contact">
+                        <span className="fw-semibold text-success">Liên hệ:</span>{' '}
+                        {e.owner?.phone ? (
+                          <a href={`tel:${e.owner.phone}`} className="text-decoration-none">
+                            {e.owner.phone}
+                          </a>
+                        ) : (
+                          <span>Đang cập nhật</span>
+                        )}
+                      </p>
+                      <p className="mb-3">
+                        <span className="fw-semibold text-success">Loại sân:</span>{' '}
+                        <span>{e.sporttype?.categoryname}</span>
+                      </p>
+                      <div className="mt-auto d-flex justify-content-between align-items-center pt-2 border-top">
+                        <a
+                          href={`/sportify/field/detail/${e.fieldid}`}
+                          className="btn btn-outline-success px-3"
+                        >
+                          Chọn sân này
+                        </a>
+                        <span className="text-danger fw-bold fs-5">
+                          {e.price.toLocaleString()} VND
+                        </span>
                       </div>
                     </div>
-                  ))
-                )}
-              </div>
-            </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </section>

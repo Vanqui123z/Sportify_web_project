@@ -66,6 +66,15 @@ const AccountPage: React.FC = () => {
     axios.get(`${URL_BACKEND}/api/rest/accounts/getAll`).then(res => setAccounts(res.data));
   };
 
+  useEffect(() => {
+    axios
+      .get("http://localhost:8081/api/rest/accounts/getAll")
+      .then(res => setAccounts(res.data))
+      .catch(err => {
+        console.error("Failed to load accounts:", err);
+      });
+  }, []);
+
   // Sửa handleImageChange để lưu file và preview
   const handleImageChange = (files: FileList | null) => {
     if (files && files[0]) {
@@ -231,7 +240,7 @@ const AccountPage: React.FC = () => {
         {/* /Page Header */}
 
         {/* Search Filter */}
-        <form className="row g-2 mb-3">
+        <form className="row g-2 mb-3 align-items-end">
           <div className="col-sm-6 col-md-2">
             <input type="text" className="form-control"
               placeholder="Họ và tên"
@@ -267,9 +276,23 @@ const AccountPage: React.FC = () => {
               <option value="User">User</option>
             </select>
           </div>
-          <div className="col-sm-6 col-md-2 d-flex gap-2">
-            <button type="button" className="btn btn-success w-100" onClick={handleSearch}>Tìm kiếm</button>
-            <button type="button" className="btn btn-secondary w-100" onClick={handleRefresh}>Làm mới</button>
+          <div className="col-sm-6 col-md-2 d-grid">
+            <button
+              type="button"
+              className="btn btn-success w-100 h-100"
+              onClick={handleSearch}
+            >
+              Tìm kiếm
+            </button>
+          </div>
+          <div className="col-sm-6 col-md-2 d-grid">
+            <button
+              type="button"
+              className="btn btn-secondary w-100 h-100"
+              onClick={handleRefresh}
+            >
+              Làm mới
+            </button>
           </div>
         </form>
         {/* /Search Filter */}

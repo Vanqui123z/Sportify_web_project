@@ -7,7 +7,10 @@ import java.util.Optional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
+import org.hibernate.Hibernate;
 //import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -31,7 +34,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import duan.sportify.GlobalExceptionHandler;
 import duan.sportify.dao.FieldDAO;
+import duan.sportify.dao.FieldOwnerRegistrationDAO;
 import duan.sportify.entities.Field;
+import duan.sportify.entities.FieldOwnerRegistration;
 import duan.sportify.entities.Sporttype;
 import duan.sportify.service.UploadService;
 import duan.sportify.utils.ErrorResponse;
@@ -44,6 +49,8 @@ public class FieldRestController {
 	MessageSource messagesource;
 	@Autowired
 	FieldDAO fieldDAO;
+	@Autowired
+	FieldOwnerRegistrationDAO fieldOwnerDAO;
 
 	@PersistenceContext
 	private EntityManager entityManager;
@@ -57,12 +64,18 @@ public class FieldRestController {
 
 	@GetMapping("getAll")
 	public ResponseEntity<List<Field>> getAll(Model model) {
-		return ResponseEntity.ok(fieldDAO.findAll());
+		List<Field> fields = fieldDAO.findAll();
+		// Initialize owner proxy để serialization JSON có đầy đủ dữ liệu
+		fields.forEach(field -> Hibernate.initialize(field.getOwner()));
+		return ResponseEntity.ok(fields);
 	}
 
 	@GetMapping("getAllActive")
 	public ResponseEntity<List<Field>> getAllActive(Model model) {
-		return ResponseEntity.ok(fieldDAO.findAllActive());
+		List<Field> fields = fieldDAO.findAllActive();
+		// Initialize owner proxy để serialization JSON có đầy đủ dữ liệu
+		fields.forEach(field -> Hibernate.initialize(field.getOwner()));
+		return ResponseEntity.ok(fields);
 	}
 
 	@GetMapping("get/{id}")
@@ -70,14 +83,20 @@ public class FieldRestController {
 		if (!fieldDAO.existsById(id)) {
 			return ResponseEntity.notFound().build();
 		}
-		return ResponseEntity.ok(fieldDAO.findById(id).get());
+		Field field = fieldDAO.findById(id).get();
+		// Initialize owner proxy
+		Hibernate.initialize(field.getOwner());
+		return ResponseEntity.ok(field);
 	}
 
 	@PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> create(
 			@RequestParam("sporttypeid") String sporttypeid,
 			@ModelAttribute Field field,
-			@RequestParam(value = "imageFile", required = false) MultipartFile imageFile) throws IOException {
+			@RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+			@RequestParam(value = "username", required = false) String username,
+			HttpServletRequest request,
+			HttpSession session) throws IOException {
 
 		// ánh xạ sporttype từ id
 		field.setSporttype(entityManager.getReference(Sporttype.class, sporttypeid));
@@ -85,6 +104,32 @@ public class FieldRestController {
 		if (field.getFieldid() != null && fieldDAO.existsById(field.getFieldid())) {
 			return ResponseEntity.badRequest().body("Field đã tồn tại");
 		}
+
+		// Set owner từ username parameter hoặc session
+		if (username == null) {
+			username = (String) session.getAttribute("username");
+		}
+
+		if (username != null) {
+			FieldOwnerRegistration owner = fieldOwnerDAO.findByUsername(username);
+			if (owner != null) {
+				field.setOwner(owner);
+				System.out
+						.println("Set owner cho sân: " + owner.getBusinessName() + " (ID: " + owner.getOwnerId() + ")");
+			} else {
+				System.out.println("Không tìm thấy FieldOwnerRegistration cho username: " + username);
+			}
+		} else {
+			System.out.println("Username không được cung cấp");
+		}
+
+		// Nếu address chưa được cung cấp hoặc là rỗng, tự động lấy từ request
+		if (field.getAddress() == null || field.getAddress().trim().isEmpty()) {
+			String clientIP = getClientIP(request);
+			field.setAddress("Địa chỉ sân (IP: " + clientIP + ")");
+			System.out.println("Tự động set địa chỉ cho sân mới: " + field.getAddress());
+		}
+
 		// Upload avatar nếu có
 		if (imageFile != null && !imageFile.isEmpty()) {
 			try {
@@ -99,6 +144,27 @@ public class FieldRestController {
 		Field savedField = fieldDAO.save(field);
 		// Trả về entity vừa lưu
 		return ResponseEntity.ok(savedField);
+	}
+
+	// Helper method để lấy Client IP từ request
+	private String getClientIP(HttpServletRequest request) {
+		String xForwardedFor = request.getHeader("X-Forwarded-For");
+		if (xForwardedFor == null || xForwardedFor.isEmpty() || "unknown".equalsIgnoreCase(xForwardedFor)) {
+			xForwardedFor = request.getHeader("Proxy-Client-IP");
+		}
+		if (xForwardedFor == null || xForwardedFor.isEmpty() || "unknown".equalsIgnoreCase(xForwardedFor)) {
+			xForwardedFor = request.getHeader("WL-Proxy-Client-IP");
+		}
+		if (xForwardedFor == null || xForwardedFor.isEmpty() || "unknown".equalsIgnoreCase(xForwardedFor)) {
+			xForwardedFor = request.getHeader("HTTP_CLIENT_IP");
+		}
+		if (xForwardedFor == null || xForwardedFor.isEmpty() || "unknown".equalsIgnoreCase(xForwardedFor)) {
+			xForwardedFor = request.getHeader("HTTP_X_FORWARDED_FOR");
+		}
+		if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+			return xForwardedFor.split(",")[0].trim();
+		}
+		return request.getRemoteAddr();
 	}
 
 	@PutMapping(value = "update/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

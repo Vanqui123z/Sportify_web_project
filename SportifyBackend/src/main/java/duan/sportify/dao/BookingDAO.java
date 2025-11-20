@@ -289,4 +289,136 @@ public interface BookingDAO extends JpaRepository<Bookings, Integer> {
 	@Query("DELETE FROM PermanentBooking p WHERE p.booking.bookingid = :id")
 	void deletePermanentBookingByBookingId(@Param("id") Integer id);
 
+	// Lấy booking của chủ sân
+	@Query(value = "(SELECT DISTINCT b.* FROM bookings b " +
+			"JOIN bookingdetails bd ON b.bookingid = bd.bookingid " +
+			"JOIN field f ON bd.fieldid = f.fieldid " +
+			"JOIN infor_owner io ON f.owner_id = io.owner_id " +
+			"WHERE io.username = :ownerUsername) " +
+			"UNION " +
+			"(SELECT DISTINCT b.* FROM bookings b " +
+			"JOIN permanent_booking pb ON b.bookingid = pb.booking_id " +
+			"JOIN field f ON pb.field_id = f.fieldid " +
+			"JOIN infor_owner io ON f.owner_id = io.owner_id " +
+			"WHERE io.username = :ownerUsername) " +
+			"ORDER BY bookingdate DESC", nativeQuery = true)
+	List<Bookings> findBookingsByOwner(@Param("ownerUsername") String ownerUsername);
+
+	// Báo cáo doanh thu đặt sân trong tháng cho chủ sân
+	@Query(value = "SELECT\r\n"
+			+ "  DATE_FORMAT(bookingdate, '%d/%m') AS booking_date_month,\r\n"
+			+ "  SUM(\r\n"
+			+ "    CASE\r\n"
+			+ "      WHEN bookingstatus = 'Hoàn Thành' THEN bookingprice\r\n"
+			+ "      WHEN bookingstatus = 'Đã Cọc' THEN bookingprice * 0.3\r\n"
+			+ "      WHEN bookingstatus = 'Hủy Đặt' THEN - bookingprice * 0.3 * 2\r\n"
+			+ "      ELSE 0\r\n"
+			+ "    END\r\n"
+			+ "  ) AS doanhThuThucTe,\r\n"
+			+ "  SUM(CASE WHEN bookingstatus = 'Hủy Đặt' THEN  bookingprice * 0.3 * 2 ELSE 0 END) AS huy,\r\n"
+			+ "  SUM(CASE WHEN bookingstatus = 'Đã Cọc' THEN  bookingprice * 0.3 ELSE 0 END) AS coc,\r\n"
+			+ "  SUM(CASE WHEN bookingstatus = 'Hoàn Thành' THEN  bookingprice  ELSE 0 END) AS hoanthanh,\r\n"
+			+ "  SUM(bookingprice) AS DoanhThuUocTinh\r\n"
+			+ "FROM bookings b\r\n"
+			+ "WHERE\r\n"
+			+ "  YEAR(b.bookingdate) = :year AND MONTH(b.bookingdate) = :month\r\n"
+			+ "  AND b.bookingid IN (\r\n"
+			+ "    SELECT DISTINCT b2.bookingid FROM bookings b2\r\n"
+			+ "    LEFT JOIN bookingdetails bd ON b2.bookingid = bd.bookingid\r\n"
+			+ "    LEFT JOIN permanent_booking pb ON b2.bookingid = pb.booking_id\r\n"
+			+ "    LEFT JOIN field f ON (bd.fieldid = f.fieldid OR pb.field_id = f.fieldid)\r\n"
+			+ "    JOIN infor_owner io ON f.owner_id = io.owner_id\r\n"
+			+ "    WHERE io.username = :ownerUsername\r\n"
+			+ "  )\r\n"
+			+ "GROUP BY DATE_FORMAT(bookingdate, '%d/%m')\r\n"
+			+ "ORDER BY DATE_FORMAT(bookingdate, '%d/%m');", nativeQuery = true)
+	List<Object[]> rpDoanhThuBookingTrongThangByOwner(@Param("year") String year, @Param("month") String month, @Param("ownerUsername") String ownerUsername);
+
+	// Báo cáo doanh thu đặt sân trong năm cho chủ sân
+	@Query(value = "SELECT\r\n"
+			+ " concat('Tháng ',month(b.bookingdate)) AS booking_date_month,\r\n"
+			+ "  SUM(\r\n"
+			+ "    CASE\r\n"
+			+ "      WHEN b.bookingstatus = 'Hoàn Thành' THEN b.bookingprice\r\n"
+			+ "      WHEN b.bookingstatus = 'Đã Cọc' THEN b.bookingprice * 0.3\r\n"
+			+ "      WHEN b.bookingstatus = 'Hủy Đặt' THEN - b.bookingprice * 0.3 * 2\r\n"
+			+ "      ELSE 0\r\n"
+			+ "    END\r\n"
+			+ "  ) AS doanhThuThucTe,\r\n"
+			+ "  SUM(CASE WHEN b.bookingstatus = 'Hủy Đặt' THEN  b.bookingprice * 0.3 * 2 ELSE 0 END) AS huy,\r\n"
+			+ "  SUM(CASE WHEN b.bookingstatus = 'Đã Cọc' THEN  b.bookingprice * 0.3 ELSE 0 END) AS coc,\r\n"
+			+ "  SUM(CASE WHEN b.bookingstatus = 'Hoàn Thành' THEN  b.bookingprice  ELSE 0 END) AS hoanthanh,\r\n"
+			+ "  SUM(b.bookingprice) AS DoanhThuUocTinh\r\n"
+			+ "FROM bookings b\r\n"
+			+ "WHERE\r\n"
+			+ "  YEAR(b.bookingdate) = :year\r\n"
+			+ "  AND b.bookingid IN (\r\n"
+			+ "    SELECT DISTINCT b2.bookingid FROM bookings b2\r\n"
+			+ "    LEFT JOIN bookingdetails bd ON b2.bookingid = bd.bookingid\r\n"
+			+ "    LEFT JOIN permanent_booking pb ON b2.bookingid = pb.booking_id\r\n"
+			+ "    LEFT JOIN field f ON (bd.fieldid = f.fieldid OR pb.field_id = f.fieldid)\r\n"
+			+ "    JOIN infor_owner io ON f.owner_id = io.owner_id\r\n"
+			+ "    WHERE io.username = :ownerUsername\r\n"
+			+ "  )\r\n"
+			+ "GROUP BY MONTH(b.bookingdate)\r\n"
+			+ "ORDER BY MONTH(b.bookingdate);", nativeQuery = true)
+	List<Object[]> rpDoanhThuBookingTrongNamByOwner(@Param("year") String year, @Param("ownerUsername") String ownerUsername);
+
+	// Báo cáo số lượng phiếu đặt trong tháng cho chủ sân
+	@Query(value = "SELECT\r\n"
+			+ "  CONCAT('Ngày ', DAY(b.bookingdate), '-', MONTH(b.bookingdate)) AS booking_date_month,\r\n"
+			+ "  COUNT(b.bookingid) AS tongphieu,\r\n"
+			+ "  SUM(CASE WHEN b.bookingstatus LIKE 'Hủy Đặt' THEN 1 ELSE 0 END) AS huy,\r\n"
+			+ "  SUM(CASE WHEN b.bookingstatus LIKE 'Đã Cọc' THEN 1 ELSE 0 END) AS coc,\r\n"
+			+ "  SUM(CASE WHEN b.bookingstatus LIKE 'Hoàn Thành' THEN 1 ELSE 0 END) AS hoanthanh\r\n"
+			+ "FROM bookings b\r\n"
+			+ "WHERE\r\n"
+			+ "  YEAR(b.bookingdate) = :year AND MONTH(b.bookingdate) = :month\r\n"
+			+ "  AND b.bookingid IN (\r\n"
+			+ "    SELECT DISTINCT b2.bookingid FROM bookings b2\r\n"
+			+ "    LEFT JOIN bookingdetails bd ON b2.bookingid = bd.bookingid\r\n"
+			+ "    LEFT JOIN permanent_booking pb ON b2.bookingid = pb.booking_id\r\n"
+			+ "    LEFT JOIN field f ON (bd.fieldid = f.fieldid OR pb.field_id = f.fieldid)\r\n"
+			+ "    JOIN infor_owner io ON f.owner_id = io.owner_id\r\n"
+			+ "    WHERE io.username = :ownerUsername\r\n"
+			+ "  )\r\n"
+			+ "GROUP BY DATE_FORMAT(b.bookingdate, '%d/%m')\r\n"
+			+ "ORDER BY DATE_FORMAT(b.bookingdate, '%d/%m');", nativeQuery = true)
+	List<Object[]> rpSoLuongBookingTrongThangByOwner(@Param("year") String year, @Param("month") String month, @Param("ownerUsername") String ownerUsername);
+
+	// Báo cáo số lượng phiếu đặt trong năm cho chủ sân
+	@Query(value = "SELECT\r\n"
+			+ "  CONCAT('Tháng ', MONTH(b.bookingdate)) AS booking_date_month,\r\n"
+			+ "  COUNT(b.bookingid) AS tongphieu,\r\n"
+			+ "  SUM(CASE WHEN b.bookingstatus LIKE 'Hủy Đặt' THEN 1 ELSE 0 END) AS huy,\r\n"
+			+ "  SUM(CASE WHEN b.bookingstatus LIKE 'Đã Cọc' THEN 1 ELSE 0 END) AS coc,\r\n"
+			+ "  SUM(CASE WHEN b.bookingstatus LIKE 'Hoàn Thành' THEN 1 ELSE 0 END) AS hoanthanh\r\n"
+			+ "FROM bookings b\r\n"
+			+ "WHERE\r\n"
+			+ "  YEAR(b.bookingdate) = :year\r\n"
+			+ "  AND b.bookingid IN (\r\n"
+			+ "    SELECT DISTINCT b2.bookingid FROM bookings b2\r\n"
+			+ "    LEFT JOIN bookingdetails bd ON b2.bookingid = bd.bookingid\r\n"
+			+ "    LEFT JOIN permanent_booking pb ON b2.bookingid = pb.booking_id\r\n"
+			+ "    LEFT JOIN field f ON (bd.fieldid = f.fieldid OR pb.field_id = f.fieldid)\r\n"
+			+ "    JOIN infor_owner io ON f.owner_id = io.owner_id\r\n"
+			+ "    WHERE io.username = :ownerUsername\r\n"
+			+ "  )\r\n"
+			+ "GROUP BY MONTH(b.bookingdate)\r\n"
+			+ "ORDER BY MONTH(b.bookingdate);", nativeQuery = true)
+	List<Object[]> rpSoLuongBookingTrongNamByOwner(@Param("year") String year, @Param("ownerUsername") String ownerUsername);
+
+	// Lấy năm của các phiếu đặt của chủ sân
+	@Query(value = "SELECT DISTINCT YEAR(b.bookingdate) AS booking_year\r\n"
+			+ "FROM bookings b\r\n"
+			+ "WHERE b.bookingid IN (\r\n"
+			+ "  SELECT DISTINCT b2.bookingid FROM bookings b2\r\n"
+			+ "  LEFT JOIN bookingdetails bd ON b2.bookingid = bd.bookingid\r\n"
+			+ "  LEFT JOIN permanent_booking pb ON b2.bookingid = pb.booking_id\r\n"
+			+ "  LEFT JOIN field f ON (bd.fieldid = f.fieldid OR pb.field_id = f.fieldid)\r\n"
+			+ "  JOIN infor_owner io ON f.owner_id = io.owner_id\r\n"
+			+ "  WHERE io.username = :ownerUsername\r\n"
+			+ ");", nativeQuery = true)
+	List<Object[]> getYearBookingByOwner(@Param("ownerUsername") String ownerUsername);
+
 }

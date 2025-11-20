@@ -79,6 +79,9 @@ public class PaymentVNPayController {
 	@Autowired
 	private VNPayService vnPayService;
 
+	@Autowired
+	private duan.sportify.service.FieldService fieldService;
+
 	// Lấy IP người dùng từ Json API trả về
 	public void ApiController(RestTemplate restTemplate) {
 		this.restTemplate = restTemplate;
@@ -197,6 +200,10 @@ public class PaymentVNPayController {
 					body.getPricefield());
 		}
 		System.out.println("ip address: " + clientIp);
+		// Store fieldId in session để dùng trong checkoutResult
+		request.getSession().setAttribute("bookingFieldId", body.getFieldid());
+		request.getSession().setAttribute("voucherOfUserId", voucherOfUserId);
+		
 		if (body.getCardId() == null || body.getCardId().isEmpty()) {
 			System.out.println("body no card: " + body.getCardId()+ " voucher: " + voucherOfUserId+ " username: " + username+ " amount: " + body.getAmount().toString() + " ip: " + clientIp + " note: " + body.getNote());
 			// chuyển sang trang thanh toán
@@ -374,7 +381,13 @@ public class PaymentVNPayController {
 		String messeage = request.getParameter("vnp_txn_desc") != null ? request.getParameter("vnp_txn_desc") : request.getParameter("vnp_OrderInfo");
 
 		// username and voucher
-		String voucherOfUserId =  messeage.split("voi voucher ")[1] != null ? messeage.split("voi voucher ")[1] : null;
+		String voucherOfUserId = null;
+		if (messeage != null && messeage.contains("voi voucher ")) {
+			String[] parts = messeage.split("voi voucher ");
+			if (parts.length > 1) {
+				voucherOfUserId = parts[1];
+			}
+		}
 		Long voucherOfUserIdInt = voucherOfUserId != null && !voucherOfUserId.isEmpty() ? Long.parseLong(voucherOfUserId) : null;
 		txnRef = txnRef != null ? txnRef : request.getParameter("vnp_txn_ref");
 		Map<String, String> fields = new HashMap<>();
@@ -388,6 +401,7 @@ public class PaymentVNPayController {
 
 		String transactionStatus;
 		double amountInVND = 0;
+		String fieldOwnerUsername = null;
 		try {
 			amountInVND = Double.parseDouble(
 					fields.getOrDefault("vnp_Amount", fields.getOrDefault("vnp_amount", "0"))) / 100.0;
@@ -418,9 +432,25 @@ public class PaymentVNPayController {
 			} else {
 				transactionStatus = "fail";
 			}
+			
+			// Lấy field owner từ session
+			Integer bookingFieldId = (Integer) request.getSession().getAttribute("bookingFieldId");
+			if (bookingFieldId != null) {
+				try {
+					duan.sportify.entities.Field field = fieldService.findById(bookingFieldId);
+					if (field != null && field.getOwner() != null) {
+						fieldOwnerUsername = field.getOwner().getUsername();
+					}
+				} catch (Exception e) {
+					System.err.println("Error getting field owner: " + e.getMessage());
+				}
+			}
+			
+			String ownerParam = fieldOwnerUsername != null ? "&owner=" + URLEncoder.encode(fieldOwnerUsername, StandardCharsets.UTF_8) : "";
 			redirectUrl += "/payment-result?field=true&orderId=" + txnRef
 					+ "&status=" + transactionStatus
-					+ "&amount=" + amountInVND;
+					+ "&amount=" + amountInVND
+					+ ownerParam;
 		} else if (txnRef != null && txnRef.startsWith("CART_")) {
 			// Xử lý giỏ hàng
 			if ("00".equals(request.getParameter("vnp_TransactionStatus"))) {
@@ -454,13 +484,32 @@ public class PaymentVNPayController {
 					Bookings booking = bookingservice.findByBookingid(bookingId);
 					booking.setRefund(true);
 					bookingservice.update(booking);
+					
+					// Lấy field owner từ booking
+					try {
+						// Tìm field từ booking details
+						duan.sportify.entities.Field field = null;
+						if (booking.getListOfBookingdetails() != null && !booking.getListOfBookingdetails().isEmpty()) {
+							field = booking.getListOfBookingdetails().get(0).getField();
+						} else if (booking.getListOfPermanentBookings() != null && !booking.getListOfPermanentBookings().isEmpty()) {
+							field = booking.getListOfPermanentBookings().get(0).getField();
+						}
+						
+						if (field != null && field.getOwner() != null) {
+							fieldOwnerUsername = field.getOwner().getUsername();
+						}
+					} catch (Exception e) {
+						System.err.println("Error getting field owner for refund: " + e.getMessage());
+					}
 				}
 			} else {
 				transactionStatus = "fail";
 			}
+			String refundOwnerParam = fieldOwnerUsername != null ? "&owner=" + URLEncoder.encode(fieldOwnerUsername, StandardCharsets.UTF_8) : "";
 			redirectUrl += "/payment-result?refund=true&refundId=" + (txnRef != null ? txnRef : "")
 					+ "&status=" + transactionStatus
-					+ "&amount=" + amountInVND;
+					+ "&amount=" + amountInVND
+					+ refundOwnerParam;
 		} 
 		else {
 			// fallback nếu không xác định được loại đơn

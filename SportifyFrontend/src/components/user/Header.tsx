@@ -13,6 +13,7 @@ export default function Header() {
   const { user, loading } = useContext(AuthContext);
   const [showModal, setShowModal] = useState(false);
   const { cartCount, updateCartCount, resetCartCount } = useCart();
+  const userRole = user?.role?.toLowerCase();
 
   useEffect(() => {
     if (user) {
@@ -109,9 +110,16 @@ export default function Header() {
                           <li><a className="dropdown-item" href="/sportify/profile">
                             <i className="fa fa-user me-2"></i>Thông tin cá nhân
                           </a></li>
-                          {user.role === "Admin" && (
+                          {userRole === "admin" && (
                             <li>
                               <a className="dropdown-item" href="/admin/dashboard">
+                                <i className="fa fa-cogs me-2"></i>Quản trị
+                              </a>
+                            </li>
+                          )}
+                          {userRole === "field owner" && (
+                            <li>
+                              <a className="dropdown-item" href="/owner/fields">
                                 <i className="fa fa-cogs me-2"></i>Quản trị
                               </a>
                             </li>

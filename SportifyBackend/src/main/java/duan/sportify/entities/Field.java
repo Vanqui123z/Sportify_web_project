@@ -61,7 +61,7 @@ public class Field implements Serializable {
     private String namefield;
 
     @NotBlank(message = "{NotBlank.field.descriptionfield}")
-    @Column(name="descriptionfield", length=200)
+    @Column(name="descriptionfield", length=2000)
     private String descriptionfield;
 
     @Min(value = 0, message = "{Min.field.price}")
@@ -94,4 +94,9 @@ public class Field implements Serializable {
     @JsonIgnore
     @OneToMany(mappedBy="field")
     private List<Bookingdetails> listOfBookingdetails;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "owner_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private FieldOwnerRegistration owner;
 }

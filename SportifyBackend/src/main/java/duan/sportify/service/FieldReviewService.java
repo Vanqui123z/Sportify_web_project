@@ -1,7 +1,9 @@
 package duan.sportify.service;
 
 import duan.sportify.entities.ProductReview;
+import duan.sportify.entities.Field;
 import duan.sportify.Repository.FieldReviewRepository;
+import duan.sportify.dao.FieldDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -14,6 +16,9 @@ public class FieldReviewService {
     
     @Autowired
     private FieldReviewRepository fieldReviewRepository;
+
+    @Autowired
+    private FieldDAO fieldDAO;
     
     // Lấy đánh giá theo field ID
     public List<ProductReview> getReviewsByFieldId(Integer fieldId) {
@@ -215,5 +220,32 @@ public class FieldReviewService {
 
     public List<ProductReview> findByFieldAndRating(Integer fieldId, Integer rating) {
         return fieldReviewRepository.findByFieldIdAndRatingAndStatusActive(fieldId, rating);
+    }
+
+    // Get reviews for owner's fields
+    public List<ProductReview> getReviewsByOwner(String ownerUsername) {
+        try {
+            // Get all fields owned by this owner
+            List<Field> ownerFields = fieldDAO.findByOwnerUsername(ownerUsername);
+            
+            // Extract field IDs
+            List<Integer> fieldIds = ownerFields.stream()
+                    .map(Field::getFieldid)
+                    .toList();
+            
+            // Get all reviews for these fields
+            List<ProductReview> reviews = new java.util.ArrayList<>();
+            for (Integer fieldId : fieldIds) {
+                reviews.addAll(fieldReviewRepository.findByFieldIdAndStatusActive(fieldId));
+            }
+            
+            System.out.println("✅ Found " + reviews.size() + " reviews for owner " + ownerUsername + 
+                    " with " + fieldIds.size() + " fields");
+            return reviews;
+        } catch (Exception e) {
+            System.out.println("❌ Error getting reviews by owner: " + e.getMessage());
+            e.printStackTrace();
+            return new java.util.ArrayList<>();
+        }
     }
 }

@@ -17,6 +17,7 @@ import CommentPage from "../../Pages/admin/Comment";
 import FieldManager from "../../Pages/admin/FieldManager";
 import OrderManager from "../../Pages/admin/OrderManager";
 import AiSupportPage from "../../Pages/admin/AISupport";
+import FieldOwnerRequests from "../../Pages/admin/FieldOwnerRequests";
 
 const AdminRoutes: React.FC = () => (
   <Routes>
@@ -31,6 +32,7 @@ const AdminRoutes: React.FC = () => (
     <Route path="vouchers" element={<VoucherPage />} />
     <Route path="contacts" element={<ContactPage />} />
     <Route path="comments" element={<CommentPage />} />
+    <Route path="field-owner-requests" element={<FieldOwnerRequests />} />
     <Route path="order-products" element={<OrderProductPage />} />
     <Route path="category-product" element={<CategoryProductPage />} />
     <Route path="category-sport" element={<CategorySportPage />} />

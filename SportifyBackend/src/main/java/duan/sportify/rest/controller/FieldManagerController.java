@@ -23,13 +23,15 @@ public class FieldManagerController {
     
     @GetMapping("/active-fields/by-date")
     public ResponseEntity<List<FieldManagerDetailDTO>> getActiveFieldsByDate(
-            @RequestParam String date) {  // Format: yyyy-MM-dd or dd/MM/yyyy
-        return ResponseEntity.ok(fieldUsageService.getActiveFieldsByDate(date));
+            @RequestParam String date,
+            @RequestParam(required = false) String ownerUsername) {  // Format: yyyy-MM-dd or dd/MM/yyyy
+        return ResponseEntity.ok(fieldUsageService.getActiveFieldsByDate(date, ownerUsername));
     }
     
     @GetMapping("/active-fields/by-month")
     public ResponseEntity<List<FieldManagerDetailDTO>> getActiveFieldsByMonth(
-            @RequestParam String yearMonth) {  // Format: yyyy-MM or MM/yyyy
-        return ResponseEntity.ok(fieldUsageService.getActiveFieldsByMonth(yearMonth));
+            @RequestParam String yearMonth,
+            @RequestParam(required = false) String ownerUsername) {  // Format: yyyy-MM or MM/yyyy
+        return ResponseEntity.ok(fieldUsageService.getActiveFieldsByMonth(yearMonth, ownerUsername));
     }
 }

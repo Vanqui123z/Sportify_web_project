@@ -20,7 +20,8 @@ export default function PaymentResult() {
   const amount = query.get("amount");
   const isField = query.get("field") === "true";
   const isCart = query.get("cart") === "true";
-  const refundId = query.get("refundId"); 
+  const refundId = query.get("refundId");
+  const fieldOwner = query.get("owner"); // Lấy owner từ URL
 
   const isSuccess = status === "success";
   const transactionStatus = isSuccess ? "Thành công" : "Thất bại";
@@ -44,6 +45,20 @@ export default function PaymentResult() {
   let description = "Thanh toán";
   if (isField) description = refundId ? "Hoàn tiền đặt sân" : "Thanh toán đặt sân";
   else if (isCart) description = "Thanh toán đơn hàng";
+
+  // Xác định URL trở về dựa trên owner
+  const getBackUrl = () => {
+    if (refundId) {
+      return fieldOwner ? `/owner/bookings` : `/admin/bookings`;
+    }
+    if (isCart) {
+      return `/sportify/order/historyList`;
+    }
+    if (isField) {
+      return `/sportify/field/profile/historybooking`;
+    }
+    return `/sportify`;
+  };
 
   return (
     <div className="min-vh-100 d-flex align-items-center justify-content-center mt-2">
@@ -130,7 +145,7 @@ export default function PaymentResult() {
                 {/* Buttons */}
                 <div className="d-flex flex-column flex-sm-row gap-3 justify-content-center">
                   {refundId ? (
-                    <a href="/admin/bookings" className="btn btn-primary btn-lg px-4 text-decoration-none">
+                    <a href={getBackUrl()} className="btn btn-primary btn-lg px-4 text-decoration-none">
                       <i className="fa fa-arrow-left me-2"></i>
                       Trở về Quản lý đặt sân
                     </a>
@@ -144,6 +159,11 @@ export default function PaymentResult() {
                         <a href="/sportify/order/historyList" className="btn btn-outline-primary btn-lg px-4 text-decoration-none">
                           <i className="fa fa-history me-2"></i>
                           Lịch Sử Đơn Hàng
+                        </a>
+                      ) : isField && fieldOwner ? (
+                        <a href="/owner/bookings" className="btn btn-outline-primary btn-lg px-4 text-decoration-none">
+                          <i className="fa fa-history me-2"></i>
+                          Lịch Sử Đặt Sân (Chủ sân)
                         </a>
                       ) : (
                         <a href="/sportify/field/profile/historybooking" className="btn btn-outline-primary btn-lg px-4 text-decoration-none">

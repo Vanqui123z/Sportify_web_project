@@ -47,10 +47,6 @@ const OrderManager: React.FC = () => {
   const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7));
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [_search, setSearch] = useState({
-    productName: "",
-    fromDate: "",
-  });
 
   // Helper functions for calculations
   const calculateTotalRevenue = (): number => {
@@ -117,7 +113,6 @@ const OrderManager: React.FC = () => {
 
   // Refresh handler
   const handleRefresh = () => {
-    setSearch({ productName: "", fromDate: "" });
     if (activeTab === 'daily') {
       fetchDailySales(selectedDate);
     } else {

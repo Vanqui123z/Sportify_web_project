@@ -20,6 +20,13 @@ export interface Field {
     address?: string;
     status?: boolean;
     sporttype?: SportType;
+    owner?: {
+        ownerId: number;
+        businessName: string;
+        phone?: string;
+        address?: string;
+        status?: string;
+    } | null;
 }
 
 interface Shift {
@@ -127,15 +134,29 @@ const DetailFields: React.FC = () => {
             try {
                 const data = await fetchFieldDetail(idField);
                 if (!data) throw new Error('Failed to fetch field detail');
-                const arr: Field[] = Array.isArray(data.fieldListByIdSporttype) ? data.fieldListByIdSporttype : (data.fields || []);
-                if (!arr || arr.length === 0) {
+                const detailCandidates: Field[] = Array.isArray(data.fieldListById)
+                    ? data.fieldListById
+                    : data.fieldListById
+                        ? [data.fieldListById]
+                        : [];
+
+                const relatedCandidates: Field[] = Array.isArray(data.fieldListByIdSporttype)
+                    ? data.fieldListByIdSporttype
+                    : [];
+
+                const idNum = Number(idField);
+                const foundFromDetail = detailCandidates.find((f) => Number(f.fieldid) === idNum);
+                const fallbackMain = relatedCandidates.find((f) => Number(f.fieldid) === idNum) || detailCandidates[0] || relatedCandidates[0];
+
+                if (!foundFromDetail && !fallbackMain) {
                     setLoading(false);
                     return;
                 }
-                const idNum = Number(idField);
-                const found = arr.find((f) => Number(f.fieldid) === idNum) || arr[0];
-                const others = arr.filter((f) => Number(f.fieldid) !== Number(found.fieldid));
-                setMainField(found);
+
+                const main = foundFromDetail || fallbackMain!;
+                setMainField(main);
+
+                const others = relatedCandidates.filter((f) => Number(f.fieldid) !== Number(main.fieldid));
                 setRelatedFields(others);
                 // If API returned shifts in another key, we could set them here. Keep empty otherwise.
                 if ((data as any).shiftsNull) {
@@ -314,6 +335,21 @@ const DetailFields: React.FC = () => {
                             <b className="font-italic">{mainField?.address}</b>
                             <p></p>
                             <span className="text-danger font-weight-bold">{currency(mainField?.price)}</span> / <span className="font-weight-bold">Giờ</span>
+
+                            <div className="mt-3">
+                                <p className="mb-1">
+                                    <strong>Chủ sân:</strong>{' '}
+                                    {mainField?.owner?.businessName || 'Đang cập nhật'}
+                                </p>
+                                <p className="mb-1">
+                                    <strong>Liên hệ:</strong>{' '}
+                                    {mainField?.owner?.phone ? (
+                                        <a href={`tel:${mainField.owner.phone}`}>{mainField.owner.phone}</a>
+                                    ) : (
+                                        'Đang cập nhật'
+                                    )}
+                                </p>
+                            </div>
 
                             <div className="border border-secondary rounded col-11 mb-4 mt-3">
                                 <span className="ml-3 mt-4 mb-1">

@@ -1,13 +1,18 @@
 const getImageUrl = (image: string | null) => {
   if (!image) return "/user/images/avatar_default.png";
 
-  if (image.startsWith("v") || image.includes("/")) {
-    // ảnh từ Cloudinary
-    return `${import.meta.env.VITE_CLOUDINARY_BASE_URL}/${image}`;
+  const trimmed = image.trim();
+  if (!trimmed) return "/user/images/default.png";
+
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
   }
 
-  // ảnh local
-  return `/user/images/${image}`;
+  if (trimmed.startsWith("v") || trimmed.includes("/")) {
+    return `${import.meta.env.VITE_CLOUDINARY_BASE_URL}/${trimmed}`;
+  }
+
+  return `/user/images/${trimmed}`;
 };
 
 export default getImageUrl;

@@ -664,4 +664,40 @@ public class ReportBookingRestController {
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}
 	}
+
+	// ===== OWNER REPORTS =====
+
+	// Báo cáo doanh thu đặt sân trong tháng cho chủ sân
+	@GetMapping("rpDoanhThuBookingTrongThangByOwner")
+	public List<Object[]> rpDoanhThuBookingTrongThangByOwner(@RequestParam("year") String year,
+			@RequestParam("month") String month, @RequestParam("ownerUsername") String ownerUsername) {
+		return bookingDAO.rpDoanhThuBookingTrongThangByOwner(year, month, ownerUsername);
+	}
+
+	// Báo cáo doanh thu đặt sân trong năm cho chủ sân
+	@GetMapping("rpDoanhThuBookingTrongNamByOwner")
+	public List<Object[]> rpDoanhThuBookingTrongNamByOwner(@RequestParam("year") String year,
+			@RequestParam("ownerUsername") String ownerUsername) {
+		return bookingDAO.rpDoanhThuBookingTrongNamByOwner(year, ownerUsername);
+	}
+
+	// Báo cáo số lượng phiếu đặt trong tháng cho chủ sân
+	@GetMapping("rpSoLuongBookingTrongThangByOwner")
+	public List<Object[]> rpSoLuongBookingTrongThangByOwner(@RequestParam("year") String year,
+			@RequestParam("month") String month, @RequestParam("ownerUsername") String ownerUsername) {
+		return bookingDAO.rpSoLuongBookingTrongThangByOwner(year, month, ownerUsername);
+	}
+
+	// Báo cáo số lượng phiếu đặt trong năm cho chủ sân
+	@GetMapping("rpSoLuongBookingTrongNamByOwner")
+	public List<Object[]> rpSoLuongBookingTrongNamByOwner(@RequestParam("year") String year,
+			@RequestParam("ownerUsername") String ownerUsername) {
+		return bookingDAO.rpSoLuongBookingTrongNamByOwner(year, ownerUsername);
+	}
+
+	// Lấy năm của các phiếu đặt của chủ sân
+	@GetMapping("getYearBookingByOwner")
+	public List<Object[]> getYearBookingByOwner(@RequestParam("ownerUsername") String ownerUsername) {
+		return bookingDAO.getYearBookingByOwner(ownerUsername);
+	}
 }

@@ -1,7 +1,8 @@
 const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import BootstrapModal from "../../components/admin/BootstrapModal";
+import { AuthContext } from "../../helper/AuthContext";
 import "../../styles/AdminModal.css";
 
 // Ensure JSX intrinsic elements are recognized
@@ -15,13 +16,25 @@ declare global {
 
 interface Field {
   fieldid: number;
-  sporttypeid: string;
+  sporttypeid?: string;
   namefield: string;
   descriptionfield: string;
   price: number;
   image: string;
   address: string;
   status: boolean;
+  clientIP?: string;
+  latitude?: string;
+  longitude?: string;
+  sporttype?: {
+    sporttypeid: string;
+    categoryname?: string;
+  };
+  owner?: {
+    ownerId?: number;
+    username?: string;
+    businessName?: string;
+  } | null;
 }
 
 
@@ -37,7 +50,13 @@ interface ErrorField {
 
 const VITE_CLOUDINARY_BASE_URL = import.meta.env.VITE_CLOUDINARY_BASE_URL || "";
 
-const FieldPage: React.FC = () => {
+interface FieldPageProps {
+  context?: "admin" | "owner";
+}
+
+const FieldPage: React.FC<FieldPageProps> = ({ context = "admin" }) => {
+  const authContext = useContext(AuthContext);
+  const ownerUsername = context === "owner" ? authContext?.user?.username || "" : "";
   const [fields, setFields] = useState<Field[]>([]);
   const [form, setForm] = useState<Partial<Field>>({ status: true });
   const [errors, setErrors] = useState<ErrorField[]>([]);
@@ -50,17 +69,133 @@ const FieldPage: React.FC = () => {
   });
   const [sportTypes, setSportTypes] = useState<SportType[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
+
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
+  const resetImageState = () => {
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+    setImagePreview("");
+    setImageFile(null);
+  };
+
+  // Helper function to get client IP and geolocation
+  const getIPGeolocation = async (): Promise<{ ip: string; latitude: string; longitude: string }> => {
+    try {
+      const response = await fetch('https://ipapi.co/json/');
+      const data = await response.json();
+      return {
+        ip: data.ip || 'unknown',
+        latitude: data.latitude ? data.latitude.toString() : '10.7769',
+        longitude: data.longitude ? data.longitude.toString() : '106.7'
+      };
+    } catch (error) {
+      console.error('Error fetching geolocation:', error);
+      // Default to Ho Chi Minh City
+      return {
+        ip: 'unknown',
+        latitude: '10.7769',
+        longitude: '106.7'
+      };
+    }
+  };
+
+  // Helper function to geocode address to latitude/longitude
+  const geocodeAddress = async (address: string): Promise<{ latitude: string; longitude: string } | null> => {
+    if (!address || address.trim() === '') return null;
+    try {
+      // Thử tìm kiếm địa chỉ đầy đủ trước
+      let searchAddress = `${address}, Vietnam`;
+      let response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchAddress)}&format=json&limit=1`);
+      let data = await response.json();
+
+      if (data && data.length > 0) {
+        return {
+          latitude: data[0].lat.toString(),
+          longitude: data[0].lon.toString()
+        };
+      }
+
+      // Nếu không tìm được, thử trích xuất quận/huyện từ địa chỉ
+      // Tìm các từ khóa quận/huyện phổ biến
+      const districtKeywords = ['quận', 'huyện', 'tp', 'tpho chi minh', 'hcm', 'ho chi minh', 'thành phố'];
+      const parts = address.toLowerCase().split(',').map(p => p.trim());
+      let districtPart = '';
+
+      for (const part of parts) {
+        for (const keyword of districtKeywords) {
+          if (part.includes(keyword)) {
+            districtPart = part;
+            break;
+          }
+        }
+        if (districtPart) break;
+      }
+
+      if (districtPart) {
+        searchAddress = `${districtPart}, Vietnam`;
+        response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchAddress)}&format=json&limit=1`);
+        data = await response.json();
+        if (data && data.length > 0) {
+          return {
+            latitude: data[0].lat.toString(),
+            longitude: data[0].lon.toString()
+          };
+        }
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error geocoding address:', error);
+      return null;
+    }
+  };
+
+  const uiConfig = useMemo(() => {
+    if (context === "owner") {
+      return {
+        homeHref: "/owner/fields",
+        homeLabel: "Trang quản trị",
+        pageTitle: "Sân thể thao của tôi",
+      };
+    }
+    return {
+      homeHref: "/admin/dashboard",
+      homeLabel: "Dashboard",
+      pageTitle: "Sân thể thao",
+    };
+  }, [context]);
+
+  const filterByContext = (data: Field[]) => {
+    if (context === "owner" && ownerUsername) {
+      return data.filter(field => field.owner?.username === ownerUsername);
+    }
+    return data;
+  };
 
   // Fetch all fields
   useEffect(() => {
+
+    if (context === "owner" && !ownerUsername) {
+      return;
+    }
+
     fetch(`${URL_BACKEND}/rest/fields/getAll`)
       .then(res => res.json())
-      .then(data => setFields(data));
+      .then((data: Field[]) => setFields(filterByContext(data)));
     // Fetch sport types
     fetch(`${URL_BACKEND}/rest/sportTypes/getAll`)
       .then(res => res.json())
       .then(data => setSportTypes(data));
-  }, []);
+  }, [context, ownerUsername]);
 
   // Search handler
   const handleSearch = () => {
@@ -70,7 +205,7 @@ const FieldPage: React.FC = () => {
     if (search.status) params.append("status", search.status);
     fetch(`${URL_BACKEND}/rest/fields/search?${params}`)
       .then(res => res.json())
-      .then(data => setFields(data));
+      .then((data: Field[]) => setFields(filterByContext(data)));
   };
 
   // Refresh handler
@@ -78,13 +213,20 @@ const FieldPage: React.FC = () => {
     setSearch({ namefield: "", sporttypeid: "", status: "" });
     fetch(`${URL_BACKEND}/rest/fields/getAll`)
       .then(res => res.json())
-      .then(data => setFields(data));
+      .then((data: Field[]) => setFields(filterByContext(data)));
   };
 
   // Handle image upload
   const handleImageChange = (files: FileList | null) => {
     if (files && files[0]) {
-      setImageFile(files[0]);
+      const file = files[0];
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    } else {
+      resetImageState();
     }
   };
 
@@ -96,6 +238,13 @@ const FieldPage: React.FC = () => {
       Object.entries(form).forEach(([key, value]) => {
         if ((key === "fieldid" || key === "userid") && value === undefined) return;
 
+        // Bỏ qua clientIP - không gửi lên backend
+        if (key === "clientIP") return;
+        // Bỏ qua address nếu nó rỗng - để backend tự động set từ IP
+        if (key === "address" && (!value || (typeof value === "string" && value.trim() === ""))) {
+          return;
+        }
+
         if (value !== undefined && value !== null) {
           if (typeof value === "boolean") {
             formData.append(key, value ? "true" : "false");
@@ -104,6 +253,12 @@ const FieldPage: React.FC = () => {
           }
         }
       });
+
+      // Thêm username từ auth context
+      if (authContext?.user?.username) {
+        formData.append("username", authContext.user.username);
+      }
+
       // Thêm file ảnh nếu có
       if (imageFile) {
         formData.append("imageFile", imageFile);
@@ -113,10 +268,13 @@ const FieldPage: React.FC = () => {
       const data = res.data;
       if (data) {
         alert("Thêm sân thành công");
-        setFields(prev => [...prev, data]);
+        setFields(prev => {
+          const filtered = filterByContext([data]);
+          return filtered.length > 0 ? [...prev, filtered[0]] : prev;
+        });
         setShowAdd(false);
         setForm({ status: true });
-        setImageFile(null);
+        resetImageState();
         setErrors([]);
       }
     } catch (err: any) {
@@ -161,10 +319,16 @@ const FieldPage: React.FC = () => {
       const data = res.data;
       if (data) {
         alert("Cập nhật sân thành công");
-        setFields(prev => prev.map(f => f.fieldid === data.fieldid ? data : f));
+        setFields(prev => {
+          const filtered = filterByContext([data]);
+          if (filtered.length === 0) {
+            return prev.filter(f => f.fieldid !== data.fieldid);
+          }
+          return prev.map(f => (f.fieldid === data.fieldid ? filtered[0] : f));
+        });
         setShowEdit(false);
         setForm({ status: true });
-        setImageFile(null);
+        resetImageState();
         setErrors([]);
       }
     } catch (err: any) {
@@ -196,6 +360,7 @@ const FieldPage: React.FC = () => {
     if ((field as any).sporttype && (field as any).sporttype.sporttypeid) {
       sporttypeid = (field as any).sporttype.sporttypeid;
     }
+    resetImageState();
     setForm({ ...field, sporttypeid });
     setShowEdit(true);
     setErrors([]);
@@ -207,6 +372,23 @@ const FieldPage: React.FC = () => {
     setErrors([]);
   };
 
+  // Handle Set IP button - geocode address to latitude/longitude
+  const handleSetIP = async () => {
+    const address = form.address;
+    if (!address || address.trim() === '') {
+      return;
+    }
+
+    const coords = await geocodeAddress(address);
+    if (coords) {
+      setForm(prev => ({
+        ...prev,
+        latitude: coords.latitude,
+        longitude: coords.longitude
+      }));
+    }
+  };
+
   // Format currency
   const formatCurrency = (value: number) => value?.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 
@@ -216,16 +398,22 @@ const FieldPage: React.FC = () => {
         {/* Page Header */}
         <div className="row align-items-center mb-4">
           <div className="col">
-            <h3 className="mb-0">Sân thể thao</h3>
+            <h3 className="mb-0">{uiConfig.pageTitle}</h3>
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb bg-transparent p-0">
-                <li className="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
-                <li className="breadcrumb-item active" aria-current="page">Sân thể thao</li>
+                <li className="breadcrumb-item"><a href={uiConfig.homeHref}>{uiConfig.homeLabel}</a></li>
+                <li className="breadcrumb-item active" aria-current="page">{uiConfig.pageTitle}</li>
               </ol>
             </nav>
           </div>
           <div className="col-auto">
-            <button className="btn btn-primary" onClick={() => { setShowAdd(true); setForm({ status: true }); setErrors([]); }}>
+            <button className="btn btn-primary" onClick={async () => {
+              resetImageState();
+              setShowAdd(true);
+              const geo = await getIPGeolocation();
+              setForm({ status: true, clientIP: geo.ip, latitude: geo.latitude, longitude: geo.longitude });
+              setErrors([]);
+            }}>
               <i className="fa fa-plus"></i> Thêm mới sân thể thao
             </button>
           </div>
@@ -242,11 +430,18 @@ const FieldPage: React.FC = () => {
             />
           </div>
           <div className="col-sm-6 col-md-3">
-            <input type="text" className="form-control"
-              placeholder="Mã môn thể thao"
+            <select
+              className="form-select"
               value={search.sporttypeid}
               onChange={e => setSearch(s => ({ ...s, sporttypeid: e.target.value }))}
-            />
+            >
+              <option value="">Tất cả môn thể thao</option>
+              {sportTypes.map(st => (
+                <option key={st.sporttypeid} value={st.sporttypeid}>
+                  {st.categoryname} ({st.sporttypeid})
+                </option>
+              ))}
+            </select>
           </div>
           <div className="col-sm-6 col-md-2">
             <select className="form-select"
@@ -287,7 +482,7 @@ const FieldPage: React.FC = () => {
                   {fields.map((item, idx) => (
                     <tr key={item.fieldid}>
                       <td>{idx + 1}</td>
-                      <td>{item.sporttypeid}</td>
+                      <td>{item.sporttypeid || item.sporttype?.sporttypeid || ""}</td>
                       <td>{item.namefield}</td>
                       <td>
                         <img
@@ -332,7 +527,10 @@ const FieldPage: React.FC = () => {
         {/* Add Modal */}
         <BootstrapModal
           show={showAdd}
-          onHide={() => setShowAdd(false)}
+          onHide={() => {
+            setShowAdd(false);
+            resetImageState();
+          }}
           title="Thêm mới sân thể thao"
           size="lg"
           className="custom-modal"
@@ -349,11 +547,13 @@ const FieldPage: React.FC = () => {
                 <label htmlFor="image" className="form-label">
                   <img
                     src={
-                      form.image
-                        ? form.image.startsWith("v") // hoặc form.image.includes("/")
-                          ? `${VITE_CLOUDINARY_BASE_URL}/${form.image}`
-                          : `/user/images/${form.image}`
-                        : "/user/images/default.png" // fallback nếu null
+                      imagePreview
+                        ? imagePreview
+                        : form.image
+                          ? form.image.startsWith("v")
+                            ? `${VITE_CLOUDINARY_BASE_URL}/${form.image}`
+                            : `/user/images/${form.image}`
+                          : "/user/images/default.png"
                     }
                     alt=""
                     style={{
@@ -404,10 +604,16 @@ const FieldPage: React.FC = () => {
               <div className="col-sm-6">
                 <div className="form-group">
                   <label>Địa chỉ <span className="text-danger">*</span></label>
-                  <input className="form-control" type="text"
-                    value={form.address || ""}
-                    onChange={e => handleFormChange("address", e.target.value)}
-                  />
+                  <div className="input-group">
+                    <input className="form-control" type="text"
+                      placeholder="Nhập địa chỉ sân"
+                      value={form.address || ""}
+                      onChange={e => handleFormChange("address", e.target.value)}
+                    />
+                    <button className="btn btn-outline-primary" type="button" onClick={handleSetIP}>
+                      Set IP
+                    </button>
+                  </div>
                   {errors.filter(e => e.field === "address").map((e, i) => (
                     <div key={i} className="badge bg-danger mt-1">{e.message}</div>
                   ))}
@@ -428,6 +634,26 @@ const FieldPage: React.FC = () => {
                       </option>
                     ))}
                   </select>
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Latitude</label>
+                  <input className="form-control" type="text"
+                    placeholder="Latitude sẽ hiển thị ở đây"
+                    value={form.latitude || ""}
+                    onChange={e => handleFormChange("latitude", e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Longitude</label>
+                  <input className="form-control" type="text"
+                    placeholder="Longitude sẽ hiển thị ở đây"
+                    value={form.longitude || ""}
+                    onChange={e => handleFormChange("longitude", e.target.value)}
+                  />
                 </div>
               </div>
               <div className="col-sm-6">
@@ -461,7 +687,10 @@ const FieldPage: React.FC = () => {
         {/* Edit Modal */}
         <BootstrapModal
           show={showEdit}
-          onHide={() => setShowEdit(false)}
+          onHide={() => {
+            setShowEdit(false);
+            resetImageState();
+          }}
           title="Chỉnh sửa sân thể thao"
           size="lg"
           className="fade show"
@@ -483,11 +712,13 @@ const FieldPage: React.FC = () => {
                 <label htmlFor="image" className="form-label">
                   <img
                     src={
-                      form.image
-                        ? form.image.startsWith("v") // hoặc form.image.includes("/")
-                          ? `${VITE_CLOUDINARY_BASE_URL}/${form.image}`
-                          : `/user/images/${form.image}`
-                        : "/user/images/default.png" // fallback nếu null
+                      imagePreview
+                        ? imagePreview
+                        : form.image
+                          ? form.image.startsWith("v")
+                            ? `${VITE_CLOUDINARY_BASE_URL}/${form.image}`
+                            : `/user/images/${form.image}`
+                          : "/user/images/default.png"
                     }
                     alt=""
                     style={{
@@ -538,10 +769,16 @@ const FieldPage: React.FC = () => {
               <div className="col-sm-6">
                 <div className="form-group">
                   <label>Địa chỉ <span className="text-danger">*</span></label>
-                  <input className="form-control" type="text"
-                    value={form.address || ""}
-                    onChange={e => handleFormChange("address", e.target.value)}
-                  />
+                  <div className="input-group">
+                    <input className="form-control" type="text"
+                      placeholder="Nhập địa chỉ sân"
+                      value={form.address || ""}
+                      onChange={e => handleFormChange("address", e.target.value)}
+                    />
+                    <button className="btn btn-outline-primary" type="button" onClick={handleSetIP}>
+                      Set IP
+                    </button>
+                  </div>
                   {errors.filter(e => e.field === "address").map((e, i) => (
                     <div key={i} className="badge bg-danger mt-1">{e.message}</div>
                   ))}
@@ -562,6 +799,26 @@ const FieldPage: React.FC = () => {
                       </option>
                     ))}
                   </select>
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Latitude</label>
+                  <input className="form-control" type="text"
+                    placeholder="Vĩ độ"
+                    value={form.latitude || ""}
+                    onChange={e => handleFormChange("latitude", e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Longitude</label>
+                  <input className="form-control" type="text"
+                    placeholder="Kinh độ"
+                    value={form.longitude || ""}
+                    onChange={e => handleFormChange("longitude", e.target.value)}
+                  />
                 </div>
               </div>
               <div className="col-sm-6">

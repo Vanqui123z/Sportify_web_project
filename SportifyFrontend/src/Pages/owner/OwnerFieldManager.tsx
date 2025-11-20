@@ -1,19 +1,18 @@
-const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
+import { Form, Alert } from 'react-bootstrap';
+import { Bar } from 'react-chartjs-2';
 import {
-  BarElement,
-  CategoryScale,
   Chart as ChartJS,
-  Legend,
+  CategoryScale,
   LinearScale,
+  BarElement,
   Title,
   Tooltip,
+  Legend,
 } from 'chart.js';
-import React, { useEffect, useState } from 'react';
-import { Alert, Form } from 'react-bootstrap';
-import { Bar } from 'react-chartjs-2';
-
 import getImageUrl from '../../helper/getImageUrl';
+import { AuthContext } from '../../helper/AuthContext';
 
 // Register Chart.js components
 ChartJS.register(
@@ -25,8 +24,6 @@ ChartJS.register(
   Legend
 );
 
-
-
 // Define types for our data
 interface FieldUsageDetailDTO {
   fieldId: number;
@@ -37,63 +34,84 @@ interface FieldUsageDetailDTO {
   totalBookings: number;
 }
 
-const FieldManager: React.FC = () => {
+const OwnerFieldManager: React.FC = () => {
+  const { user } = useContext(AuthContext);
+  const ownerUsername = user?.username || '';
+
   // State variables
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7));
   const [dailyDetailData, setDailyDetailData] = useState<FieldUsageDetailDTO[]>([]);
   const [monthlyDetailData, setMonthlyDetailData] = useState<FieldUsageDetailDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [_loading, setLoading] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<'daily' | 'monthly'>('daily');
+  const [loading, setLoading] = useState(false);
 
   // Fetch initial data
   useEffect(() => {
+    if (!ownerUsername) return;
     fetchDailyDetailData(selectedDate);
     fetchMonthlyDetailData(selectedMonth);
-  }, []);
+  }, [ownerUsername]);
 
   // Fetch data when date/month changes
   useEffect(() => {
+    if (!ownerUsername) return;
     fetchDailyDetailData(selectedDate);
-  }, [selectedDate]);
+  }, [selectedDate, ownerUsername]);
 
   useEffect(() => {
+    if (!ownerUsername) return;
     fetchMonthlyDetailData(selectedMonth);
-  }, [selectedMonth]);
+  }, [selectedMonth, ownerUsername]);
 
   // Helper functions for calculations
   const calculateTotal = (data: FieldUsageDetailDTO[], property: keyof Pick<FieldUsageDetailDTO, 'oneTimeBookings' | 'permanentBookings' | 'totalBookings'>) => {
     return data.reduce((sum, item) => sum + item[property], 0);
   };
-
+  
   const calculatePercentage = (part: number, total: number) => {
     return Math.round((part / (total || 1)) * 100);
   };
 
-  // Data fetching functions - keeping only the two specified API calls
+  // Data fetching functions - filter by owner
   const fetchDailyDetailData = async (date: string) => {
     try {
       setLoading(true);
-      const response = await axios.get(`${URL_BACKEND}/api/field-usage/active-fields/by-date?date=${date}`);
+      const response = await axios.get(
+        `http://localhost:8081/api/field-usage/active-fields/by-date?date=${date}&ownerUsername=${ownerUsername}`
+      );
       setDailyDetailData(response.data);
+      setError(null);
     } catch (err) {
-      setError('Failed to fetch daily detail data');
+      console.error('Error fetching daily detail data:', err);
+      setError('Không thể tải dữ liệu sử dụng sân theo ngày');
+      setDailyDetailData([]);
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchMonthlyDetailData = async (yearMonth: string) => {
     try {
       setLoading(true);
-      const response = await axios.get(`${URL_BACKEND}/api/field-usage/active-fields/by-month?yearMonth=${yearMonth}`);
+      const response = await axios.get(
+        `http://localhost:8081/api/field-usage/active-fields/by-month?yearMonth=${yearMonth}&ownerUsername=${ownerUsername}`
+      );
       setMonthlyDetailData(response.data);
+      setError(null);
     } catch (err) {
-      setError('Failed to fetch monthly detail data');
+      console.error('Error fetching monthly detail data:', err);
+      setError('Không thể tải dữ liệu sử dụng sân theo tháng');
+      setMonthlyDetailData([]);
+    } finally {
+      setLoading(false);
     }
   };
 
   // Refresh handler
   const handleRefresh = () => {
+    if (!ownerUsername) return;
     fetchDailyDetailData(selectedDate);
     fetchMonthlyDetailData(selectedMonth);
   };
@@ -103,7 +121,7 @@ const FieldManager: React.FC = () => {
     const fieldNames = dailyDetailData.map(item => item.fieldName);
     const oneTimeData = dailyDetailData.map(item => item.oneTimeBookings);
     const permanentData = dailyDetailData.map(item => item.permanentBookings);
-
+    
     return {
       labels: fieldNames,
       datasets: [
@@ -120,12 +138,12 @@ const FieldManager: React.FC = () => {
       ],
     };
   };
-
+  
   const prepareMonthlyChartData = () => {
     const fieldNames = monthlyDetailData.map(item => item.fieldName);
     const oneTimeData = monthlyDetailData.map(item => item.oneTimeBookings);
     const permanentData = monthlyDetailData.map(item => item.permanentBookings);
-
+    
     return {
       labels: fieldNames,
       datasets: [
@@ -169,13 +187,13 @@ const FieldManager: React.FC = () => {
     if (data.length === 0) {
       return (
         <tr>
-          <td colSpan={6} className="text-center">
+          <td colSpan={7} className="text-center">
             {activeTab === 'daily' ? 'Không có dữ liệu cho ngày đã chọn' : 'Không có dữ liệu cho tháng đã chọn'}
           </td>
         </tr>
       );
     }
-
+    
     return data.map((item, idx) => (
       <tr key={item.fieldId}>
         <td>{idx + 1}</td>
@@ -192,6 +210,16 @@ const FieldManager: React.FC = () => {
   // Get current data based on active tab
   const getCurrentData = () => activeTab === 'daily' ? dailyDetailData : monthlyDetailData;
 
+  if (!ownerUsername) {
+    return (
+      <div className="page-wrapper py-4">
+        <div className="container bg-white rounded shadow-sm p-4">
+          <Alert variant="warning">Vui lòng đăng nhập để xem dữ liệu</Alert>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="page-wrapper py-4">
       <div className="container bg-white rounded shadow-sm p-4">
@@ -201,7 +229,7 @@ const FieldManager: React.FC = () => {
             <h3 className="mb-0">Quản Lý Sử Dụng Sân</h3>
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb bg-transparent p-0">
-                <li className="breadcrumb-item"><a href="/admin/dashboard">Trang Chủ</a></li>
+                <li className="breadcrumb-item"><a href="/owner/dashboard">Trang Chủ</a></li>
                 <li className="breadcrumb-item active" aria-current="page">Thống Kê Sân</li>
               </ol>
             </nav>
@@ -215,8 +243,9 @@ const FieldManager: React.FC = () => {
         {/* /Page Header */}
 
         {error && <Alert variant="danger">{error}</Alert>}
+        {loading && <Alert variant="info">Đang tải dữ liệu...</Alert>}
 
-        {/* Dashboard Cards - Updated to use available data */}
+        {/* Dashboard Cards */}
         <div className="row mb-4">
           <div className="col-md-6 col-lg-3 mb-3">
             <div className="card border-0 shadow-sm h-100">
@@ -231,7 +260,7 @@ const FieldManager: React.FC = () => {
           <div className="col-md-6 col-lg-3 mb-3">
             <div className="card border-0 shadow-sm h-100">
               <div className="card-body text-center">
-                <h5 className="card-title">Số Sân Đang Hoạt Động</h5>
+                <h5 className="card-title">Số Sân Của Tôi</h5>
                 <p className="display-4 mb-0 fw-bold text-success">
                   {getCurrentData().length}
                 </p>
@@ -273,7 +302,7 @@ const FieldManager: React.FC = () => {
         {/* Tab Navigation */}
         <ul className="nav nav-tabs mb-4">
           <li className="nav-item">
-            <button
+            <button 
               className={`nav-link ${activeTab === 'daily' ? 'active' : ''}`}
               onClick={() => setActiveTab('daily')}
             >
@@ -281,7 +310,7 @@ const FieldManager: React.FC = () => {
             </button>
           </li>
           <li className="nav-item">
-            <button
+            <button 
               className={`nav-link ${activeTab === 'monthly' ? 'active' : ''}`}
               onClick={() => setActiveTab('monthly')}
             >
@@ -397,16 +426,22 @@ const FieldManager: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {getCurrentData()
-                      .sort((a, b) => b.totalBookings - a.totalBookings)
-                      .slice(0, 5)
-                      .map((item, idx) => (
-                        <tr key={item.fieldId}>
-                          <td>{idx + 1}</td>
-                          <td>{item.fieldName}</td>
-                          <td>{item.totalBookings}</td>
-                        </tr>
-                      ))}
+                    {getCurrentData().length > 0 ? (
+                      getCurrentData()
+                        .sort((a, b) => b.totalBookings - a.totalBookings)
+                        .slice(0, 5)
+                        .map((item, idx) => (
+                          <tr key={item.fieldId}>
+                            <td>{idx + 1}</td>
+                            <td>{item.fieldName}</td>
+                            <td>{item.totalBookings}</td>
+                          </tr>
+                        ))
+                    ) : (
+                      <tr>
+                        <td colSpan={3} className="text-center">Không có dữ liệu</td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -424,7 +459,7 @@ const FieldManager: React.FC = () => {
                       <h6>Đặt Một Lần</h6>
                       <div className="display-6 text-primary">
                         {calculatePercentage(
-                          calculateTotal(getCurrentData(), 'oneTimeBookings'),
+                          calculateTotal(getCurrentData(), 'oneTimeBookings'), 
                           calculateTotal(getCurrentData(), 'totalBookings')
                         )}%
                       </div>
@@ -433,7 +468,7 @@ const FieldManager: React.FC = () => {
                       <h6>Đặt Cố Định</h6>
                       <div className="display-6 text-warning">
                         {calculatePercentage(
-                          calculateTotal(getCurrentData(), 'permanentBookings'),
+                          calculateTotal(getCurrentData(), 'permanentBookings'), 
                           calculateTotal(getCurrentData(), 'totalBookings')
                         )}%
                       </div>
@@ -449,4 +484,4 @@ const FieldManager: React.FC = () => {
   );
 };
 
-export default FieldManager;
+export default OwnerFieldManager;

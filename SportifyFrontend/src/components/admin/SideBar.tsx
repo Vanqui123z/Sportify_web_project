@@ -62,6 +62,19 @@ const Sidebar: React.FC = () => {
             </NavLink>
           </li>
 
+
+          <li className="nav-item mb-1">
+            <NavLink
+              to="/admin/field-owner-requests"
+              className={({ isActive }) =>
+                `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
+              }
+            >
+              <i className="fas fa-users-cog me-3 text-info"></i>
+              <span>Quản lý chủ sân</span>
+            </NavLink>
+          </li>
+
           <li className="nav-item mb-1">
             <NavLink
               to="/admin/events"
@@ -80,13 +93,13 @@ const Sidebar: React.FC = () => {
               <div className="accordion-item border-0">
                 <h6 className="accordion-header">
                   <button
-                    className="accordion-button collapsed bg-transparent border-0 p-0 nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
+                    className="accordion-button collapsed bg-transparent border-0 w-100 text-start d-flex justify-content-between align-items-center py-2 px-3 rounded text-dark nav-link"
                     type="button"
                     data-bs-toggle="collapse"
                     data-bs-target="#otherMenu"
                   >
-                    <i className="fas fa-pen me-3 text-secondary"></i>
                     <span>Khác</span>
+                    <span className="caret-indicator">▾</span>
                   </button>
                 </h6>
                 <div
@@ -142,13 +155,13 @@ const Sidebar: React.FC = () => {
               <div className="accordion-item border-0">
                 <h6 className="accordion-header">
                   <button
-                    className="accordion-button collapsed bg-transparent border-0 p-0 nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
+                    className="accordion-button collapsed bg-transparent border-0 w-100 text-start d-flex justify-content-between align-items-center py-2 px-3 rounded text-dark nav-link"
                     type="button"
                     data-bs-toggle="collapse"
                     data-bs-target="#bookingMenu"
                   >
-                    <i className="fas fa-bullhorn me-3 text-warning"></i>
                     <span>Quản lý phiếu đặt</span>
+                    <span className="caret-indicator">▾</span>
                   </button>
                 </h6>
                 <div
@@ -216,13 +229,13 @@ const Sidebar: React.FC = () => {
               <div className="accordion-item border-0">
                 <h6 className="accordion-header">
                   <button
-                    className="accordion-button collapsed bg-transparent border-0 p-0 nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
+                    className="accordion-button collapsed bg-transparent border-0 w-100 text-start d-flex justify-content-between align-items-center py-2 px-3 rounded text-dark nav-link"
                     type="button"
                     data-bs-toggle="collapse"
                     data-bs-target="#categoryMenu"
                   >
-                    <i className="fas fa-boxes me-3 text-info"></i>
                     <span>Quản lý thể loại</span>
+                    <span className="caret-indicator">▾</span>
                   </button>
                 </h6>
                 <div
@@ -267,13 +280,13 @@ const Sidebar: React.FC = () => {
               <div className="accordion-item border-0">
                 <h6 className="accordion-header">
                   <button
-                    className="accordion-button collapsed bg-transparent border-0 p-0 nav-link d-flex align-items-center py-2 px-3 rounded text-dark"
+                    className="accordion-button collapsed bg-transparent border-0 w-100 text-start d-flex justify-content-between align-items-center py-2 px-3 rounded text-dark nav-link"
                     type="button"
                     data-bs-toggle="collapse"
                     data-bs-target="#reportMenu"
                   >
-                    <i className="fas fa-chart-bar me-3 text-danger"></i>
                     <span>Báo cáo thống kê</span>
+                    <span className="caret-indicator">▾</span>
                   </button>
                 </h6>
                 <div
