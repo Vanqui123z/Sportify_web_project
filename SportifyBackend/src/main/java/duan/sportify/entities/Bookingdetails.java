@@ -17,8 +17,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-
-
+import javax.persistence.UniqueConstraint;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -34,49 +33,47 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name="bookingdetails", catalog="sportify" )
+@Table(name = "bookingdetails", catalog = "sportify", uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "fieldid", "shiftid", "playdate" })
+})
 public class Bookingdetails implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    //--- ENTITY PRIMARY KEY 
+    // --- ENTITY PRIMARY KEY
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    @Column(name="bookingdetailid", nullable=false)
-    private Integer    bookingdetailid ;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "bookingdetailid", nullable = false)
+    private Integer bookingdetailid;
 
-    //--- ENTITY DATA FIELDS 
-    @Column(name="bookingid", nullable=false)
-    private Integer    bookingid ;
+    // --- ENTITY DATA FIELDS
+    @Column(name = "bookingid", nullable = false)
+    private Integer bookingid;
 
-    @Column(name="shiftid", nullable=false)
-    private Integer    shiftid ;
-    
+    @Column(name = "shiftid", nullable = false)
+    private Integer shiftid;
+
     @Temporal(TemporalType.DATE)
-    @Column(name="playdate", nullable=false)
-    private Date       playdate ;
+    @Column(name = "playdate", nullable = false)
+    private Date playdate;
 
-    @Column(name="fieldid", nullable=false)
-    private Integer    fieldid ;
+    @Column(name = "fieldid", nullable = false)
+    private Integer fieldid;
 
-    @Column(name="price")
-    private Double     price ;
+    @Column(name = "price")
+    private Double price;
 
-
-    //--- ENTITY LINKS ( RELATIONSHIP )
+    // --- ENTITY LINKS ( RELATIONSHIP )
     @ManyToOne
-    @JoinColumn(name="fieldid", referencedColumnName="fieldid", insertable=false, updatable=false)
-    private Field      field ; 
-
-    @ManyToOne
-    @JoinColumn(name="bookingid", referencedColumnName="bookingid", insertable=false, updatable=false)
-    private Bookings   booking ; 
+    @JoinColumn(name = "fieldid", referencedColumnName = "fieldid", insertable = false, updatable = false)
+    private Field field;
 
     @ManyToOne
-    @JoinColumn(name="shiftid", referencedColumnName="shiftid", insertable=false, updatable=false)
-    private Shifts     shifts ; 
+    @JoinColumn(name = "bookingid", referencedColumnName = "bookingid", insertable = false, updatable = false)
+    private Bookings booking;
 
-
-    
+    @ManyToOne
+    @JoinColumn(name = "shiftid", referencedColumnName = "shiftid", insertable = false, updatable = false)
+    private Shifts shifts;
 
 }

@@ -2,101 +2,172 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
+from sklearn.preprocessing import StandardScaler
 from xgboost import XGBRegressor
 import onnxmltools
 from onnxmltools.convert.common.data_types import FloatTensorType
 import onnxruntime as rt
 
-# ===========================
-# 1️⃣ TẠO DỮ LIỆU GIẢ LẬP
-# ===========================
-
 np.random.seed(42)
-n_samples = 1000
+n_samples = 2000
 
-# Các feature đầu vào
+# ========================
+# 1️⃣ TẠO DỮ LIỆU CHÍNH
+# ========================
+
+totalBookingsMonth_raw = np.random.randint(20, 400, n_samples)
+totalBookings7Day_raw = np.random.randint(0, 80, (n_samples, 7))
+totalBookings3Day_raw = np.random.randint(0, 100, (n_samples, 3))
+totalBookings1Day_raw = np.random.randint(0, 120, n_samples)
+
 data = pd.DataFrame({
-    "totalBookings_month": np.random.randint(150, 300, n_samples),  # Keep only monthly bookings
-    "avgtempC": np.random.uniform(20, 35, n_samples),
-    "dailyChanceOfRain": np.random.randint(0, 100, n_samples),
-    "isHoliday": np.random.randint(0, 2, n_samples)
+    "totalBookingsMonth": totalBookingsMonth_raw / 30,
+    "totalBookings7Day": totalBookings7Day_raw.mean(axis=1),
+    "totalBookings3Day": totalBookings3Day_raw.mean(axis=1),
+    "totalBookings1Day": totalBookings1Day_raw,
+    "avgTemp": np.random.uniform(20, 35, n_samples),
+    "rain": np.random.randint(0, 100, n_samples),
+    "holidayFlag": np.random.randint(0, 2, n_samples)
 })
 
-# Biến mục tiêu: số lượt đặt sân ngày mai
-totalBookings_tomorrow = []
-for i in range(len(data)):
-    tb_month = data["totalBookings_month"].iloc[i]
-    temp = data["avgtempC"].iloc[i]
-    rain = data["dailyChanceOfRain"].iloc[i]
-    holiday = data["isHoliday"].iloc[i]
-    
-    val = (
-        (tb_month / 30) * 0.8 +                    # trọng số của trung bình tháng
-        (35 - temp) * 0.3 +                        # trọng số của nhiệt độ
-        (rain / 100) * (-2.0) +                    # trọng số của mưa
-        holiday * 2 +                              # trọng số ngày lễ
-        np.random.normal(0, 0.3)                   # nhiễu ngẫu nhiên
-    )
-    totalBookings_tomorrow.append(val)
+# ========================
+# 2️⃣ TẠO TARGET
+# ========================
 
-data["totalBookings_tomorrow"] = totalBookings_tomorrow
+def generate_booking_conditional(row):
+    total_recent = row["totalBookings1Day"] + row["totalBookings3Day"] + row["totalBookings7Day"]
+    if total_recent <= 10:  # THẤP
+        val = (
+            row["totalBookings1Day"]*0.2 +
+            row["totalBookings3Day"]*0.15 +
+            row["totalBookings7Day"]*0.1 +
+            row["totalBookingsMonth"]*0.05 +
+            row["holidayFlag"]*0.1
+        )
+    elif total_recent <= 50:  # TRUNG BÌNH
+        val = (
+            row["totalBookings1Day"]*0.5 +
+            row["totalBookings3Day"]*0.25 +
+            row["totalBookings7Day"]*0.15 +
+            row["totalBookingsMonth"]*0.05 +
+            row["holidayFlag"]*0.2
+        )
+    else:  # CAO
+        val = (
+            row["totalBookings1Day"]*0.6 +
+            row["totalBookings3Day"]*0.3 +
+            row["totalBookings7Day"]*0.2 +
+            row["totalBookingsMonth"]*0.05 +
+            row["holidayFlag"]*0.4
+        )
+    return max(0, val)
 
-# ===========================
-# 2️⃣ CHUẨN BỊ DỮ LIỆU
-# ===========================
+data["totalBookingsTomorrow"] = data.apply(generate_booking_conditional, axis=1)
 
-X = data[["totalBookings_month", "avgtempC", "dailyChanceOfRain", "isHoliday"]]
-# Đổi tên các cột thành f0, f1, f2, f3
-X.columns = [f'f{i}' for i in range(X.shape[1])]
-y = data["totalBookings_tomorrow"]
+# ========================
+# 2.5️⃣ TẠO THÊM DỮ LIỆU "LOW BOOKINGS"
+# ========================
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+n_low = 500
+low_samples = pd.DataFrame({
+    "totalBookingsMonth": np.random.randint(0, 50, n_low)/30,
+    "totalBookings7Day": np.random.randint(0, 5, n_low),
+    "totalBookings3Day": np.random.randint(0, 3, n_low),
+    "totalBookings1Day": np.random.randint(0, 3, n_low),
+    "avgTemp": np.random.uniform(20, 35, n_low),
+    "rain": np.random.randint(0, 100, n_low),
+    "holidayFlag": np.random.randint(0, 2, n_low)
+})
+low_samples["totalBookingsTomorrow"] = low_samples.apply(generate_booking_conditional, axis=1)
+data = pd.concat([data, low_samples], ignore_index=True)
 
-# ===========================
-# 3️⃣ HUẤN LUYỆN MÔ HÌNH XGBOOST
-# ===========================
+# ========================
+# 3️⃣ CHUẨN HÓA CHỌN LỌC
+# ========================
+
+X = data[[
+    "totalBookingsMonth",
+    "totalBookings7Day",
+    "totalBookings3Day",
+    "totalBookings1Day",
+    "avgTemp",
+    "rain",
+    "holidayFlag"
+]].copy()
+
+# Chỉ chuẩn hóa các feature liên tục
+scaler = StandardScaler()
+X[["avgTemp", "rain"]] = scaler.fit_transform(X[["avgTemp", "rain"]])
+
+# Log-transform target
+y = np.log1p(data["totalBookingsTomorrow"])
+
+# ========================
+# 3.5️⃣ ĐỔI TÊN CỘT CHO ONNX
+# ========================
+
+X_scaled = X.copy()
+X_scaled.columns = [f"f{i}" for i in range(X_scaled.shape[1])]
+
+# Split
+X_train, X_test, y_train, y_test = train_test_split(
+    X_scaled, y, test_size=0.2, random_state=42
+)
+
+# ========================
+# 4️⃣ TRAIN XGBOOST
+# ========================
 
 model = XGBRegressor(
-    n_estimators=120,
+    n_estimators=250,
     max_depth=4,
-    learning_rate=0.1,
-    subsample=0.8,
-    colsample_bytree=0.8,
+    learning_rate=0.05,
+    subsample=0.9,
+    colsample_bytree=0.7,
+    reg_alpha=0.15,      
+    reg_lambda=1.3,
+    min_child_weight=5,
     random_state=42
 )
 
 model.fit(X_train, y_train)
 
-y_pred = model.predict(X_test)
-rmse = np.sqrt(mean_squared_error(y_test, y_pred))
-print(f"✅ Huấn luyện thành công. RMSE = {rmse:.3f}")
+y_pred_log = model.predict(X_test)
+y_pred = np.expm1(y_pred_log)  # trở về scale gốc
 
-# ===========================
-# 4️⃣ XUẤT MÔ HÌNH SANG ONNX
-# ===========================
+rmse = np.sqrt(mean_squared_error(np.expm1(y_test), y_pred))
+print("RMSE =", rmse)
 
-# Định nghĩa input shape và tên
-input_type = [('float_input', FloatTensorType([None, X.shape[1]]))]
+# ========================
+# 5️⃣ EXPORT ONNX
+# ========================
 
-# Chuyển đổi sang ONNX với target opset mới nhất
-onnx_model = onnxmltools.convert_xgboost(model, 
-                                        initial_types=input_type,
-                                        target_opset=13)
+input_type = [('float_input', FloatTensorType([None, X_scaled.shape[1]]))]
+onnx_model = onnxmltools.convert_xgboost(model, initial_types=input_type)
 
-# Lưu mô hình
-with open("field_booking_xgb.onnx", "wb") as f:
+with open("field_booking_final.onnx", "wb") as f:
     f.write(onnx_model.SerializeToString())
 
-print("✅ Đã lưu mô hình ONNX: field_booking_xgb.onnx")
+print("🏁 Đã xuất mô hình tối ưu")
 
-# ===========================
-# 5️⃣ KIỂM TRA LẠI MÔ HÌNH BẰNG ONNXRUNTIME
-# ===========================
+# ========================
+# 6️⃣ TEST 3 MẪU
+# ========================
 
-sess = rt.InferenceSession("field_booking_xgb.onnx", providers=['CPUExecutionProvider'])
+test_samples = np.array([
+    [10, 5, 3, 2, 30, 50, 0],
+    [50, 20, 37, 10, 28, 20, 0],
+    [90, 70, 40, 30, 28, 10, 1]
+], dtype=np.float32)
+
+test_df = pd.DataFrame(test_samples, columns=X.columns)
+test_df[["avgTemp", "rain"]] = scaler.transform(test_df[["avgTemp", "rain"]])
+test_df = test_df[X.columns]  # sắp xếp lại
+test_df.columns = [f"f{i}" for i in range(test_df.shape[1])]
+
+sess = rt.InferenceSession("field_booking_final.onnx")
 input_name = sess.get_inputs()[0].name
 
-sample = np.array([[162.0, 28.0, 50.0, 0.0]], dtype=np.float32)
-pred = sess.run(None, {input_name: sample})[0]
-
-print("🔍 Dự đoán thử với input [2, 162, 28, 50, 0] →", pred)
+pred_log = sess.run(None, {input_name: test_df.values.astype(np.float32)})[0]
+pred = np.expm1(pred_log)
+print("Dự đoán:", pred)

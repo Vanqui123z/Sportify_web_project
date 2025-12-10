@@ -22,4 +22,10 @@ public interface OrderDetailDAO extends JpaRepository<Orderdetails, Integer> {
 
     @Query(value = "SELECT * FROM orderdetails where orderid = :orderid", nativeQuery = true)
     List<Orderdetails> findByOrderId(@Param("orderid") Integer orderid);
+
+    // Đếm nó lượng order active của user trong hôm nay
+    @Query(value = "SELECT COUNT(*) FROM orders o JOIN orderdetails od ON o.orderid = od.orderid "
+            + "WHERE o.username = :username AND o.orderstatus = 'Đã Thanh Toán' "
+            + "AND DATE(o.createdate) = CURRENT_DATE", nativeQuery = true)
+    int countUserBookingsToday(@Param("username") String username);
 }

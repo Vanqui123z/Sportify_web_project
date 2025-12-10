@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
+import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../helper/AuthContext";
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 
 interface BookingDetail {
   bookingdetailid: number;
@@ -52,7 +53,7 @@ const OwnerBookingPage: React.FC = () => {
     const fetchBookings = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:8081/rest/bookings/getByOwner/${ownerUsername}`
+          `${URL_BACKEND}/rest/bookings/getByOwner/${ownerUsername}`
         );
         const ownerBookings = res.data || [];
         setBookings(ownerBookings);
@@ -121,7 +122,7 @@ const OwnerBookingPage: React.FC = () => {
     try {
       await Promise.all(
         selectedBookings.map(id =>
-          axios.delete(`http://localhost:8081/rest/bookings/delete/${id}`)
+          axios.delete(`${URL_BACKEND}/rest/bookings/delete/${id}`)
         )
       );
       alert("Xóa thành công!");
@@ -136,7 +137,7 @@ const OwnerBookingPage: React.FC = () => {
 
   const handleStatusChange = async (bookingId: number, newStatus: string) => {
     try {
-      await axios.put(`http://localhost:8081/rest/bookings/update/${bookingId}`, {
+      await axios.put(`${URL_BACKEND}/rest/bookings/update/${bookingId}`, {
         bookingstatus: newStatus,
       });
       const updated = bookings.map(b =>
@@ -334,13 +335,12 @@ const OwnerBookingPage: React.FC = () => {
                             <td style={{ color: "#6c757d" }}>{booking.phone}</td>
                             <td>
                               <span
-                                className={`badge ${
-                                  booking.bookingstatus === "Hoàn Thành"
+                                className={`badge ${booking.bookingstatus === "Hoàn Thành"
                                     ? "bg-success"
                                     : booking.bookingstatus === "Đã Cọc"
-                                    ? "bg-warning"
-                                    : "bg-danger"
-                                }`}
+                                      ? "bg-warning"
+                                      : "bg-danger"
+                                  }`}
                               >
                                 {booking.bookingstatus}
                               </span>
@@ -396,13 +396,12 @@ const OwnerBookingPage: React.FC = () => {
                         <div
                           className="card shadow-sm"
                           style={{
-                            borderLeft: `4px solid ${
-                              booking.bookingstatus === "Hoàn Thành"
+                            borderLeft: `4px solid ${booking.bookingstatus === "Hoàn Thành"
                                 ? "#28a745"
                                 : booking.bookingstatus === "Đã Cọc"
-                                ? "#ffc107"
-                                : "#dc3545"
-                            }`
+                                  ? "#ffc107"
+                                  : "#dc3545"
+                              }`
                           }}
                         >
                           <div className="card-body">
@@ -426,13 +425,12 @@ const OwnerBookingPage: React.FC = () => {
                                 </p>
                               </div>
                               <span
-                                className={`badge ${
-                                  booking.bookingstatus === "Hoàn Thành"
+                                className={`badge ${booking.bookingstatus === "Hoàn Thành"
                                     ? "bg-success"
                                     : booking.bookingstatus === "Đã Cọc"
-                                    ? "bg-warning"
-                                    : "bg-danger"
-                                }`}
+                                      ? "bg-warning"
+                                      : "bg-danger"
+                                  }`}
                               >
                                 {booking.bookingstatus}
                               </span>
@@ -495,13 +493,12 @@ const OwnerBookingPage: React.FC = () => {
                       <strong>Trạng Thái:</strong>
                       <p>
                         <span
-                          className={`badge ${
-                            selectedBooking.bookingstatus === "Hoàn Thành"
+                          className={`badge ${selectedBooking.bookingstatus === "Hoàn Thành"
                               ? "bg-success"
                               : selectedBooking.bookingstatus === "Đã Cọc"
-                              ? "bg-warning"
-                              : "bg-danger"
-                          }`}
+                                ? "bg-warning"
+                                : "bg-danger"
+                            }`}
                         >
                           {selectedBooking.bookingstatus}
                         </span>

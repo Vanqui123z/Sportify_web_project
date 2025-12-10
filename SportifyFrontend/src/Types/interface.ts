@@ -37,3 +37,15 @@ export interface Event {
   image: string;
   description: string;
 }
+
+// Dữ liệu thống kê sân
+export interface FieldUsage {
+  fieldId: number;
+  fieldName: string;
+  fieldImage: string;
+  fieldPrice: number;
+  oneTimeBookings: number;
+  permanentBookings: number;
+  totalBookings: number;
+  totalRevenue: number;
+}

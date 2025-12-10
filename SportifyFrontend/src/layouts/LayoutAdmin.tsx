@@ -1,13 +1,45 @@
-import React, { useContext } from "react";
-import { AuthContext } from "../helper/AuthContext";
+import { Helmet } from "@dr.pogodin/react-helmet";
+import React, { useContext, useEffect } from "react";
+import { Outlet } from "react-router-dom";
+import AdminAIChatbox from "../components/admin/AdminAIChatbox";
 import Header from "../components/admin/Header";
 import Sidebar from "../components/admin/SideBar";
-import AdminAIChatbox from "../components/admin/AdminAIChatbox";
-import { Outlet } from "react-router-dom";
-import { Helmet } from "@dr.pogodin/react-helmet";
+import { AuthContext } from "../helper/AuthContext";
+import { loadScript } from "../helper/LoadScript";
 
 const LayoutAdmin: React.FC = () => {
   const { user, loading } = useContext(AuthContext);
+
+  const arrayScript = [
+    "/admin/assets/js/jquery-3.5.1.min.js",
+    "/admin/assets/js/jquery.dataTables.min.js",
+    "/admin/assets/js/dataTables.bootstrap4.min.js",
+    "/admin/assets/js/popper.min.js",
+    "/admin/assets/js/bootstrap.min.js",
+    "/admin/assets/js/jquery.slimscroll.min.js",
+    "/admin/assets/plugins/raphael/raphael.min.js",
+    "/admin/assets/plugins/morris/morris.min.js",
+    "/admin/assets/js/chart.js",
+    "/admin/assets/js/moment.min.js",
+    "/admin/assets/js/bootstrap-datetimepicker.min.js",
+    "/admin/assets/js/select2.min.js",
+    "/admin/assets/js/app.js",
+    // "https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular.min.js",
+    // "https://cdnjs.cloudflare.com/ajax/libs/angular-route/1.8.3/angular-route.min.js",
+  ];
+  useEffect(() => {
+    async function loadScripts() {
+      try {
+        for (const src of arrayScript) {
+          loadScript(src)
+        }
+      } catch (e) {
+        console.error("load script failed : ", e)
+      }
+    }
+
+    loadScripts()
+  }, [])
 
   if (loading) {
     return (
@@ -32,9 +64,10 @@ const LayoutAdmin: React.FC = () => {
     );
   }
 
+
+
   return (
     <>
-
       <Helmet>
         <title>Admin Sportify</title>
 

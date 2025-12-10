@@ -50,7 +50,7 @@ public class Admin_ProductRestController {
 
 	@GetMapping("getAll")
 	public ResponseEntity<List<Products>> getAll(Model model) {
-		return ResponseEntity.ok(productDAO.findProductActive());
+		return ResponseEntity.ok(productDAO.findAll());
 	}
 
 	@GetMapping("get/{id}")

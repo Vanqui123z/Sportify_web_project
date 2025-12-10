@@ -645,7 +645,7 @@ const Comment = ({ productId, fieldId, type }: CommentProps) => {
                       <div className="review-date">{formatDate(review.createdAt || review.updatedAt)}</div>
                     </div>
                     {/* Action buttons shown only for the user's own review */}
-                    {username && review.username.toLowerCase() === username.toLowerCase() && (
+                    {username && review.customerName.toLowerCase() === username.toLowerCase() && (
                       <div className="review-actions">
                         <button className="edit-review-btn small-btn" onClick={openEditModal}>
                           <i className="fa fa-pencil"></i> Sửa

@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
+import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../helper/AuthContext";
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 
 interface BookingDetail {
   bookingdetailid: number;
@@ -52,7 +53,7 @@ const OwnerBookingManagerPage: React.FC = () => {
     const fetchBookings = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:8081/rest/bookings/getByOwner/${ownerUsername}`
+          `${URL_BACKEND}/rest/bookings/getByOwner/${ownerUsername}`
         );
         const ownerBookings = res.data || [];
         setBookings(ownerBookings);
@@ -92,14 +93,14 @@ const OwnerBookingManagerPage: React.FC = () => {
 
   const handleRefresh = () => {
     if (!ownerUsername) return;
-    
-    axios.get(`http://localhost:8081/rest/bookings/getByOwner/${ownerUsername}`)
+
+    axios.get(`${URL_BACKEND}/rest/bookings/getByOwner/${ownerUsername}`)
       .then(res => {
         const ownerBookings = res.data || [];
         setBookings(ownerBookings);
         setFilteredBookings(ownerBookings);
       });
-    
+
     setSearch({ keyword: "", datebook: "", status: "" });
   };
 
@@ -130,7 +131,7 @@ const OwnerBookingManagerPage: React.FC = () => {
     try {
       await Promise.all(
         selectedBookings.map(id =>
-          axios.delete(`http://localhost:8081/rest/bookings/delete/${id}`)
+          axios.delete(`${URL_BACKEND}/rest/bookings/delete/${id}`)
         )
       );
       alert("Xóa thành công!");
@@ -145,7 +146,7 @@ const OwnerBookingManagerPage: React.FC = () => {
 
   const handleStatusChange = async (bookingId: number, newStatus: string) => {
     try {
-      await axios.put(`http://localhost:8081/rest/bookings/update/${bookingId}`, {
+      await axios.put(`${URL_BACKEND}/rest/bookings/update/${bookingId}`, {
         bookingstatus: newStatus,
       });
       const updated = bookings.map(b =>
@@ -395,13 +396,12 @@ const OwnerBookingManagerPage: React.FC = () => {
                         <div
                           className="card shadow-sm"
                           style={{
-                            borderLeft: `4px solid ${
-                              booking.bookingstatus === "Hoàn Thành"
-                                ? "#28a745"
-                                : booking.bookingstatus === "Đã Cọc"
+                            borderLeft: `4px solid ${booking.bookingstatus === "Hoàn Thành"
+                              ? "#28a745"
+                              : booking.bookingstatus === "Đã Cọc"
                                 ? "#ffc107"
                                 : "#dc3545"
-                            }`
+                              }`
                           }}
                         >
                           <div className="card-body">
@@ -456,9 +456,9 @@ const OwnerBookingManagerPage: React.FC = () => {
                   <h5 className="modal-title">Chi Tiết Phiếu Đặt</h5>
                   <button
                     type="button"
-                    className="btn-close"
+                    className="btn-close btn"
                     onClick={() => setShowDetail(false)}
-                  ></button>
+                  >X</button>
                 </div>
                 <div className="modal-body">
                   <div className="row mb-3">

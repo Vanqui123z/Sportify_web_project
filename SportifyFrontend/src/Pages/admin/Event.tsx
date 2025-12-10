@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import BootstrapModal from '../../components/admin/BootstrapModal';
+import "../../styles/AdminModal.css";
 
 interface Event {
   eventid: number;
@@ -298,221 +300,215 @@ const EventPage: React.FC = () => {
         </div>
 
         {/* Add Modal */}
-        {showAdd && (
-          <div className="modal fade show" style={{ display: "block" }}>
-            <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">Tạo sự kiện mới</h5>
-                  <button type="button" className="btn-close" onClick={() => setShowAdd(false)}></button>
+        <BootstrapModal
+          show={showAdd}
+          onHide={() => setShowAdd(false)}
+          title="Tạo sự kiện mới"
+          footer={
+            <button type="button" className="btn btn-primary" onClick={handleAddEvent}>
+              Thêm sự kiện mới
+            </button>
+          }
+          size="lg"
+          scrollable={false}
+          bodyClassName="event-modal-body"
+          topOffset="6%"
+        >
+          <form>
+            <div className="row g-3">
+              <div className="col-sm-12 text-center mb-3">
+                <label htmlFor="image" className="form-label">
+                  <img
+                    src={
+                      form.image
+                        ? form.image.startsWith("v") // hoặc form.image.includes("/")
+                          ? `${VITE_CLOUDINARY_BASE_URL}/${form.image}`
+                          : `/user/images/${form.image}`
+                        : "/user/images/default.png" // fallback nếu null
+                    }
+                    width="70%"
+                    style={{ objectFit: "cover", borderRadius: 8, border: "1px solid #eee", background: "#fafbfc" }}
+                    alt={form.nameevent}
+                  />
+                </label>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Tên sự kiện <span className="text-danger">*</span></label>
+                  <input className="form-control" type="text"
+                    value={form.nameevent || ""}
+                    onChange={e => handleFormChange("nameevent", e.target.value)}
+                  />
+                  {errors.filter(e => e.field === "nameevent").map((e, i) => (
+                    <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                  ))}
                 </div>
-                <div className="modal-body">
-                  <form>
-                    <div className="row g-3">
-                      <div className="col-sm-12 text-center mb-3">
-                        <label htmlFor="image" className="form-label">
-                          <img
-                            src={
-                              form.image
-                                ? form.image.startsWith("v") // hoặc form.image.includes("/")
-                                  ? `${VITE_CLOUDINARY_BASE_URL}/${form.image}`
-                                  : `/user/images/${form.image}`
-                                : "/user/images/default.png" // fallback nếu null
-                            }
-                            width="70%"
-                            style={{ objectFit: "cover", borderRadius: 8, border: "1px solid #eee", background: "#fafbfc" }}
-                            alt={form.nameevent}
-                          />
-                        </label>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Tên sự kiện <span className="text-danger">*</span></label>
-                          <input className="form-control" type="text"
-                            value={form.nameevent || ""}
-                            onChange={e => handleFormChange("nameevent", e.target.value)}
-                          />
-                          {errors.filter(e => e.field === "nameevent").map((e, i) => (
-                            <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Ảnh sự kiện <span className="text-danger">*</span></label>
-                          <input type="file"
-                            className="form-control"
-                            id="image"
-                            onChange={e => handleImageChange(e.target.files)}
-                          />
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Ngày bắt đầu <span className="text-danger">*</span></label>
-                          <input className="form-control" type="date"
-                            value={form.datestart || ""}
-                            onChange={e => handleFormChange("datestart", e.target.value)}
-                          />
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Ngày kết thúc <span className="text-danger">*</span></label>
-                          <input className="form-control" type="date"
-                            value={form.dateend || ""}
-                            onChange={e => handleFormChange("dateend", e.target.value)}
-                          />
-                        </div>
-                      </div>
-                      <div className="col-sm-12">
-                        <div className="form-group">
-                          <label>Loại sự kiện</label>
-                          <select className="form-select"
-                            value={form.eventtype || ""}
-                            onChange={e => handleFormChange("eventtype", e.target.value)}
-                          >
-                            <option value="">Chọn loại sự kiện</option>
-                            {eventTypeOptions.map(type => (
-                              <option key={type} value={type}>{type}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                      <div className="col-sm-12">
-                        <div className="form-group">
-                          <label>Description</label>
-                          <textarea className="form-control"
-                            value={form.descriptions || ""}
-                            onChange={e => handleFormChange("descriptions", e.target.value)}
-                          />
-                          {errors.filter(e => e.field === "descriptions").map((e, i) => (
-                            <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-4 text-end">
-                      <button type="button" className="btn btn-primary" onClick={handleAddEvent}>
-                        Thêm sự kiện mới
-                      </button>
-                    </div>
-                  </form>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Ảnh sự kiện <span className="text-danger">*</span></label>
+                  <input type="file"
+                    className="form-control"
+                    id="image"
+                    onChange={e => handleImageChange(e.target.files)}
+                  />
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Ngày bắt đầu <span className="text-danger">*</span></label>
+                  <input className="form-control" type="date"
+                    value={form.datestart || ""}
+                    onChange={e => handleFormChange("datestart", e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Ngày kết thúc <span className="text-danger">*</span></label>
+                  <input className="form-control" type="date"
+                    value={form.dateend || ""}
+                    onChange={e => handleFormChange("dateend", e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="col-sm-12">
+                <div className="form-group">
+                  <label>Loại sự kiện</label>
+                  <select className="form-select"
+                    value={form.eventtype || ""}
+                    onChange={e => handleFormChange("eventtype", e.target.value)}
+                  >
+                    <option value="">Chọn loại sự kiện</option>
+                    {eventTypeOptions.map(type => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="col-sm-12">
+                <div className="form-group">
+                  <label>Description</label>
+                  <textarea className="form-control"
+                    value={form.descriptions || ""}
+                    onChange={e => handleFormChange("descriptions", e.target.value)}
+                  />
+                  {errors.filter(e => e.field === "descriptions").map((e, i) => (
+                    <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                  ))}
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          </form>
+        </BootstrapModal>
 
         {/* Edit Modal */}
-        {showEdit && (
-          <div className="modal fade show" style={{ display: "block" }}>
-            <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-              <div className="modal-content" style={{ width: "150%", overflowY: 'auto' }}>
-                <div className="modal-header">
-                  <h5 className="modal-title">Chỉnh sửa sự kiện</h5>
-                  <button type="button" className="btn-close" onClick={() => setShowEdit(false)}></button>
+        <BootstrapModal
+          show={showEdit}
+          onHide={() => setShowEdit(false)}
+          title="Chỉnh sửa sự kiện"
+          footer={
+            <>
+              <button type="button" className="btn btn-primary" onClick={handleEditEvent}>
+                Chỉnh sửa sự kiện
+              </button>
+              <button type="button" className="btn btn-danger ms-2" onClick={() => handleDeleteEvent(form.eventid as number)}>
+                Xóa sự kiện
+              </button>
+            </>
+          }
+          size="xl"
+          scrollable={false}
+          bodyClassName="event-modal-body"
+          topOffset="6%"
+        >
+          <form>
+            <div className="row g-3">
+              <div className="col-sm-12 text-center mb-3">
+                <label htmlFor="image" className="form-label">
+                  <img
+                    src={
+                      form.image
+                        ? form.image.startsWith("v") // hoặc form.image.includes("/")
+                          ? `${VITE_CLOUDINARY_BASE_URL}/${form.image}`
+                          : `/user/images/${form.image}`
+                        : "/user/images/default.png" // fallback nếu null
+                    }
+                    width="70%"
+                    style={{ objectFit: "cover", borderRadius: 8, border: "1px solid #eee", background: "#fafbfc" }}
+                    alt={form.nameevent}
+                  />
+                </label>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Tên sự kiện <span className="text-danger">*</span></label>
+                  <input className="form-control" type="text"
+                    value={form.nameevent || ""}
+                    onChange={e => handleFormChange("nameevent", e.target.value)}
+                  />
+                  {errors.filter(e => e.field === "nameevent").map((e, i) => (
+                    <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                  ))}
                 </div>
-                <div className="modal-body">
-                  <form>
-                    <div className="row g-3">
-                      <div className="col-sm-12 text-center mb-3">
-                        <label htmlFor="image" className="form-label">
-                          <img
-                            src={
-                              form.image
-                                ? form.image.startsWith("v") // hoặc form.image.includes("/")
-                                  ? `${VITE_CLOUDINARY_BASE_URL}/${form.image}`
-                                  : `/user/images/${form.image}`
-                                : "/user/images/default.png" // fallback nếu null
-                            }
-                            width="70%"
-                            style={{ objectFit: "cover", borderRadius: 8, border: "1px solid #eee", background: "#fafbfc" }}
-                            alt={form.nameevent}
-                          />
-                        </label>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Tên sự kiện <span className="text-danger">*</span></label>
-                          <input className="form-control" type="text"
-                            value={form.nameevent || ""}
-                            onChange={e => handleFormChange("nameevent", e.target.value)}
-                          />
-                          {errors.filter(e => e.field === "nameevent").map((e, i) => (
-                            <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Ảnh sự kiện <span className="text-danger">*</span></label>
-                          <input type="file"
-                            className="form-control"
-                            id="image"
-                            onChange={e => handleImageChange(e.target.files)}
-                          />
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Ngày bắt đầu <span className="text-danger">*</span></label>
-                          <input className="form-control" type="date"
-                            value={form.datestart || ""}
-                            onChange={e => handleFormChange("datestart", e.target.value)}
-                          />
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Ngày kết thúc <span className="text-danger">*</span></label>
-                          <input className="form-control" type="date"
-                            value={form.dateend || ""}
-                            onChange={e => handleFormChange("dateend", e.target.value)}
-                          />
-                        </div>
-                      </div>
-                      <div className="col-sm-12">
-                        <div className="form-group">
-                          <label>Loại sự kiện</label>
-                          <select className="form-select"
-                            value={form.eventtype || ""}
-                            onChange={e => handleFormChange("eventtype", e.target.value)}
-                          >
-                            <option value="">Chọn loại sự kiện</option>
-                            {eventTypeOptions.map(type => (
-                              <option key={type} value={type}>{type}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                      <div className="col-sm-12">
-                        <div className="form-group">
-                          <label>Description</label>
-                          <textarea className="form-control"
-                            value={form.descriptions || ""}
-                            onChange={e => handleFormChange("descriptions", e.target.value)}
-                          />
-                          {errors.filter(e => e.field === "descriptions").map((e, i) => (
-                            <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-4 text-end">
-                      <button type="button" className="btn btn-primary" onClick={handleEditEvent}>
-                        Chỉnh sửa sự kiện
-                      </button>
-                      <button type="button" className="btn btn-danger ms-2" onClick={() => handleDeleteEvent(form.eventid as number)}>
-                        Xóa sự kiện
-                      </button>
-                    </div>
-                  </form>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Ảnh sự kiện <span className="text-danger">*</span></label>
+                  <input type="file"
+                    className="form-control"
+                    id="image"
+                    onChange={e => handleImageChange(e.target.files)}
+                  />
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Ngày bắt đầu <span className="text-danger">*</span></label>
+                  <input className="form-control" type="date"
+                    value={form.datestart || ""}
+                    onChange={e => handleFormChange("datestart", e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Ngày kết thúc <span className="text-danger">*</span></label>
+                  <input className="form-control" type="date"
+                    value={form.dateend || ""}
+                    onChange={e => handleFormChange("dateend", e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="col-sm-12">
+                <div className="form-group">
+                  <label>Loại sự kiện</label>
+                  <select className="form-select"
+                    value={form.eventtype || ""}
+                    onChange={e => handleFormChange("eventtype", e.target.value)}
+                  >
+                    <option value="">Chọn loại sự kiện</option>
+                    {eventTypeOptions.map(type => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="col-sm-12">
+                <div className="form-group">
+                  <label>Description</label>
+                  <textarea className="form-control"
+                    value={form.descriptions || ""}
+                    onChange={e => handleFormChange("descriptions", e.target.value)}
+                  />
+                  {errors.filter(e => e.field === "descriptions").map((e, i) => (
+                    <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                  ))}
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          </form>
+        </BootstrapModal>
 
         {/* Toast/Notification */}
         <div id="toast"></div>

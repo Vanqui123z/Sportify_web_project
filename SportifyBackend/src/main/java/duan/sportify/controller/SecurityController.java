@@ -1,5 +1,7 @@
 package duan.sportify.controller;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +25,6 @@ import duan.sportify.service.AuthorizedService;
 import duan.sportify.service.UserService;
 
 @RestController
-
 public class SecurityController {
 	@Autowired
 	UserService userService;
@@ -148,15 +149,70 @@ public class SecurityController {
 		String password = payload.get("password");
 
 		Map<String, Object> resp = new HashMap<>();
+
+		// Tìm user
 		Users user = userService.findByUsername(username);
 
-		if (user == null || !user.getPasswords().equals(password)) {
+		// Không tiết lộ user không tồn tại
+		if (user == null) {
 			resp.put("success", false);
 			resp.put("message", "Sai tài khoản hoặc mật khẩu");
 			return resp;
 		}
 
-		// Lưu username vào session
+		LocalDateTime now = LocalDateTime.now();
+
+		// Nếu status = false -> tài khoản bị khóa (có thể do admin khóa tay hoặc do
+		// login fail)
+		if (Boolean.FALSE.equals(user.getStatus())) {
+			// Nếu có lockedUntil và thời gian khóa đã hết -> tự mở khóa
+			if (user.getLockedUntil() != null && user.getLockedUntil().isBefore(now)) {
+				user.setStatus(true);
+				user.setFailedAttempt(0);
+				user.setLockedUntil(null);
+				userDAO.save(user);
+				// tiếp tục flow kiểm tra mật khẩu bên dưới
+			} else {
+				// Vẫn đang khóa
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss dd/MM/yyyy");
+
+				String untilMsg = (user.getLockedUntil() != null)
+						? user.getLockedUntil().format(formatter)
+						: "đã bị khóa";
+				resp.put("success", false);
+				resp.put("message", "Tài khoản đang bị khóa đến: " + untilMsg);
+				return resp;
+			}
+		}
+		// pass
+		if (!user.getPasswords().equals(password)) {
+			int attempts = (user.getFailedAttempt() == null ? 0 : user.getFailedAttempt()) + 1;
+			user.setFailedAttempt(attempts);
+
+			// Nếu vượt quá giới hạn -> khóa và set status = false
+			if (attempts >= 5) {
+				user.setLockedUntil(now.plusMinutes(5));
+				user.setStatus(false);
+				userDAO.save(user);
+
+				resp.put("success", false);
+				resp.put("message", "Sai quá 5 lần. Tài khoản bị khóa 5 phút.");
+				return resp;
+			} else {
+				userDAO.save(user);
+				resp.put("success", false);
+				resp.put("message", "Sai mật khẩu! Còn " + (5 - attempts) + " lần. ");
+				return resp;
+			}
+		}
+
+		// Nếu đến đây => mật khẩu đúng
+		user.setFailedAttempt(0);
+		user.setLockedUntil(null);
+		user.setStatus(true); // đảm bảo status = true khi đăng nhập thành công
+		userDAO.save(user);
+
+		// Tạo session
 		session.setAttribute("username", username);
 		System.out.println("User " + username + " logged in.");
 

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import PaymentExpression from '../../../components/user/PaymentExpression';
 import VoucherSelect from '../../../components/user/VoucherSelect';
+import getImageUrl from '../../../helper/getImageUrl';
 import { fetchBookingData } from '../../../service/user/checkout/checkBookingFields';
 
 interface SportType {
@@ -164,29 +165,39 @@ const CheckoutDatSan: React.FC = () => {
     console.log('Payload JSON:', payload);
 
     try {
-      const res = await fetch(`${URL_BACKEND}/api/user/getIp/create?`, {
+      const res = await fetch(`${URL_BACKEND}/api/user/getIp/create`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) {
-        throw new Error(`API trả về lỗi ${res.status}`);
-      }
-
       const data = await res.json();
 
-      if (data && data.url) {
+      // ✅ CASE RIÊNG: SÂN ĐÃ BỊ ĐẶT
+      if (res.status === 409) {
+        alert(data?.message || 'Sân đã được người khác đặt!');
+        window.location.href = '/sportify/field';
+        return;
+      }
+
+      // ❌ Lỗi khác
+      if (!res.ok) {
+        alert('Có lỗi xảy ra, vui lòng thử lại!');
+        return;
+      }
+
+      // ✅ Thành công
+      if (data?.url) {
         window.location.href = data.url;
       } else {
-        alert(" Có lỗi khi thanh toán, vui lòng thử lại!");
+        alert('Có lỗi khi thanh toán!');
       }
-    } catch (err: any) {
-      alert('Có lỗi khi thanh toán, vui lòng thử lại!');
+
+    } catch (err) {
+      alert('Không thể kết nối đến hệ thống!');
     }
+
 
 
   };
@@ -351,7 +362,7 @@ const CheckoutDatSan: React.FC = () => {
                             <div className="d-flex">
                               <img
                                 style={{ width: "50%", height: "40%", marginRight: 20 }}
-                                src={field?.image ? `/user/images/${field.image}` : "/user/images/noimage.png"}
+                                src={getImageUrl(field.image)}
                                 alt="Image"
                               />
                               <div className="" style={{ marginTop: 10 }}>
@@ -463,6 +474,7 @@ const CheckoutDatSan: React.FC = () => {
                     </div>
                     <div className="col-md-6">
                       <PaymentExpression
+                        titleButton="Đặt Sân"
                         showCardList={showCardList}
                         setShowCardList={setShowCardList}
                         username={user?.username}

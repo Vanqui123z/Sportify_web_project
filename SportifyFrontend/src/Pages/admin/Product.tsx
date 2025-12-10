@@ -29,6 +29,7 @@ interface ErrorField {
 }
 const ProductPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]); // Cache full list for refresh and offline fallback
   const [categories, setCategories] = useState<Category[]>([]);
   const [form, setForm] = useState<Partial<Product>>({});
   const [errors, setErrors] = useState<ErrorField[]>([]);
@@ -46,7 +47,10 @@ const ProductPage: React.FC = () => {
   useEffect(() => {
     fetch(`${URL_BACKEND}/rest/products/getAll`)
       .then(res => res.json())
-      .then(data => setProducts(data));
+      .then(data => {
+        setProducts(data);
+        setAllProducts(data);
+      });
     fetch(`${URL_BACKEND}/rest/categories/getAll`)
       .then(res => res.json())
       .then(data => setCategories(data));
@@ -55,12 +59,44 @@ const ProductPage: React.FC = () => {
   // Search handler
   const handleSearch = () => {
     const params = new URLSearchParams();
-    if (search.searchName) params.append("productname", search.searchName);
+    if (search.searchName.trim()) params.append("productname", search.searchName.trim());
     if (search.searchCate) params.append("categoryid", search.searchCate);
     if (search.searchStatus) params.append("productstatus", search.searchStatus);
-    fetch(`${URL_BACKEND}/rest/products/search?${params}`)
-      .then(res => res.json())
-      .then(data => setProducts(data));
+
+    const query = params.toString();
+    const url = query
+      ? `${URL_BACKEND}/rest/products/search?${query}`
+      : `${URL_BACKEND}/rest/products/getAll`;
+
+    fetch(url)
+      .then(res => {
+        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+        return res.json();
+      })
+      .then(data => {
+        setProducts(data);
+        if (!query) {
+          setAllProducts(data);
+        }
+      })
+      .catch(err => {
+        console.error("[Product Search] failed", err);
+        const trimmedName = search.searchName.trim().toLowerCase();
+        const filtered = allProducts.filter(product => {
+          const productName = (product.productname || "").toLowerCase();
+          const categoryId = product.categoryid ?? product.categories?.categoryid;
+          const statusValue = product.productstatus;
+          const matchesName = trimmedName ? productName.includes(trimmedName) : true;
+          const matchesCategory = search.searchCate
+            ? String(categoryId ?? "") === search.searchCate
+            : true;
+          const matchesStatus = search.searchStatus
+            ? String(statusValue === true || statusValue ? 1 : 0) === search.searchStatus
+            : true;
+          return matchesName && matchesCategory && matchesStatus;
+        });
+        setProducts(filtered);
+      });
   };
 
   // Refresh handler
@@ -68,7 +104,10 @@ const ProductPage: React.FC = () => {
     setSearch({ searchName: "", searchCate: "", searchStatus: "" });
     fetch(`${URL_BACKEND}/rest/products/getAll`)
       .then(res => res.json())
-      .then(data => setProducts(data));
+      .then(data => {
+        setProducts(data);
+        setAllProducts(data);
+      });
   };
 
   // Add product handler
@@ -110,6 +149,7 @@ const ProductPage: React.FC = () => {
         .then(data => {
           if (data) {
             setProducts(prev => [...prev, data]);
+            setAllProducts(prev => [...prev, data]);
             setShowAdd(false);
             setForm({});
             setErrors([]);
@@ -141,6 +181,7 @@ const ProductPage: React.FC = () => {
         alert("Cập nhật sản phẩm thành công");
         if (data) {
           setProducts(prev => prev.map(p => p.productid === data.productid ? data : p));
+          setAllProducts(prev => prev.map(p => p.productid === data.productid ? data : p));
           setShowEdit(false);
           setForm({});
           setErrors([]);
@@ -157,6 +198,7 @@ const ProductPage: React.FC = () => {
       .then(() => {
         alert("Xóa sản phẩm thành công");
         setProducts(prev => prev.filter(p => p.productid !== productid));
+        setAllProducts(prev => prev.filter(p => p.productid !== productid));
         setShowEdit(false);
       });
   };
@@ -215,19 +257,24 @@ const ProductPage: React.FC = () => {
         {/* /Page Header */}
 
         {/* Search Filter */}
-        <div className="row filter-row">
+        <div className="row filter-row align-items-end g-3 mb-4">
           <div className="col-sm-6 col-md-3">
-            <div className="form-group form-focus">
-              <input type="text" className="form-control floating"
+            <div className="form-group mb-0">
+              <label className="form-label">Tên sản phẩm</label>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Nhập tên sản phẩm"
                 value={search.searchName}
                 onChange={e => setSearch(s => ({ ...s, searchName: e.target.value }))}
               />
-              <label className="focus-label">Tên sản phẩm</label>
             </div>
           </div>
           <div className="col-sm-6 col-md-3">
-            <div className="form-group form-focus select-focus">
-              <select className="select floating"
+            <div className="form-group mb-0">
+              <label className="form-label">Loại sản phẩm</label>
+              <select
+                className="form-select"
                 value={search.searchCate}
                 onChange={e => setSearch(s => ({ ...s, searchCate: e.target.value }))}
               >
@@ -236,12 +283,13 @@ const ProductPage: React.FC = () => {
                   <option key={c.categoryid} value={c.categoryid}>{c.categoryname}</option>
                 ))}
               </select>
-              <label className="focus-label">Loại sản phẩm</label>
             </div>
           </div>
           <div className="col-sm-6 col-md-2">
-            <div className="form-group form-focus select-focus">
-              <select className="select floating"
+            <div className="form-group mb-0">
+              <label className="form-label">Trạng thái</label>
+              <select
+                className="form-select"
                 value={search.searchStatus}
                 onChange={e => setSearch(s => ({ ...s, searchStatus: e.target.value }))}
               >
@@ -249,16 +297,15 @@ const ProductPage: React.FC = () => {
                 <option value="1">Đang bán</option>
                 <option value="0">Ngưng bán</option>
               </select>
-              <label className="focus-label">Trạng thái</label>
             </div>
           </div>
-          <div className="col-sm-6 col-md-2">
-            <button className="btn btn-success btn-block" onClick={handleSearch}>
+          <div className="col-sm-6 col-md-2 d-flex align-items-end">
+            <button type="button" className="btn btn-success w-100" onClick={handleSearch}>
               Tìm kiếm
             </button>
           </div>
-          <div className="col-sm-6 col-md-2">
-            <button className="btn btn-success btn-block" onClick={handleRefresh}>
+          <div className="col-sm-6 col-md-2 d-flex align-items-end">
+            <button type="button" className="btn btn-success w-100" onClick={handleRefresh}>
               Làm mới
             </button>
           </div>

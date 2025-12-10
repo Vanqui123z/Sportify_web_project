@@ -1,5 +1,6 @@
 const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 import React, { useEffect, useState } from "react";
+import BootstrapModal from '../../components/admin/BootstrapModal';
 
 interface SportType {
   sporttypeid: string;
@@ -226,103 +227,99 @@ const CategorySportPage: React.FC = () => {
         </div>
 
         {/* Add Modal */}
-        {showAdd && (
-          <div className="modal fade show" style={{ display: "block" }}>
-            <div className="modal-dialog modal-lg modal-dialog-centered">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">Thêm môn thể thao mới</h5>
-                  <button type="button" className="btn-close" onClick={() => setShowAdd(false)}></button>
+        <BootstrapModal
+          show={showAdd}
+          onHide={() => { setShowAdd(false); setForm({}); setErrors([]); }}
+          title="Thêm môn thể thao mới"
+          size="lg"
+          contentMaxHeight="95vh"
+          bodyMaxHeight="85vh"
+          topOffset="5vh"
+          bodyClassName="p-4"
+          footer={
+            <>
+              <button type="button" className="btn btn-secondary" onClick={() => { setShowAdd(false); setForm({}); setErrors([]); }}>Đóng</button>
+              <button type="button" className="btn btn-primary" onClick={handleAddSportType}>Thêm</button>
+            </>
+          }
+        >
+          <form>
+            <div className="row g-3">
+              <div className="col-sm-12">
+                <div className="form-group">
+                  <label>Mã môn thể thao <span className="text-danger">*</span></label>
+                  <input className="form-control" type="text"
+                    value={form.sporttypeid || ""}
+                    onChange={e => handleFormChange("sporttypeid", e.target.value)}
+                  />
+                  {errors.filter(e => e.field === "sporttypeid").map((e, i) => (
+                    <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                  ))}
                 </div>
-                <div className="modal-body">
-                  <form>
-                    <div className="row g-3">
-                      <div className="col-sm-12">
-                        <div className="form-group">
-                          <label>Mã môn thể thao <span className="text-danger">*</span></label>
-                          <input className="form-control" type="text"
-                            value={form.sporttypeid || ""}
-                            onChange={e => handleFormChange("sporttypeid", e.target.value)}
-                          />
-                          {errors.filter(e => e.field === "sporttypeid").map((e, i) => (
-                            <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="col-sm-12">
-                        <div className="form-group">
-                          <label>Tên môn thể thao <span className="text-danger">*</span></label>
-                          <input className="form-control" type="text"
-                            value={form.categoryname || ""}
-                            onChange={e => handleFormChange("categoryname", e.target.value)}
-                          />
-                          {errors.filter(e => e.field === "categoryname").map((e, i) => (
-                            <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-4 text-end">
-                      <button type="button" className="btn btn-primary" onClick={handleAddSportType}>
-                        Thêm môn thể thao mới
-                      </button>
-                    </div>
-                  </form>
+              </div>
+              <div className="col-sm-12">
+                <div className="form-group">
+                  <label>Tên môn thể thao <span className="text-danger">*</span></label>
+                  <input className="form-control" type="text"
+                    value={form.categoryname || ""}
+                    onChange={e => handleFormChange("categoryname", e.target.value)}
+                  />
+                  {errors.filter(e => e.field === "categoryname").map((e, i) => (
+                    <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                  ))}
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          </form>
+        </BootstrapModal>
 
         {/* Edit Modal */}
-        {showEdit && (
-          <div className="modal fade show" style={{ display: "block" }}>
-            <div className="modal-dialog modal-lg modal-dialog-centered">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">Chỉnh sửa môn thể thao</h5>
-                  <button type="button" className="btn-close" onClick={() => setShowEdit(false)}></button>
+        <BootstrapModal
+          show={showEdit}
+          onHide={() => { setShowEdit(false); setForm({}); setErrors([]); }}
+          title="Chỉnh sửa môn thể thao"
+          size="lg"
+          contentMaxHeight="95vh"
+          bodyMaxHeight="85vh"
+          topOffset="5vh"
+          bodyClassName="p-4"
+          footer={
+            <>
+              <button type="button" className="btn btn-secondary" onClick={() => { setShowEdit(false); setForm({}); setErrors([]); }}>Đóng</button>
+              <button type="button" className="btn btn-primary" onClick={handleEditSportType}>Cập nhật</button>
+            </>
+          }
+        >
+          <form>
+            <div className="row g-3">
+              <div className="col-sm-12">
+                <div className="form-group">
+                  <label>Mã môn thể thao <span className="text-danger">*</span></label>
+                  <input className="form-control" type="text"
+                    value={form.sporttypeid || ""}
+                    onChange={e => handleFormChange("sporttypeid", e.target.value)}
+                    readOnly
+                  />
+                  {errors.filter(e => e.field === "sporttypeid").map((e, i) => (
+                    <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                  ))}
                 </div>
-                <div className="modal-body">
-                  <form>
-                    <div className="row g-3">
-                      <div className="col-sm-12">
-                        <div className="form-group">
-                          <label>Mã môn thể thao <span className="text-danger">*</span></label>
-                          <input className="form-control" type="text"
-                            value={form.sporttypeid || ""}
-                            onChange={e => handleFormChange("sporttypeid", e.target.value)}
-                            readOnly
-                          />
-                          {errors.filter(e => e.field === "sporttypeid").map((e, i) => (
-                            <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="col-sm-12">
-                        <div className="form-group">
-                          <label>Tên môn thể thao <span className="text-danger">*</span></label>
-                          <input className="form-control" type="text"
-                            value={form.categoryname || ""}
-                            onChange={e => handleFormChange("categoryname", e.target.value)}
-                          />
-                          {errors.filter(e => e.field === "categoryname").map((e, i) => (
-                            <div key={i} className="badge bg-danger mt-1">{e.message}</div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-4 text-end">
-                      <button type="button" className="btn btn-primary" onClick={handleEditSportType}>
-                        Chỉnh sửa môn thể thao mới
-                      </button>
-                    </div>
-                  </form>
+              </div>
+              <div className="col-sm-12">
+                <div className="form-group">
+                  <label>Tên môn thể thao <span className="text-danger">*</span></label>
+                  <input className="form-control" type="text"
+                    value={form.categoryname || ""}
+                    onChange={e => handleFormChange("categoryname", e.target.value)}
+                  />
+                  {errors.filter(e => e.field === "categoryname").map((e, i) => (
+                    <div key={i} className="badge bg-danger mt-1">{e.message}</div>
+                  ))}
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          </form>
+        </BootstrapModal>
 
         {/* Toast/Notification */}
         <div id="toast"></div>

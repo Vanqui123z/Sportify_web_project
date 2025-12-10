@@ -5,6 +5,7 @@
 package duan.sportify.entities;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -87,6 +88,12 @@ public class Users implements Serializable {
 
     @Column(name = "status")
     private Boolean status;
+
+    @Column(name = "failed_attempt", columnDefinition = "INT DEFAULT 0")
+    private Integer failedAttempt = 0;
+
+    @Column(name = "locked_until")
+    private LocalDateTime lockedUntil = null;
 
     // --- ENTITY LINKS ( RELATIONSHIP )
     @JsonIgnore

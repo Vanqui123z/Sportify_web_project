@@ -1,5 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import BootstrapModal from '../../components/admin/BootstrapModal';
 import ListCardBank from "../../components/user/ListCardBank";
 const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 
@@ -300,7 +301,7 @@ const BookingPage: React.FC = () => {
             </select>
           </div>
           <div className="col-md-3 d-flex align-items-end gap-2">
-            <button type="button" className="btn btn-success w-100">Tìm kiếm</button>
+            <button type="submit" className="btn btn-success w-100">Tìm kiếm</button>
             <button type="button" className="btn btn-secondary w-100" onClick={handleRefresh}>Làm mới</button>
           </div>
         </form>
@@ -377,231 +378,206 @@ const BookingPage: React.FC = () => {
         </div>
 
         {/* Edit Modal */}
-        {showEdit && (
-          <div className="modal fade show" style={{ display: "block" }}>
-            <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" style={{ maxWidth: 1300 }}>
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">Chi tiết phiếu đặt sân</h5>
-                  <button type="button" className="btn-close" onClick={() => setShowEdit(false)}></button>
+        <BootstrapModal
+          show={showEdit}
+          onHide={() => setShowEdit(false)}
+          title="Chi tiết phiếu đặt sân"
+          size="xl"
+          contentMaxHeight="100vh"
+          bodyMaxHeight="90vh"
+          topOffset="5vh"
+          bodyClassName="p-4"
+          footer={
+            <div className="mt-4 text-end">
+              <button
+                type="button"
+                className={`btn ${form.refund === true ? 'btn-secondary' : 'btn-warning'} me-2`}
+                onClick={handleRefundClick}
+                disabled={form.refund === true}
+              >
+                {form.refund === true ? 'Đã hoàn tiền' : 'Hoàn tiền'}
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleUpdateBooking}
+              >
+                Chỉnh sửa phiếu đặt sân
+              </button>
+            </div>
+          }
+        >
+          <form>
+            <div className="row g-3">
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Mã phiếu <span className="text-danger">*</span></label>
+                  <input className="form-control" type="text" value={form.bookingid || ""} readOnly />
                 </div>
-                <div className="modal-body">
-                  <form>
-                    <div className="row g-3">
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Mã phiếu <span className="text-danger">*</span></label>
-                          <input className="form-control" type="text" value={form.bookingid || ""} readOnly />
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Người đặt <span className="text-danger">*</span></label>
-                          <input className="form-control" type="text" value={form.username || ""} readOnly />
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Ngày đặt <span className="text-danger">*</span></label>
-                          <input className="form-control" type="text" value={formatDate(form.bookingdate || "")} readOnly />
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Số điện thoại <span className="text-danger">*</span></label>
-                          <input className="form-control" type="text" value={form.phone || ""} readOnly />
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Trạng thái <span className="text-danger">*</span></label>
-                          <select className="form-select"
-                            value={form.bookingstatus || ""}
-                            onChange={e => handleFormChange("bookingstatus", e.target.value)}
-                          >
-                            <option value="Đã Cọc">Đã Cọc</option>
-                            <option value="Hoàn Thành">Hoàn Thành</option>
-                            <option value="Hủy Đặt">Hủy Đặt</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Thành tiền <span className="text-danger">*</span></label>
-                          <input className="form-control" type="text" value={formatCurrency(form.bookingprice || 0)} readOnly />
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>Ngày booking <span className="text-danger">*</span></label>
-                          <input className="form-control" type="text" value={formatDate(form.bookingdate || "")} readOnly />
-                        </div>
-                      </div>
-                      <div className="col-sm-12">
-                        <div className="form-group">
-                          <label>Ghi chú</label>
-                          <textarea className="form-control" value={form.note || ""} readOnly />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="col-md-12 d-flex mt-4">
-                      <div className="card card-table flex-fill">
-                        <div className="card-body">
-                          <div className="table-responsive">
-                            <table className="table table-nowrap custom-table mb-0">
-                              <thead>
-                                <tr>
-                                  <th>#</th>
-                                  <th>Tên sân</th>
-                                  <th>Ngày chơi</th>
-                                  <th>Ca</th>
-                                  <th>Số tiền đã cọc</th>
-                                  <th>Số tiền còn lại</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {(bookingDetail.length === 0 && bookingPermanent.length > 0) ?
-                                  bookingPermanent.map((p, idx) => (
-                                    <tr key={p.bookingId}>
-                                      <td>{idx + 1}</td>
-                                      <td>{p.fieldName}</td>
-                                      <td>{p.startDate} - {p.endDate} (Thứ {p.dayOfWeek})</td>
-                                      <td>{p.shiftName}</td>
-                                      <td>{formatCurrency(p.price * 0.3)}</td>
-                                      <td>{formatCurrency(p.price - (p.price * 0.3))}</td>
-                                    </tr>
-                                  ))
-                                  : bookingDetail.map((b, idx) => (
-                                    <tr key={b.bookingdetailid}>
-                                      <td>{idx + 1}</td>
-                                      <td>{b.field?.namefield || ""}</td>
-                                      <td>{b.playdate}</td>
-                                      <td>{b.shifts?.nameshift || ""}</td>
-                                      <td>{formatCurrency((form.bookingprice || 0) * 0.3)}</td>
-                                      <td>{formatCurrency((form.bookingprice || 0) - ((form.bookingprice || 0) * 0.3))}</td>
-                                    </tr>
-                                  ))
-                                }
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-4 text-end">
-                      <button
-                        type="button"
-                        className={`btn ${form.refund === true ? 'btn-secondary' : 'btn-warning'} me-2`}
-                        onClick={handleRefundClick}
-                        disabled={form.refund === true}
-                      >
-                        {form.refund === true ? 'Đã hoàn tiền' : 'Hoàn tiền'}
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-primary"
-                        onClick={handleUpdateBooking}
-                      >
-                        Chỉnh sửa phiếu đặt sân
-                      </button>
-                    </div>
-                  </form>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Người đặt <span className="text-danger">*</span></label>
+                  <input className="form-control" type="text" value={form.username || ""} readOnly />
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Ngày đặt <span className="text-danger">*</span></label>
+                  <input className="form-control" type="text" value={formatDate(form.bookingdate || "")} readOnly />
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Số điện thoại <span className="text-danger">*</span></label>
+                  <input className="form-control" type="text" value={form.phone || ""} readOnly />
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Trạng thái <span className="text-danger">*</span></label>
+                  <select className="form-select"
+                    value={form.bookingstatus || ""}
+                    onChange={e => handleFormChange("bookingstatus", e.target.value)}
+                  >
+                    <option value="Đã Cọc">Đã Cọc</option>
+                    <option value="Hoàn Thành">Hoàn Thành</option>
+                    <option value="Hủy Đặt">Hủy Đặt</option>
+                  </select>
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Thành tiền <span className="text-danger">*</span></label>
+                  <input className="form-control" type="text" value={formatCurrency(form.bookingprice || 0)} readOnly />
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Ngày booking <span className="text-danger">*</span></label>
+                  <input className="form-control" type="text" value={formatDate(form.bookingdate || "")} readOnly />
+                </div>
+              </div>
+              <div className="col-sm-12">
+                <div className="form-group">
+                  <label>Ghi chú</label>
+                  <textarea className="form-control" value={form.note || ""} readOnly />
                 </div>
               </div>
             </div>
-          </div>
-        )}
+            <div className="col-md-12 d-flex mt-4">
+              <div className="card card-table flex-fill">
+                <div className="card-body">
+                  <div className="table-responsive" style={{ maxHeight: '75vh', overflowY: 'auto' }}>
+                    <table className="table table-nowrap custom-table mb-0">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Tên sân</th>
+                          <th>Ngày chơi</th>
+                          <th>Ca</th>
+                          <th>Số tiền đã cọc</th>
+                          <th>Số tiền còn lại</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(bookingDetail.length === 0 && bookingPermanent.length > 0) ?
+                          bookingPermanent.map((p, idx) => (
+                            <tr key={p.bookingId}>
+                              <td>{idx + 1}</td>
+                              <td>{p.fieldName}</td>
+                              <td>{p.startDate} - {p.endDate} (Thứ {p.dayOfWeek})</td>
+                              <td>{p.shiftName}</td>
+                              <td>{formatCurrency(p.price * 0.3)}</td>
+                              <td>{formatCurrency(p.price - (p.price * 0.3))}</td>
+                            </tr>
+                          ))
+                          : bookingDetail.map((b, idx) => (
+                            <tr key={b.bookingdetailid}>
+                              <td>{idx + 1}</td>
+                              <td>{b.field?.namefield || ""}</td>
+                              <td>{b.playdate}</td>
+                              <td>{b.shifts?.nameshift || ""}</td>
+                              <td>{formatCurrency((form.bookingprice || 0) * 0.3)}</td>
+                              <td>{formatCurrency((form.bookingprice || 0) - ((form.bookingprice || 0) * 0.3))}</td>
+                            </tr>
+                          ))
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </BootstrapModal>
 
         {/* Refund Confirmation Modal */}
-        {showRefundConfirm && (
-          <div className="modal fade show" style={{ display: "block" }}>
-            <div className="modal-dialog">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">Xác nhận hoàn tiền</h5>
-                  <button type="button" className="btn-close" onClick={() => setShowRefundConfirm(false)}></button>
-                </div>
-                <div className="modal-body">
-                  <p>Bạn muốn hoàn {formatCurrency(getRefundAmount())} cho đơn {form.bookingid}?</p>
-                  <small className="text-muted">
-                    {form.bookingstatus === "Đã Cọc"
-                      ? "(Hoàn lại tiền cọc 30%)"
-                      : "(Hoàn lại toàn bộ số tiền)"}
-                  </small>
-                </div>
-                <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" onClick={() => setShowRefundConfirm(false)}>Không</button>
-                  <button type="button" className="btn btn-primary" onClick={handleRefundConfirm}>Có</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <BootstrapModal
+          show={showRefundConfirm}
+          onHide={() => setShowRefundConfirm(false)}
+          title="Xác nhận hoàn tiền"
+          footer={
+            <>
+              <button type="button" className="btn btn-secondary" onClick={() => setShowRefundConfirm(false)}>Không</button>
+              <button type="button" className="btn btn-primary" onClick={handleRefundConfirm}>Có</button>
+            </>
+          }
+        >
+          <p>Bạn muốn hoàn {formatCurrency(getRefundAmount())} cho đơn {form.bookingid}?</p>
+          <small className="text-muted">
+            {form.bookingstatus === "Đã Cọc"
+              ? "(Hoàn lại tiền cọc 30%)"
+              : "(Hoàn lại toàn bộ số tiền)"}
+          </small>
+        </BootstrapModal>
 
         {/* Card Selection Modal */}
-        {showCardSelection && (
-          <div className="modal fade show" style={{ display: "block" }}>
-            <div className="modal-dialog">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">Chọn thẻ hoàn tiền</h5>
-                  <button type="button" className="btn-close" onClick={() => setShowCardSelection(false)}></button>
-                </div>
-                <div className="modal-body">
-                  <ListCardBank
-                    username={username}
-                    selectedCardId={selectedCard}
-                    onCardSelect={handleCardSelect}
-                    showDeleteButton={false}
-                    showDefaultButton={false}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <BootstrapModal
+          show={showCardSelection}
+          onHide={() => setShowCardSelection(false)}
+          title="Chọn thẻ hoàn tiền"
+        >
+          <ListCardBank
+            username={username}
+            selectedCardId={selectedCard}
+            onCardSelect={handleCardSelect}
+            showDeleteButton={false}
+            showDefaultButton={false}
+          />
+        </BootstrapModal>
 
         {/* New Confirmation Modal for Final Refund Confirmation */}
-        {showCardConfirm && (
-          <div className="modal fade show" style={{ display: "block" }}>
-            <div className="modal-dialog">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">Xác nhận cuối cùng</h5>
-                  <button
-                    type="button"
-                    className="btn-close"
-                    onClick={() => setShowCardConfirm(false)}
-                  ></button>
-                </div>
-                <div className="modal-body">
-                  <p>Xác nhận hoàn tiền với thông tin:</p>
-                  <ul className="list-unstyled">
-                    <li>Số tiền: {formatCurrency(selectedCardData?.amount || 0)}</li>
-                    <li>Mã đơn: {form.bookingid}</li>
-                    <li>Mã thẻ: {selectedCardData?.cardId}</li>
-                  </ul>
-                </div>
-                <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => setShowCardConfirm(false)}
-                  >
-                    Hủy
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={handleFinalConfirm}
-                  >
-                    Xác nhận hoàn tiền
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <BootstrapModal
+          show={showCardConfirm}
+          onHide={() => setShowCardConfirm(false)}
+          title="Xác nhận cuối cùng"
+          footer={
+            <>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setShowCardConfirm(false)}
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleFinalConfirm}
+              >
+                Xác nhận hoàn tiền
+              </button>
+            </>
+          }
+        >
+          <p>Xác nhận hoàn tiền với thông tin:</p>
+          <ul className="list-unstyled">
+            <li>Số tiền: {formatCurrency(selectedCardData?.amount || 0)}</li>
+            <li>Mã đơn: {form.bookingid}</li>
+            <li>Mã thẻ: {selectedCardData?.cardId}</li>
+          </ul>
+        </BootstrapModal>
 
         {/* Toast/Notification */}
         <div id="toast"></div>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { BookingStatusRadarChart, BookingRevenueBarChart } from "../../components/admin/Chart";
+import { BookingRevenueBarChart, BookingStatusRadarChart } from "../../components/admin/Chart";
 import { AuthContext } from "../../helper/AuthContext";
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 
 const months = [
   "01", "02", "03", "04", "05", "06",
@@ -25,14 +26,14 @@ const OwnerReportBooking: React.FC = () => {
   useEffect(() => {
     if (ownerUsername) {
       setLoading(true);
-      fetch(`http://localhost:8081/rest/reportBooking/getYearBookingByOwner?ownerUsername=${ownerUsername}`)
+      fetch(`${URL_BACKEND}/rest/reportBooking/getYearBookingByOwner?ownerUsername=${ownerUsername}`)
         .then(res => res.json())
         .then(data => setYears(data.map((y: string[]) => y[0])))
         .catch(err => console.error("Error fetching years:", err))
         .finally(() => setLoading(false));
 
       // Fetch owner's bookings
-      fetch(`http://localhost:8081/rest/bookings/getByOwner/${ownerUsername}`)
+      fetch(`${URL_BACKEND}/rest/bookings/getByOwner/${ownerUsername}`)
         .then(res => res.json())
         .then(data => setBookings(data))
         .catch(err => console.error("Error fetching bookings:", err));
@@ -44,23 +45,23 @@ const OwnerReportBooking: React.FC = () => {
     if (!ownerUsername || !year) return;
 
     if (month) {
-      fetch(`http://localhost:8081/rest/reportBooking/rpDoanhThuBookingTrongThangByOwner?year=${year}&month=${month}&ownerUsername=${ownerUsername}`)
+      fetch(`${URL_BACKEND}/rest/reportBooking/rpDoanhThuBookingTrongThangByOwner?year=${year}&month=${month}&ownerUsername=${ownerUsername}`)
         .then(res => res.json())
         .then(setRpDTThang)
         .catch(err => console.error("Error fetching DTThang:", err));
 
-      fetch(`http://localhost:8081/rest/reportBooking/rpSoLuongBookingTrongThangByOwner?year=${year}&month=${month}&ownerUsername=${ownerUsername}`)
+      fetch(`${URL_BACKEND}/rest/reportBooking/rpSoLuongBookingTrongThangByOwner?year=${year}&month=${month}&ownerUsername=${ownerUsername}`)
         .then(res => res.json())
         .then(setRpSLThang)
         .catch(err => console.error("Error fetching SLThang:", err));
     }
 
-    fetch(`http://localhost:8081/rest/reportBooking/rpDoanhThuBookingTrongNamByOwner?year=${year}&ownerUsername=${ownerUsername}`)
+    fetch(`${URL_BACKEND}/rest/reportBooking/rpDoanhThuBookingTrongNamByOwner?year=${year}&ownerUsername=${ownerUsername}`)
       .then(res => res.json())
       .then(setRpDTNam)
       .catch(err => console.error("Error fetching DTNam:", err));
 
-    fetch(`http://localhost:8081/rest/reportBooking/rpSoLuongBookingTrongNamByOwner?year=${year}&ownerUsername=${ownerUsername}`)
+    fetch(`${URL_BACKEND}/rest/reportBooking/rpSoLuongBookingTrongNamByOwner?year=${year}&ownerUsername=${ownerUsername}`)
       .then(res => res.json())
       .then(setRpSLNam)
       .catch(err => console.error("Error fetching SLNam:", err));
@@ -73,7 +74,7 @@ const OwnerReportBooking: React.FC = () => {
     if (type === "DTThang") url = `/rest/reportBooking/downloadExcelDTBookingThang?year=${year}&month=${month}`;
     if (type === "SLNam") url = `/rest/reportBooking/downloadExcelSLBookingNam?year=${year}`;
     if (type === "SLThang") url = `/rest/reportBooking/downloadExcelSLBookingThang?year=${year}&month=${month}`;
-    window.open("http://localhost:8081" + url, "_blank");
+    window.open(`${URL_BACKEND}` + url, "_blank");
   };
 
   return (

@@ -16,23 +16,33 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+@Component
 public class VNPayConfig {
-	// Lấy từ application.properties hoặc biến môi trường
 	@Value("${backend.url}")
-	private static String BACKEND_URL;
+	private String backendUrl;
 
-	public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-	public static String vnp_Token = "https://sandbox.vnpayment.vn/token_ui/create-token.html";
-	public static String vnp_PayToken = "https://sandbox.vnpayment.vn/token_ui/payment-token.html";
-	public static String vnp_Returnurl = BACKEND_URL + "/api/user/payment/checkoutResult";
-	public static String vnp_ReturnurlToken = BACKEND_URL + "/api/user/token-payment";
-	public static String vnp_TmnCode = "GMSZE87J";
-	public static String vnp_HashSecret = "DCZRJJWNSBMX4L9ZKXNI7A64ANITCKGF";
-	public static String vnp_Cancelurl = BACKEND_URL + "/api/user/payment";
-	public static String vnp_Version = "2.1.0";
-	public static String vnp_Command = "pay";
-	public static String vnp_apiUrl = "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
+	public String getVnp_Returnurl() {
+		return backendUrl + "/api/user/payment/checkoutResult";
+	}
+
+	public String getVnp_ReturnurlToken() {
+		return backendUrl + "/api/user/token-payment";
+	}
+
+	public String getVnp_Cancelurl() {
+		return backendUrl + "/api/user/payment";
+	}
+
+	public static final String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+	public static final String vnp_Token = "https://sandbox.vnpayment.vn/token_ui/create-token.html";
+	public static final String vnp_PayToken = "https://sandbox.vnpayment.vn/token_ui/payment-token.html";
+	public static final String vnp_TmnCode = "GMSZE87J";
+	public static final String vnp_HashSecret = "DCZRJJWNSBMX4L9ZKXNI7A64ANITCKGF";
+	public static final String vnp_Version = "2.1.0";
+	public static final String vnp_Command = "pay";
+	public static final String vnp_apiUrl = "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
 
 	public static String Sha256(String message) {
 		String digest = null;
@@ -53,14 +63,14 @@ public class VNPayConfig {
 	}
 
 	// Util for VNPAY
-	public static String hashAllFields(Map fields) {
-		List fieldNames = new ArrayList(fields.keySet());
+	public static String hashAllFields(Map<String, String> fields) {
+		List<String> fieldNames = new ArrayList<>(fields.keySet());
 		Collections.sort(fieldNames);
 		StringBuilder sb = new StringBuilder();
-		Iterator itr = fieldNames.iterator();
+		Iterator<String> itr = fieldNames.iterator();
 		while (itr.hasNext()) {
-			String fieldName = (String) itr.next();
-			String fieldValue = (String) fields.get(fieldName);
+			String fieldName = itr.next();
+			String fieldValue = fields.get(fieldName);
 			if ((fieldValue != null) && (fieldValue.length() > 0)) {
 				sb.append(fieldName);
 				sb.append("=");

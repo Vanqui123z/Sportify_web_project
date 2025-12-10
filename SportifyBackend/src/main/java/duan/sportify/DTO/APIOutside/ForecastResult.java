@@ -1,7 +1,7 @@
 package duan.sportify.DTO.APIOutside;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
-
 
 @Data
 @AllArgsConstructor
@@ -11,4 +11,3 @@ public class ForecastResult {
     private String date;
     private double predictedBookings;
 }
-

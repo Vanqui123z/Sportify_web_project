@@ -1,5 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+import "../../styles/Sidebar.css";
 
 const Sidebar: React.FC = () => {
   return (
@@ -21,10 +22,23 @@ const Sidebar: React.FC = () => {
                 `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
               }
             >
-              <i className="fas fa-tachometer-alt me-3 text-primary"></i>
+              <i className="bi bi-speedometer2 mr-3 "></i>
               <span>Dashboard</span>
             </NavLink>
           </li>
+          <li className="nav-item mb-1">
+            <NavLink
+              to="/admin/manager-file-active"
+              className={({ isActive }) =>
+                `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
+              }
+            >
+              <i className="bi bi-speedometer mr-3 "></i>
+              <span>Quản lí trạng thái sân</span>
+            </NavLink>
+          </li>
+
+
 
           <li className="nav-item mb-1">
             <NavLink
@@ -33,7 +47,7 @@ const Sidebar: React.FC = () => {
                 `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
               }
             >
-              <i className="fas fa-store me-3 text-success"></i>
+              <i className="bi bi-box-seam mr-3"></i>
               <span>Sản phẩm</span>
             </NavLink>
           </li>
@@ -45,7 +59,7 @@ const Sidebar: React.FC = () => {
                 `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
               }
             >
-              <i className="fas fa-futbol me-3 text-warning"></i>
+              <i className="bi bi-basket3 mr-3"></i>
               <span>Sân thể thao</span>
             </NavLink>
           </li>
@@ -57,7 +71,7 @@ const Sidebar: React.FC = () => {
                 `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
               }
             >
-              <i className="fas fa-users-cog me-3 text-info"></i>
+              <i className="bi bi-people mr-3"></i>
               <span>Quản lý tài khoản</span>
             </NavLink>
           </li>
@@ -70,7 +84,7 @@ const Sidebar: React.FC = () => {
                 `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
               }
             >
-              <i className="fas fa-users-cog me-3 text-info"></i>
+              <i className="bi bi-person-badge mr-3"></i>
               <span>Quản lý chủ sân</span>
             </NavLink>
           </li>
@@ -82,7 +96,7 @@ const Sidebar: React.FC = () => {
                 `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
               }
             >
-              <i className="fas fa-newspaper me-3 text-danger"></i>
+              <i className="bi bi-newspaper mr-3"></i>
               <span>Tin tức & Sự kiện</span>
             </NavLink>
           </li>
@@ -99,7 +113,6 @@ const Sidebar: React.FC = () => {
                     data-bs-target="#otherMenu"
                   >
                     <span>Khác</span>
-                    <span className="caret-indicator">▾</span>
                   </button>
                 </h6>
                 <div
@@ -116,7 +129,6 @@ const Sidebar: React.FC = () => {
                             `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
                           }
                         >
-                          <i className="fas fa-gift me-3 text-primary"></i>
                           <span>Mã giảm giá</span>
                         </NavLink>
                       </li>
@@ -127,7 +139,6 @@ const Sidebar: React.FC = () => {
                             `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
                           }
                         >
-                          <i className="fas fa-comments me-3 text-success"></i>
                           <span>Liên hệ</span>
                         </NavLink>
                       </li>
@@ -138,7 +149,6 @@ const Sidebar: React.FC = () => {
                             `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
                           }
                         >
-                          <i className="fas fa-comments me-3 text-success"></i>
                           <span>Quản lý bình luận</span>
                         </NavLink>
                       </li>
@@ -160,8 +170,9 @@ const Sidebar: React.FC = () => {
                     data-bs-toggle="collapse"
                     data-bs-target="#bookingMenu"
                   >
+                    <i className="bi bi-card-checklist mr-3"></i>
                     <span>Quản lý phiếu đặt</span>
-                    <span className="caret-indicator">▾</span>
+
                   </button>
                 </h6>
                 <div
@@ -178,7 +189,6 @@ const Sidebar: React.FC = () => {
                             `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
                           }
                         >
-                          <i className="fas fa-ticket-alt me-3 text-primary"></i>
                           <span>Lịch đặt sân</span>
                         </NavLink>
                       </li>
@@ -189,7 +199,6 @@ const Sidebar: React.FC = () => {
                             `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
                           }
                         >
-                          <i className="fas fa-ticket-alt me-3 text-primary"></i>
                           <span>Quản lí đặt sân </span>
                         </NavLink>
                       </li>
@@ -201,7 +210,6 @@ const Sidebar: React.FC = () => {
                             `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
                           }
                         >
-                          <i className="fas fa-receipt me-3 text-success"></i>
                           <span>Đơn hàng</span>
                         </NavLink>
                       </li>
@@ -212,7 +220,6 @@ const Sidebar: React.FC = () => {
                             `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
                           }
                         >
-                          <i className="fas fa-ticket-alt me-3 text-primary"></i>
                           <span>Quản lí đơn hàng  </span>
                         </NavLink>
                       </li>
@@ -234,8 +241,9 @@ const Sidebar: React.FC = () => {
                     data-bs-toggle="collapse"
                     data-bs-target="#categoryMenu"
                   >
+                    <i className="bi bi-tags mr-3"></i>
                     <span>Quản lý thể loại</span>
-                    <span className="caret-indicator">▾</span>
+
                   </button>
                 </h6>
                 <div
@@ -252,7 +260,6 @@ const Sidebar: React.FC = () => {
                             `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
                           }
                         >
-                          <i className="fas fa-tshirt me-3 text-primary"></i>
                           <span>Loại sản phẩm</span>
                         </NavLink>
                       </li>
@@ -263,7 +270,6 @@ const Sidebar: React.FC = () => {
                             `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
                           }
                         >
-                          <i className="fas fa-running me-3 text-success"></i>
                           <span>Loại thể thao</span>
                         </NavLink>
                       </li>
@@ -285,8 +291,9 @@ const Sidebar: React.FC = () => {
                     data-bs-toggle="collapse"
                     data-bs-target="#reportMenu"
                   >
+                    <i className="bi bi-bar-chart mr-3"></i>
                     <span>Báo cáo thống kê</span>
-                    <span className="caret-indicator">▾</span>
+
                   </button>
                 </h6>
                 <div
@@ -303,7 +310,6 @@ const Sidebar: React.FC = () => {
                             `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
                           }
                         >
-                          <i className="fas fa-chart-line me-3 text-primary"></i>
                           <span>Thống kê đặt sân</span>
                         </NavLink>
                       </li>
@@ -314,7 +320,6 @@ const Sidebar: React.FC = () => {
                             `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
                           }
                         >
-                          <i className="fas fa-chart-area me-3 text-success"></i>
                           <span>Thống kê bán hàng</span>
                         </NavLink>
                       </li>
@@ -331,7 +336,7 @@ const Sidebar: React.FC = () => {
                 `nav-link d-flex align-items-center py-2 px-3 rounded text-dark${isActive ? ' active' : ''}`
               }
             >
-              <i className="fas fa-cogs me-3 text-secondary"></i>
+              <i className="bi bi-robot mr-3"></i>
               <span>AI hỗ trợ</span>
             </NavLink>
           </li>

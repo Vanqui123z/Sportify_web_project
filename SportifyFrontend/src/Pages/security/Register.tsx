@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { validateSignup } from '../../helper/validateSignup';
 const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 
+
 type OwnerFormState = {
 	applicantName: string;
 	phone: string;
@@ -209,7 +210,7 @@ export default function Register() {
 				formData.append('businessLicense', ownerForm.businessLicense);
 			}
 
-			const response = await fetch('http://localhost:8081/api/sportify/field-owner/register', {
+			const response = await fetch('${URL_BACKEND}/api/sportify/field-owner/register', {
 				method: 'POST',
 				body: formData,
 			});

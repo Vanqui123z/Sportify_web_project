@@ -68,7 +68,7 @@ const AccountPage: React.FC = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8081/api/rest/accounts/getAll")
+      .get(`${URL_BACKEND}/api/rest/accounts/getAll`)
       .then(res => setAccounts(res.data))
       .catch(err => {
         console.error("Failed to load accounts:", err);

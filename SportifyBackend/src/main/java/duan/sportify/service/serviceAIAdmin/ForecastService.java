@@ -1,13 +1,16 @@
 package duan.sportify.service.serviceAIAdmin;
-import duan.sportify.DTO.APIOutside.ForecastResult;
-import duan.sportify.DTO.APIOutside.FieldUsage;
-import duan.sportify.DTO.APIOutside.HolidayEvent;
-import duan.sportify.DTO.APIOutside.WeatherForecast;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import duan.sportify.DTO.APIOutside.FieldUsage;
+import duan.sportify.DTO.APIOutside.ForecastResult;
+import duan.sportify.DTO.APIOutside.HolidayEvent;
+import duan.sportify.DTO.APIOutside.WeatherForecast;
 
 @Service
 public class ForecastService {
@@ -19,21 +22,14 @@ public class ForecastService {
     @Autowired
     ModelService modelService;
 
-  
-
     public List<ForecastResult> forecastNextWeek() throws Exception {
         // gọi Service để lấy dữ liệu từ API ngoài
-        //yearMonth = 2025/10
-        String yearMonth =  LocalDate.now().toString().substring(0,7);
+        // yearMonth = 2025/10
+        String yearMonth = LocalDate.now().toString().substring(0, 7);
         List<FieldUsage> usageMonth = dataFetchService.getFieldUsageByMonth(yearMonth);
-        List<FieldUsage> usageToday = dataFetchService.getFieldUsageByDate(LocalDate.now());
+        List<FieldUsage> usage7Day = dataFetchService.getFieldUsageBy7daylast();
         WeatherForecast weather = dataFetchService.getWeatherForecast();
         List<HolidayEvent> holidays = dataFetchService.getHolidays();
-
-        System.out.println("usageMonth: " + usageMonth);
-        System.out.println("usageToday: " + usageToday);
-        System.out.println("weather: " + weather);
-        System.out.println("holidays: " + holidays);
 
         List<ForecastResult> results = new ArrayList<>();
         // weather
@@ -42,26 +38,31 @@ public class ForecastService {
             WeatherForecast.ForecastDay weatherDay = weather.getForecast().stream()
                     .filter(f -> f.getDate().equals(targetDate.toString()))
                     .findFirst()
-                    .orElse(weather.getForecast().get(0)); 
+                    .orElse(weather.getForecast().get(0));
             // holiday
             boolean isHoliday = featureService.isHoliday(targetDate, holidays);
 
             // build feature vector
-            for (FieldUsage field : usageMonth) {
+            for (FieldUsage fieldMonth : usageMonth) {
+                // Tìm field tương ứng trong 7 ngày gần nhất
+                FieldUsage field7day = usage7Day.stream()
+                        .filter(f -> f.getFieldId() == fieldMonth.getFieldId())
+                        .findFirst()
+                        .orElse(null);
+
                 float[] featureVec = featureService.buildFeatureVector(
-                    field, 
-                    weatherDay, 
-                    isHoliday
-                );
+                        fieldMonth, // dữ liệu tháng
+                        field7day, // dữ liệu 7 ngày
+                        weatherDay,
+                        isHoliday);
                 // nạp ONNX model, chạy inference → kết quả dự đoán
-                float predicted = modelService.predictSingle(featureVec);
+                float predicted = modelService.predictSingle(featureVec) + 1;
 
                 results.add(new ForecastResult(
-                        field.getFieldId(),
-                        field.getFieldName(),
+                        fieldMonth.getFieldId(),
+                        fieldMonth.getFieldName(),
                         targetDate.toString(),
-                        (Math.floor(predicted))
-                ));
+                        (Math.floor(predicted))));
             }
         }
 

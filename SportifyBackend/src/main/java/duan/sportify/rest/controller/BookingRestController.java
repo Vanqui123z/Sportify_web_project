@@ -4,6 +4,7 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,15 +24,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import duan.sportify.GlobalExceptionHandler;
+import duan.sportify.DTO.booking.CreateBookingRequestDTO;
+import duan.sportify.DTO.booking.CreatePermanentBookingRequestDTO;
 import duan.sportify.dao.BookingDAO;
 import duan.sportify.dao.FieldDAO;
 import duan.sportify.dao.FieldOwnerRegistrationDAO;
 import duan.sportify.entities.Bookingdetails;
 import duan.sportify.entities.Bookings;
 import duan.sportify.entities.PermanentBooking;
+import duan.sportify.service.BookingService;
 import duan.sportify.utils.ErrorResponse;
 
-@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/rest/bookings/")
 public class BookingRestController {
@@ -44,6 +46,8 @@ public class BookingRestController {
 	FieldDAO fieldDAO;
 	@Autowired
 	FieldOwnerRegistrationDAO fieldOwnerDAO;
+	@Autowired
+	private BookingService bookingService;
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
@@ -53,6 +57,43 @@ public class BookingRestController {
 	@GetMapping("getAll")
 	public ResponseEntity<List<Bookings>> getAll(Model model) {
 		return ResponseEntity.ok(bookingDAO.findAllBooking());
+	}
+
+	@PostMapping("/create")
+	public ResponseEntity<?> createBooking(
+			@RequestBody CreateBookingRequestDTO body,
+			HttpServletRequest request) {
+
+		Bookings booking = bookingService.createBooking(
+				body.getUsername(),
+				body.getAmount(),
+				body.getPhone(),
+				body.getNote(),
+				body.getShiftId(),
+				body.getFieldId(),
+				body.getPlaydate(),
+				body.getPricefield());
+
+		return ResponseEntity.ok(booking);
+	}
+
+	@PostMapping("/create-permanent")
+	public ResponseEntity<?> createBookingPermanent(
+			@RequestBody CreatePermanentBookingRequestDTO body,
+			HttpServletRequest request) {
+
+		Bookings booking = bookingService.createBookingPermanent(
+				body.getUsername(),
+				body.getAmount(),
+				body.getPhone(),
+				body.getNote(),
+				body.getShifts(),
+				body.getFieldId(),
+				body.getPricefield(),
+				body.getStartDate(),
+				body.getEndDate());
+
+		return ResponseEntity.ok(booking);
 	}
 
 	@GetMapping("get/{id}")

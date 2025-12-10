@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { fetchProductList } from '../../../service/user/home/productApi';
-import getImageUrl from '../../../helper/getImageUrl';
 import HeroSection from "../../../components/user/Hero"; // Thêm import
+import getImageUrl from '../../../helper/getImageUrl';
+import { fetchProductList } from '../../../service/user/home/productApi';
 
 interface Category {
   categoryid: number;
@@ -74,50 +74,70 @@ const Product: React.FC = () => {
           <div className="row">
             {/* Search form */}
             <form onSubmit={handleSearchSubmit} className="mb-0 d-flex justify-content-center col-md-12">
-              <input 
-                value={searchText} 
-                onChange={(e) => setSearchText(e.target.value)} 
+              <input
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
                 name="searchText"
-                className="form-control me-2 col-6" 
+                className="form-control me-2 col-6"
                 type="search"
-                placeholder="Tìm kiếm theo tên" 
-                aria-label="Search" 
+                placeholder="Tìm kiếm theo tên"
+                aria-label="Search"
               />
               <button className="btn btn-outline-success col-2" type="submit">Search</button>
             </form>
 
             {/* Search results message */}
-            <div className="d-flex justify-content-center col-md-12 mt-1">
-              <div className="mr-4 col-md-8"></div>
+            <div className="col-12 mt-1">
+              {filteredProducts.length === 0 && searchText && (
+                <div className="text-center">Không tìm thấy sản phẩm nào phù hợp với từ khóa "{searchText}"</div>
+              )}
             </div>
-            <br />
 
-            {/* show sản phẩm */}
-            <div className="col-md-9">
-              {/* No products found message */}
-              <div className="col-md-12">
-                {filteredProducts.length === 0 && searchText && (
-                  <div>Không tìm thấy sản phẩm nào phù hợp với từ khóa "{searchText}"</div>
-                )}
+            {/* Category filter */}
+            <div className="col-12 mt-4">
+              <div
+                className="d-flex flex-wrap justify-content-center align-items-center border rounded py-3 px-4 bg-light"
+                style={{ gap: '0.75rem' }}
+              >
+                <span className="fw-semibold text-success">Loại sản phẩm:</span>
+                <button
+                  type="button"
+                  className={`btn ${selectedCategory === null ? 'btn-success text-white' : 'btn-outline-success'}`}
+                  onClick={() => setSelectedCategory(null)}
+                >
+                  Tất cả
+                </button>
+                {categoryList.map((category) => (
+                  <button
+                    key={category.categoryid}
+                    type="button"
+                    className={`btn ${selectedCategory === category.categoryid ? 'btn-success text-white' : 'btn-outline-success'}`}
+                    onClick={() => setSelectedCategory(category.categoryid)}
+                  >
+                    {category.categoryname}
+                  </button>
+                ))}
               </div>
+            </div>
 
-              {/* Product grid */}
+            {/* Product grid */}
+            <div className="col-12 mt-4">
               <div className="row">
                 {filteredProducts.map((product) => (
-                  <div key={product.productid} className="d-flex col-xl-4 col-lg-4 col-md-6 col-sm-12">
-                    <div className="product" style={{backgroundColor: '#EEEEEE'}}>
+                  <div key={product.productid} className="d-flex col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-4">
+                    <div className="product w-100" style={{ backgroundColor: '#EEEEEE' }}>
                       <div className="d-flex align-items-center justify-content-center">
                         <img
                           className="img d-flex align-items-center justify-content-center"
                           src={getImageUrl(product.image)}
                           alt="Error"
-                          style={{height: '250px', width: '255px', objectFit: 'fill'}}
+                          style={{ height: '250px', width: '100%', objectFit: 'cover' }}
                         />
                       </div>
                       <div className="text text-center">
                         <div className="row hoverIcons col-12">
                           <div className="col-12 mb-2">
-                            <a 
+                            <a
                               href={`/sportify/product-single/${product.productid}`}
                               className="btn btn-success btn-sm"
                             >
@@ -126,7 +146,7 @@ const Product: React.FC = () => {
                           </div>
                         </div>
                         <h2>{product.productname}</h2>
-                        <p className="mb-0">
+                        <div className="mb-0">
                           <p>
                             Giá gốc:
                             <del>{formatPrice(product.price)}</del>
@@ -134,51 +154,11 @@ const Product: React.FC = () => {
                           <p>
                             Giá bán: <span className="price">{formatPrice(product.discountprice)}</span>
                           </p>
-                        </p>
+                        </div>
                       </div>
                     </div>
                   </div>
                 ))}
-              </div>
-
-              <div className="row mt-5">
-                {/* Pagination can be added here if needed */}
-              </div>
-            </div>
-
-            {/* Sidebar */}
-            <div className="col-md-3">
-              {/* Category sidebar */}
-              <div className="sidebar-box">
-                <div className="categories">
-                  <h3>
-                    <a href="/sportify/product">Loại sản phẩm</a>
-                  </h3>
-                  <ul className="p-0">
-                    <li>
-                      <button 
-                        type="button" 
-                        className={`btn btn-link ${selectedCategory === null ? 'fw-bold text-primary' : 'text-muted'}`} 
-                        onClick={() => setSelectedCategory(null)}
-                        style={{textDecoration: 'none', padding: 0, border: 'none', background: 'none'}}
-                      >
-                        Tất cả
-                      </button>
-                    </li>
-                    {categoryList.map((category) => (
-                      <li key={category.categoryid}>
-                        <button 
-                          type="button" 
-                          className={`btn btn-link ${selectedCategory === category.categoryid ? 'fw-bold text-primary' : 'text-muted'}`} 
-                          onClick={() => setSelectedCategory(category.categoryid)}
-                          style={{textDecoration: 'none', padding: 0, border: 'none', background: 'none'}}
-                        >
-                          {category.categoryname}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
               </div>
             </div>
           </div>

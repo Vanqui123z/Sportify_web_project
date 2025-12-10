@@ -218,6 +218,38 @@ const Cart: React.FC = () => {
       });
   };
 
+  // Hàm kiểm tra số lượng đơn hàng trong ngày
+  const checkDailyOrderLimit = async (): Promise<boolean> => {
+    try {
+      const response = await fetch(`${URL_BACKEND}/api/user/order/count-today`, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+      if (data.success && data.count >= 10) {
+        alert("Bạn chỉ có thể đặt tối đa 10 đơn trong ngày. Hãy thử lại vào ngày mai!");
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error checking daily order limit:", error);
+      return true; // Cho phép tiếp tục nếu có lỗi khi kiểm tra
+    }
+  };
+
+  // Hàm xử lý thanh toán
+  const handlePayment = async () => {
+    const canProceed = await checkDailyOrderLimit();
+    if (canProceed) {
+      window.location.href = `/sportify/cart/checkout/items?ids=${selectedItems.join(',')}`;
+    }
+  };
+
 
   // Tính tổng tiền của các sản phẩm ĐƯỢC CHỌN
   const selectedTotalPrice = cart
@@ -386,12 +418,12 @@ const Cart: React.FC = () => {
               </div>
               <p className="text-center">
                 {selectedItems.length > 0 ? (
-                  <a
-                    href={`/sportify/cart/checkout/items?ids=${selectedItems.join(',')}`}
+                  <button
+                    onClick={handlePayment}
                     className="btn btn-primary py-3 px-4"
                   >
                     Thanh toán ({selectedItems.length} sản phẩm)
-                  </a>
+                  </button>
                 ) : (
                   <button
                     className="btn btn-secondary py-3 px-4"

@@ -321,7 +321,10 @@ const ManagerCardBank: React.FC = () => {
 
     return (
         <div className="list-card-container">
-            <h2>Quản lý thẻ thanh toán</h2>
+            <div className="list-card-heading">
+                <h2>Quản lý thẻ thanh toán</h2>
+                <p>Quản lý, thêm mới và thiết lập thẻ mặc định cho tài khoản thanh toán của bạn.</p>
+            </div>
 
             <div className="card-list">
                 {/* Extracted ListCardBank component */}

@@ -3,13 +3,15 @@ package duan.sportify.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import duan.sportify.Repository.CartRepository;
+
 import duan.sportify.Repository.CartItemRepository;
+import duan.sportify.Repository.CartRepository;
 import duan.sportify.dao.ProductDAO;
 import duan.sportify.entities.Cart;
 import duan.sportify.entities.CartItem;
 import duan.sportify.entities.Products;
 import duan.sportify.service.CartService;
+
 @Service
 public class CartServiceImpl implements CartService {
     @Autowired
@@ -63,7 +65,7 @@ public class CartServiceImpl implements CartService {
     @Override
     public void removeFromCart(String username, Integer cartItemId) {
         Cart cart = getActiveCart(username);
-        
+
         // Tìm và xóa cart item theo ID
         cartItemRepo.findById(cartItemId).ifPresent(cartItem -> {
             // Kiểm tra xem cart item có thuộc về giỏ hàng của user không
@@ -86,7 +88,7 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public void updateCartItemQuantity(String username, Integer cartItemId, int quantity) {
         Cart cart = getActiveCart(username);
-        
+
         cartItemRepo.findById(cartItemId).ifPresent(cartItem -> {
             // Kiểm tra xem cart item có thuộc về giỏ hàng của user không
             if (cartItem.getCart().getCartid().equals(cart.getCartid())) {
@@ -97,4 +99,5 @@ public class CartServiceImpl implements CartService {
             }
         });
     }
+
 }

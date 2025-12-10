@@ -1,5 +1,5 @@
 // API for Profile
-const URL_BACKEND = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8081';
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 
 export async function fetchProfile() {
   const res = await fetch(`${URL_BACKEND}/api/user/profile`, {

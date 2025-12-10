@@ -56,12 +56,10 @@ const TeamPage: React.FC = () => {
   const [showMyTeamsOnly, setShowMyTeamsOnly] = useState(false);
   const navigate = useNavigate();
 
-
+  const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 
   const handleEnterTeam = async (team: TeamItem) => {
-    console.log("Entering team:", team);
     try {
-      const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
       const response = await fetch(`${URL_BACKEND}/api/user/team/teamdetail/${team.id}`, {
         method: "GET",
         credentials: "include",
@@ -70,17 +68,20 @@ const TeamPage: React.FC = () => {
 
       const data = await response.json();
 
-      if (data.success && data.role) {
+      if (data.success) {
         // ✅ User là owner → chuyển hướng đến trang quản lý team
-        navigate(`/sportify/team/detailteam/${team.id}`);
-      }
-      else {
-        // ❌ Các trường hợp khác → hiện thông báo
-        addNotification(data.message, "info");
+        if (data.role === "owner" || data.role === "member") {
+          navigate(`/sportify/team/detailteam/${team.id}`);
+        } else {
+          alert(data.message);
+          addNotification(data.message, "success");
+        }
       }
     } catch (error: any) {
       console.error(error);
-      addNotification("Đã xảy ra lỗi khi kiểm tra team", "error");
+      const errorMessage = error.message || "Đã xảy ra lỗi khi kiểm tra team";
+      alert(errorMessage);
+      addNotification(errorMessage, "error");
     }
   };
 
@@ -206,13 +207,23 @@ const TeamPage: React.FC = () => {
       });
       const result = await res.json();
 
-      if (!result.success) throw new Error(result.message);
-
-      addNotification(`Đã tạo đội ${formData.newNameteam} thành công`, "success");
-      setShowModal(false);
-      fetchTeams(); // Reload
+      if (result.success) {
+        // Hiển thị message từ API hoặc message mặc định
+        const successMessage = result.message || `Đã tạo đội ${formData.newNameteam} thành công`;
+        alert(successMessage);
+        addNotification(successMessage, "success");
+        setShowModal(false);
+        fetchTeams(); // Reload
+      } else {
+        // Hiển thị message lỗi từ API
+        const errorMessage = result.message || "Tạo đội thất bại";
+        alert(errorMessage);
+        addNotification(errorMessage, "error");
+      }
     } catch (err: any) {
-      addNotification(err.message, "error");
+      const errorMessage = err.message || "Đã xảy ra lỗi khi tạo đội";
+      alert(errorMessage);
+      addNotification(errorMessage, "error");
     }
   };
 

@@ -1,9 +1,11 @@
-import React, { useEffect, useState, useContext } from 'react';
-import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import FullCalendar from '@fullcalendar/react';
+import React, { useContext, useEffect, useState } from 'react';
 import Modal from 'react-modal';
 import { AuthContext } from '../../helper/AuthContext';
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
+
 
 // Custom styles for Modal with better responsive design
 const customStyles = {
@@ -64,7 +66,7 @@ const OwnerBookingCalendar: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
-  
+
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -72,13 +74,13 @@ const OwnerBookingCalendar: React.FC = () => {
         setError('');
         setLoading(true);
         // Fetch calendar data for owner - using new endpoint that formats data for calendar
-        const res = await fetch(`http://localhost:8081/rest/bookings/calendar/owner/${encodeURIComponent(ownerUsername)}`);
+        const res = await fetch(`${URL_BACKEND}/rest/bookings/calendar/owner/${encodeURIComponent(ownerUsername)}`);
         if (!res.ok) {
           throw new Error('Không thể tải dữ liệu lịch');
         }
         const data: any[] = await res.json();
         let allEvents: any[] = [];
-        
+
         // Data từ API đã định dạng sẵn, chỉ cần convert thành format FullCalendar cần
         data.forEach((item) => {
           const titleDisplay = `ID: ${item.bookingId}`;
@@ -87,7 +89,7 @@ const OwnerBookingCalendar: React.FC = () => {
             title: titleDisplay,
             start: item.start,
             end: item.end,
-            extendedProps: { 
+            extendedProps: {
               type: item.type,
               className: item.type === 'PERMANENT' ? 'permanent-booking' : 'regular-booking'
             },
@@ -95,7 +97,7 @@ const OwnerBookingCalendar: React.FC = () => {
             borderColor: item.type === 'PERMANENT' ? '#46b8da' : '#47b754',
           });
         });
-        
+
         setEvents(allEvents);
       } catch (err) {
         setError('Lỗi khi tải dữ liệu lịch đặt sân');
@@ -114,9 +116,9 @@ const OwnerBookingCalendar: React.FC = () => {
     setLoading(true);
     setModalIsOpen(true);
     setError('');
-     const bookingId = Number(info.event.id);
+    const bookingId = Number(info.event.id);
     try {
-      const res = await fetch(`http://localhost:8081/api/rest/calander/${bookingId}`);
+      const res = await fetch(`${URL_BACKEND}/api/rest/calander/${bookingId}`);
       if (!res.ok) {
         throw new Error('Không thể tải chi tiết đặt sân');
       }
@@ -212,7 +214,7 @@ const OwnerBookingCalendar: React.FC = () => {
                 customButtons={{
                   todayButton: {
                     text: 'Hôm nay',
-                    click: function() {
+                    click: function () {
                       const calendarApi = document.querySelector('.fc')?.querySelector('.fc-today-button');
                       if (calendarApi) {
                         (calendarApi as HTMLElement).click();
@@ -251,7 +253,7 @@ const OwnerBookingCalendar: React.FC = () => {
               <div className="modal-header bg-success text-white border-0" style={{ backgroundColor: '#55ce63' }}>
                 <h5 className="modal-title">
                   <i className="bi bi-info-circle me-2"></i>
-                  Chi tiết đặt sân {bookingDetail.bookingType === 'PERMANENT' && 
+                  Chi tiết đặt sân {bookingDetail.bookingType === 'PERMANENT' &&
                     <span className="badge bg-info ms-2">Đặt cố định</span>}
                 </h5>
                 <button
@@ -330,7 +332,7 @@ const OwnerBookingCalendar: React.FC = () => {
                                 </span>
                               </div>
                             </div>
-                              <div className="col-sm-6 mb-2">
+                            <div className="col-sm-6 mb-2">
                               <small className="text-muted">Tên sân:</small>
                               <div>
                                 <span >
@@ -338,7 +340,7 @@ const OwnerBookingCalendar: React.FC = () => {
                                 </span>
                               </div>
                             </div>
-                            
+
                             <div className="col-sm-6 mb-2">
                               <small className="text-muted">Trạng thái:</small>
                               <div>
@@ -386,7 +388,7 @@ const OwnerBookingCalendar: React.FC = () => {
                                 <small className="text-muted">Đến ngày:</small>
                                 <div className="fw-bold text-success" style={{ color: '#55ce63' }}>{bookingDetail.endDate}</div>
                               </div>
-                              
+
                             </div>
                           ) : (
                             <div>

@@ -1,5 +1,5 @@
-const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 import React, { useEffect, useState } from "react";
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 
 interface User {
   username: string;

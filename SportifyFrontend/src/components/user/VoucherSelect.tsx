@@ -27,12 +27,11 @@ interface VoucherSelectProps {
 const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 const VoucherSelect: React.FC<VoucherSelectProps> = ({ username, tamtinh, onVoucherApplied, onApply }) => {
   const [userVouchers, setUserVouchers] = useState<UserVoucher[]>([]);
-  const [voucherOfUserId, setVoucherOfUserId] = useState<number | null>(null);
+  const [_voucherOfUserId, setVoucherOfUserId] = useState<number | null>(null);
   const [discountCode, setDiscountCode] = useState('');
   const [_appliedCode, setAppliedCode] = useState<string | null>(null);
   const [selectedVoucher, setSelectedVoucher] = useState<UserVoucher | null>(null);
 
-  console.log("voucherOfUserId", voucherOfUserId);
   useEffect(() => {
     if (username) {
       fetch(`${URL_BACKEND}/api/user/voucher-of-user?username=${username}`, {

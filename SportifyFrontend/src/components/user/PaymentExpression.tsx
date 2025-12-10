@@ -1,15 +1,18 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import ListCardBank from './ListCardBank';
 
 interface PaymentExpressionProps {
+  titleButton: string;
   showCardList: boolean;
   setShowCardList: (show: boolean) => void;
   username?: string;
-  selectedCardId?: string | undefined ;
+  selectedCardId?: string | undefined;
   setSelectedCardId: (cardId: string | undefined) => void;
 }
 
 const PaymentExpression: React.FC<PaymentExpressionProps> = ({
+  titleButton,
   showCardList,
   setShowCardList,
   username,
@@ -67,10 +70,10 @@ const PaymentExpression: React.FC<PaymentExpressionProps> = ({
 
       <div style={{ color: "black" }} className="font-italic">
         Khi nhấn vào nút này bạn công nhận mình đã đọc và đồng ý với các
-        <a href="/sportify/quydinh" style={{ color: "blue" }}> Điều khoản & Điều kiện </a> và
-        <a href="/sportify/chinhsach" style={{ color: "blue" }}> Chính sách quyền riêng tư</a> của Sportify.
+        <Link to="/sportify/regulations" style={{ color: "blue" }}> Điều khoản & Điều Kiện </Link> và
+        <Link to="/sportify/policy" style={{ color: "blue" }}> Chính sách quyền riêng tư</Link> của Sportify.
         <p>
-          <button type="submit" className="btn btn-primary py-3 px-4 mt-3">Đặt Sân</button>
+          <button type="submit" className="btn btn-primary py-3 px-4 mt-3">{titleButton}</button>
         </p>
       </div>
     </div>
