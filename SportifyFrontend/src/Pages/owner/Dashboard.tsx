@@ -69,22 +69,22 @@ interface OwnerDashboardDetailsResponse {
 const OwnerDashboard: React.FC = () => {
   const { user } = useContext(AuthContext);
   const ownerUsername = user?.username || "";
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [stats, setStats] = useState<DashboardStats>({
+  const [_stats, setStats] = useState<DashboardStats>({
     countBookingInDate: 0,
     countFieldActiving: 0,
     countProductActive: 0,
     countLienHe: 0,
   });
-  const [bookingStats, setBookingStats] = useState<BookingStats>({
+  const [_bookingStats, setBookingStats] = useState<BookingStats>({
     total: 0,
     completed: 0,
     deposit: 0,
     cancelled: 0,
     revenue: 0,
   });
-  const [contacts, setContacts] = useState<ContactItem[]>([]);
+  const [_contacts, setContacts] = useState<ContactItem[]>([]);
   const [topFields, setTopFields] = useState<TopField[]>([]);
 
   useEffect(() => {
