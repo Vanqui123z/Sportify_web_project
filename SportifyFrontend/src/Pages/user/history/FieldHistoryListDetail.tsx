@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import getImageUrl from "../../../helper/getImageUrl";
 // [{"shiftid":1,"nameshift":"Buổi sáng: 04H00-05H00","starttime":"04:00:00","endtime":"05:00:00"}
 interface BookingOnceInfo {
   [index: number]: any;
@@ -161,6 +162,7 @@ const LichSuDatSanDetail: React.FC = () => {
 
       <div className="container d-flex justify-content-center rounded mb-5">
         <div className="col-md-12 rounded row" id="profiles" style={{ marginTop: 50, backgroundColor: "rgb(247, 249, 250)" }}>
+
           {/* ONCE Booking */}
           {isOnce &&
             data.listBookingOnce.map((bookingInfo, idx) => {
@@ -213,7 +215,16 @@ const LichSuDatSanDetail: React.FC = () => {
                   </h6>
                   <div className="card-body">
                     <h5 className="card-title text-success font-weight-bold">{bookingInfo[6]}</h5>
-                    <img style={{ width: "20%", height: "50%" }} src={`/user/images/${bookingInfo[7]}`} alt="Image" />
+                    <div className="mb-3">
+                      <img
+                        style={{ width: "100%", maxWidth: 280, borderRadius: 12, objectFit: "cover" }}
+                        src={getImageUrl(bookingInfo[7] as string | null)}
+                        alt={bookingInfo[6] || "Sân"}
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src = "/user/images/noimage.png";
+                        }}
+                      />
+                    </div>
                     <div>
                       <span style={{ color: "black" }}>Ngày nhận sân:</span>{" "}
                       <span style={{ color: "#1F8A70", fontWeight: "bold" }}>
@@ -285,7 +296,16 @@ const LichSuDatSanDetail: React.FC = () => {
                 </h6>
                 <div className="card-body">
                   <h5 className="card-title text-success font-weight-bold">{bookingInfo.fieldName}</h5>
-                  <img style={{ width: "20%", height: "50%" }} src={`/user/images/${bookingInfo.fieldImage}`} alt="Image" />
+                  <div className="mb-3">
+                    <img
+                      style={{ width: "100%", maxWidth: 280, borderRadius: 12, objectFit: "cover" }}
+                      src={getImageUrl(bookingInfo.fieldImage)}
+                      alt={bookingInfo.fieldName || "Sân"}
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = "/user/images/noimage.png";
+                      }}
+                    />
+                  </div>
                   <div>
                     <span style={{ color: "black" }}>Ngày bắt đầu:</span>{" "}
                     <span style={{ color: "#1F8A70", fontWeight: "bold" }}>

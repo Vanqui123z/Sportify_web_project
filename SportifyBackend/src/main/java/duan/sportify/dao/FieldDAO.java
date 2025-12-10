@@ -5,15 +5,12 @@ import java.util.Optional;
 
 import javax.transaction.Transactional;
 
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import duan.sportify.entities.FavoriteField;
 import duan.sportify.entities.Field;
-import duan.sportify.entities.Sporttype;
-import duan.sportify.entities.Users;
 
 @SuppressWarnings("unused")
 public interface FieldDAO extends JpaRepository<Field, Integer> {
@@ -47,12 +44,12 @@ public interface FieldDAO extends JpaRepository<Field, Integer> {
 	List<Field> findAllActive();
 
 	// search team in admin
-	    @Query(value = "select * FROM field\r\n"
-		    + "WHERE (namefield LIKE CONCAT('%', :namefield, '%') OR :namefield IS NULL)\r\n"
-		    + "AND (sporttypeid like CONCAT('%', :sporttypeid, '%') OR :sporttypeid IS NULL)\r\n"
-		    + "and (status = :status OR :status IS NULL);", nativeQuery = true)
-	    List<Field> searchFieldAdmin(@Param("namefield") Optional<String> namefield,
-		    @Param("sporttypeid") Optional<String> sporttypeid, @Param("status") Optional<Integer> status);
+	@Query(value = "select * FROM field\r\n"
+			+ "WHERE (namefield LIKE CONCAT('%', :namefield, '%') OR :namefield IS NULL)\r\n"
+			+ "AND (sporttypeid like CONCAT('%', :sporttypeid, '%') OR :sporttypeid IS NULL)\r\n"
+			+ "and (status = :status OR :status IS NULL);", nativeQuery = true)
+	List<Field> searchFieldAdmin(@Param("namefield") Optional<String> namefield,
+			@Param("sporttypeid") Optional<String> sporttypeid, @Param("status") Optional<Integer> status);
 
 	// dashboard admin
 	@Query(value = "  SELECT COUNT(*) AS total_field\r\n"
@@ -74,9 +71,9 @@ public interface FieldDAO extends JpaRepository<Field, Integer> {
 	Optional<Field> findFieldByName(String name);
 
 	@Query(value = "SELECT f.* FROM field f " +
-	       "WHERE (f.sporttypeid = :sporttypeId OR :sporttypeId = 'tatca') " +
-	       "AND f.status = 1 " +
-	       "AND f.latitude IS NOT NULL AND f.longitude IS NOT NULL", nativeQuery = true)
+			"WHERE (f.sporttypeid = :sporttypeId OR :sporttypeId = 'tatca') " +
+			"AND f.status = 1 " +
+			"AND f.latitude IS NOT NULL AND f.longitude IS NOT NULL", nativeQuery = true)
 	List<Field> findActiveFieldsWithCoordinates(@Param("sporttypeId") String sporttypeId);
 
 	// Lấy tất cả sân theo chủ sân
@@ -84,4 +81,5 @@ public interface FieldDAO extends JpaRepository<Field, Integer> {
 			"JOIN infor_owner io ON f.owner_id = io.owner_id " +
 			"WHERE io.username = :ownerUsername", nativeQuery = true)
 	List<Field> findByOwnerUsername(@Param("ownerUsername") String ownerUsername);
+
 }

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { checkLogin } from '../../helper/checkLogin';
 const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 
 const Login: React.FC = () => {
@@ -8,11 +9,6 @@ const Login: React.FC = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
-    // Forgot password state - currently not used
-    // const [fpUsername, setFpUsername] = useState('');
-    // const [fpEmail, setFpEmail] = useState('');
-
-
 
     useEffect(() => {
         if (notification) {
@@ -21,39 +17,57 @@ const Login: React.FC = () => {
         }
     }, [notification]);
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
+        setNotification(null);
+
         try {
             const payloadLogin = { username, password };
-            fetch(`${URL_BACKEND}/api/user/login`, {
+
+            const res = await fetch(`${URL_BACKEND}/api/user/login`, {
                 method: 'POST',
                 credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify(payloadLogin),
-            }).then(res => {
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                return res.json();
-            }).then(data => {
-                console.log('Login successful:', data);
-                localStorage.setItem("username", data.username);
-                if (data.success === true) {
-                    setNotification('Login successful');
-                    window.location.href = '/sportify';
-                } else {
-                    setNotification("Username or password is incorrect");
-                }
-
-            }).catch(err => {
-                console.error('Login failed:', err);
-                setNotification('Login failed');
             });
+
+            // ❗ HTTP error (401, 403, 500…)
+            if (!res.ok) {
+                throw new Error(`HTTP ${res.status}`);
+            }
+
+            const data = await res.json();
+
+            if (!data.success) {
+                setNotification(data.message || 'Username or password is incorrect');
+                return;
+            }
+
+            // ✅ Login success
+            localStorage.setItem('username', data.username);
+            setNotification('Login successful');
+
+            const session = await checkLogin();
+
+            switch (session.role) {
+                case 'Field Owner':
+                    window.location.href = '/owner/dashboard';
+                    break;
+                case 'Admin':
+                    window.location.href = '/admin/dashboard';
+                    break;
+                default:
+                    window.location.href = '/sportify';
+            }
+
         } catch (error) {
-            console.error('Login error:', error);
+            console.error('Login failed:', error);
+            setNotification('Login failed');
         }
-
-
-        setNotification('Login clicked (not implemented)');
     };
+
 
     // Forgot password handler (not currently used)
 

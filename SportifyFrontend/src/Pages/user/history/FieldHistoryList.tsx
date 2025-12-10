@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import getImageUrl from "../../../helper/getImageUrl";
 
 type BookingInfo = {
   bookingId: number;
@@ -7,7 +8,7 @@ type BookingInfo = {
   note: string;
   bookingStatus: string;
   fieldName: string;
-  fieldImage: string;
+  fieldImage: string | null;
   bookingType: string;
   startDate: string | null;
   endDate: string | null;
@@ -23,8 +24,12 @@ const statusColor = (status: string) => {
 
 const formatDate = (dateStr: string | null) => {
   if (!dateStr) return "--";
-  const d = new Date(dateStr);
-  return d.toLocaleString("vi-VN", { hour12: false });
+  const hasTime = dateStr.includes("T") || dateStr.includes(":");
+  const parsed = new Date(dateStr);
+  if (Number.isNaN(parsed.getTime())) return "--";
+  return hasTime
+    ? parsed.toLocaleString("vi-VN", { hour12: false })
+    : parsed.toLocaleDateString("vi-VN");
 };
 
 const formatCurrency = (value: number) =>
@@ -38,6 +43,8 @@ const bookingTypeLabel = (type: string) => {
 
 const LichSuDatSan: React.FC = () => {
   const [listbooking, setListBooking] = useState<BookingInfo[]>([]);
+  const [processingIds, setProcessingIds] = useState<number[]>([]);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   useEffect(() => {
     const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
@@ -50,10 +57,61 @@ const LichSuDatSan: React.FC = () => {
     })
       .then((res) => res.json())
       .then((data) => {
-        setListBooking(data.listbooking);
+        setListBooking(Array.isArray(data?.listbooking) ? data.listbooking : []);
       })
       .catch(() => setListBooking([]));
   }, []);
+
+  const handleDelete = async (bookingId: number) => {
+    if (processingIds.includes(bookingId) || bulkDeleting) return;
+    if (!window.confirm("Bạn có chắc muốn xóa phiếu đặt sân này?")) return;
+
+    const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
+    try {
+      setProcessingIds((prev) => [...prev, bookingId]);
+      const res = await fetch(`${URL_BACKEND}/rest/bookings/deleteMultiple`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify([bookingId]),
+      });
+
+      if (!res.ok) throw new Error("delete failed");
+
+      setListBooking((prev) => prev.filter((item) => item.bookingId !== bookingId));
+    } catch (err) {
+      console.error("Delete booking error", err);
+      window.alert("Xóa phiếu đặt sân thất bại. Vui lòng thử lại.");
+    } finally {
+      setProcessingIds((prev) => prev.filter((id) => id !== bookingId));
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    if (listbooking.length === 0 || bulkDeleting) return;
+    if (!window.confirm("Bạn có chắc muốn xóa tất cả phiếu đặt sân?")) return;
+
+    const ids = listbooking.map((item) => item.bookingId);
+    const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
+    try {
+      setBulkDeleting(true);
+      const res = await fetch(`${URL_BACKEND}/rest/bookings/deleteMultiple`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(ids),
+      });
+
+      if (!res.ok) throw new Error("delete failed");
+
+      setListBooking([]);
+    } catch (err) {
+      console.error("Delete all bookings error", err);
+      window.alert("Xóa tất cả phiếu đặt sân thất bại. Vui lòng thử lại.");
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
 
   return (
     <>
@@ -138,7 +196,22 @@ const LichSuDatSan: React.FC = () => {
             <h3 className="tde">
               <span>Hiển thị 20 phiếu đặt sân gần nhất</span>
             </h3>
+            <div className="mb-3">
+              <button
+                className="btn btn-danger btn-sm"
+                onClick={handleDeleteAll}
+                disabled={listbooking.length === 0 || bulkDeleting}
+              >
+                {bulkDeleting ? "Đang xóa..." : "Xóa tất cả"}
+              </button>
+            </div>
           </div>
+
+          {listbooking.length === 0 && (
+            <div className="col-12 py-5 text-center text-muted">
+              Bạn chưa có lịch sử đặt sân hoặc dữ liệu đang được cập nhật.
+            </div>
+          )}
 
           {listbooking.map((booking, idx) => (
             <div key={idx} className="card col-12 mb-3" style={{ borderRadius: 10 }}>
@@ -163,33 +236,53 @@ const LichSuDatSan: React.FC = () => {
                 </span>
               </h6>
               <div className="card-body row">
-                <div className="col-md-3 d-flex align-items-center justify-content-center">
-                  <img style={{ width: "100%", borderRadius: 10 }} src={`/user/images/${booking.fieldImage}`} alt="Sân" />
+                <div className="col-md-3 d-flex align-items-center justify-content-center mb-3 mb-md-0">
+                  <img
+                    style={{ width: "100%", borderRadius: 12, objectFit: "cover", minHeight: 160 }}
+                    src={getImageUrl(booking.fieldImage)}
+                    alt={booking.fieldName || "Sân"}
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = "/user/images/noimage.png";
+                    }}
+                  />
                 </div>
                 <div className="col-md-9">
-                  <h5 className="card-title text-success font-weight-bold">{booking.fieldName}</h5>
-                  <p><b>Loại đặt sân:</b> {bookingTypeLabel(booking.bookingType)}</p>
-                  <p>
-                    <b>Ngày bắt đầu:</b> {formatDate(booking.startDate)}<br />
-                    <b>Ngày kết thúc:</b> {formatDate(booking.endDate)}
-                  </p>
-                  {booking.dayOfWeeks && (
-                    <p><b>Ngày trong tuần:</b> {booking.dayOfWeeks}</p>
-                  )}
-                  <p className="card-text limited-length5">{booking.note || "Không có ghi chú"}</p>
+                  <h5 className="card-title text-success font-weight-bold mb-3">{booking.fieldName}</h5>
+                  <div className="row">
+                    <div className="col-sm-6">
+                      <p className="mb-2"><b>Loại đặt sân:</b> {bookingTypeLabel(booking.bookingType)}</p>
+                      <p className="mb-2"><b>Ngày bắt đầu:</b> {formatDate(booking.startDate)}</p>
+                      <p className="mb-2"><b>Ngày kết thúc:</b> {formatDate(booking.endDate)}</p>
+                    </div>
+                    <div className="col-sm-6">
+                      {booking.dayOfWeeks && (
+                        <p className="mb-2"><b>Ngày trong tuần:</b> {booking.dayOfWeeks}</p>
+                      )}
+                      <p className="mb-2"><b>Ghi chú:</b> {booking.note?.trim() || "Không có ghi chú"}</p>
+                    </div>
+                  </div>
                   <hr />
-                  <p>
-                    <b>Tổng tiền:</b>{" "}
-                    <span className="text-danger font-weight-bold">{formatCurrency(booking.bookingPrice)}</span>
-                    <a
-                      style={{ float: "right" }}
-                      href={`/sportify/field/profile/historybooking/detail?bookingId=${booking.bookingId}&bookingPrice=${booking.bookingPrice}`}
-                    >
-                      <button type="button" className="btn btn-outline-info">
+                  <div className="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between">
+                    <div>
+                      <b>Tổng tiền:</b>{" "}
+                      <span className="text-danger font-weight-bold">{formatCurrency(booking.bookingPrice)}</span>
+                    </div>
+                    <div className="d-flex flex-column flex-sm-row gap-2 mt-3 mt-sm-0">
+                      <a
+                        className="btn btn-outline-info"
+                        href={`/sportify/field/profile/historybooking/detail?bookingId=${booking.bookingId}&bookingPrice=${booking.bookingPrice}`}
+                      >
                         Xem Chi Tiết
+                      </a>
+                      <button
+                        className="btn btn-outline-danger"
+                        onClick={() => handleDelete(booking.bookingId)}
+                        disabled={processingIds.includes(booking.bookingId) || bulkDeleting}
+                      >
+                        {processingIds.includes(booking.bookingId) ? "Đang xóa..." : "Xóa"}
                       </button>
-                    </a>
-                  </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

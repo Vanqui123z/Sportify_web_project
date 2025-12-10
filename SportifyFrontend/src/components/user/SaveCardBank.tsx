@@ -37,7 +37,7 @@ const BankLogo: React.FC<{
     const code = bank?.code || bankCode || '';
     const name = bank?.name || code;
     const logo = bank?.logo;
-    
+
     const VNPAY_BASE_URL = 'https://sandbox.vnpayment.vn';
 
     return (
@@ -68,14 +68,18 @@ interface SavedCardsProps {
 
 const SavedCards: React.FC<SavedCardsProps> = ({ cards, banks, onSetDefault, onDelete, selectedCardId, onCardSelect }) => {
     if (cards.length === 0) {
-        return <div className="no-cards-message">Bạn chưa có thẻ nào được lưu.</div>;
+        return (
+            <div className="no-cards-message">
+                Bạn chưa có thẻ nào được lưu. <a href="/sportify/profile/listcard">Tạo thẻ ngay...</a>
+            </div>
+        );
     }
 
     return (
         <div className="saved-cards">
             {cards.map(card => (
-                <div 
-                    key={card.id} 
+                <div
+                    key={card.id}
                     className={`card-item ${card.isDefault ? 'default-card' : ''} ${selectedCardId === card.id ? 'selected' : ''}`}
                     onClick={() => onCardSelect && onCardSelect(card.id)}
                     style={{ cursor: onCardSelect ? 'pointer' : 'default' }}
@@ -114,7 +118,7 @@ const SavedCards: React.FC<SavedCardsProps> = ({ cards, banks, onSetDefault, onD
                         <div className="card-holder">{card.username || card.cardHolderName || 'Chưa có tên'}</div>
                         <div className="card-type">Loại thẻ: {card.cardType || 'Không xác định'}</div>
                         <div className="card-bank-code">Mã ngân hàng: {card.bankCode}</div>
-                        {(card.expMonth && card.expYear) && 
+                        {(card.expMonth && card.expYear) &&
                             <div className="card-expiry">Ngày phát hành: {card.expMonth}/{card.expYear}</div>
                         }
                     </div>

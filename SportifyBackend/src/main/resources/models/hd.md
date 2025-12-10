@@ -17,6 +17,17 @@ python train_xgboost_to_onnx.py
 totalBookings_tomorrow = (
 
 # Biến mục tiêu: số lượt đặt sân ngày mai
+
+totalBookings_month → 80%
+
+avgtempC → 5%
+
+dailyChanceOfRain → 3%
+
+isHoliday → 10%
+
+ngẫu nhiên → 2%
+
 totalBookings_tomorrow = []
 for i in range(len(data)):
     tb_today = data["totalBookings_today"].iloc[i]

@@ -26,8 +26,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -54,7 +54,7 @@ public class Bookings implements Serializable {
     private Integer bookingid;
 
     // --- ENTITY DATA FIELDS
-    @Column(name = "username", nullable = false, length = 16)
+    @Column(name = "username", nullable = false, length = 20)
     private String username;
 
     @Temporal(TemporalType.TIMESTAMP)

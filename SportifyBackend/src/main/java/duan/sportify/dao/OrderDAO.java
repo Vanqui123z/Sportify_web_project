@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -15,11 +16,20 @@ public interface OrderDAO extends JpaRepository<Orders, Integer> {
 	@Query("SELECT o FROM Orders o WHERE o.users.username = ?1")
 	List<Orders> findByUsername(String username);
 
+	@Query(value = "SELECT orderid FROM orders WHERE username = :username AND orderid IN (:ids)", nativeQuery = true)
+	List<Integer> findOrderIdsForUser(@Param("username") String username, @Param("ids") List<Integer> ids);
+
+	@Modifying
+	@Query(value = "DELETE FROM orderdetails WHERE orderid IN (:ids)", nativeQuery = true)
+	void deleteOrderDetailsByOrderIds(@Param("ids") List<Integer> ids);
+
 	// search admin
-	@Query(value = "SELECT o.* FROM orders o \r\n" + "	        JOIN users u ON o.username = u.username \r\n"
-			+ "	        where(CONCAT(u.firstname, ' ', u.lastname) LIKE CONCAT('%', :keyword, '%'))\r\n"
-			+ "	        AND o.createdate LIKE CONCAT('%', :datebook, '%') \r\n" + "            and o.orderstatus like CONCAT('%', :status, '%')\r\n"
-			+ "         and  (:payment IS NULL OR o.paymentstatus = :payment)", nativeQuery = true)
+	@Query(value = "SELECT o.* FROM orders o " +
+			"JOIN users u ON o.username = u.username " +
+			"WHERE (CONCAT(u.firstname, ' ', u.lastname) LIKE CONCAT('%', :keyword, '%')) " +
+			"AND (:datebook IS NULL OR DATE(o.createdate) = :datebook) " +
+			"AND (o.orderstatus LIKE CONCAT('%', :status, '%')) " +
+			"AND (:payment IS NULL OR o.paymentstatus = :payment)", nativeQuery = true)
 	List<Orders> findByConditions(@Param("keyword") String keyword, @Param("datebook") Date datebook,
 			@Param("status") String status, @Param("payment") Optional<Integer> payment);
 
@@ -184,7 +194,7 @@ public interface OrderDAO extends JpaRepository<Orders, Integer> {
 			"FROM orderdetails od " +
 			"JOIN products p ON od.productid = p.productid " +
 			"JOIN orders o ON od.orderid = o.orderid " +
-			"WHERE DATE_FORMAT(o.createdate, '%Y-%m') = :yearMonth " +	
+			"WHERE DATE_FORMAT(o.createdate, '%Y-%m') = :yearMonth " +
 			"AND o.paymentstatus = 1 " +
 			"GROUP BY p.productid, p.productname, p.image, p.price " +
 			"ORDER BY total_quantity DESC", nativeQuery = true)

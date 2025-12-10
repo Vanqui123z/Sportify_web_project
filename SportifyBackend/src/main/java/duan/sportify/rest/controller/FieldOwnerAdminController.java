@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -83,34 +84,34 @@ public class FieldOwnerAdminController {
 
         if (username.length() < 6 || username.length() > 15) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("success", false,
-                    "message", "Tên đăng nhập trong hồ sơ không hợp lệ (6-15 ký tự, không khoảng trắng)."));
+                    .body(Map.of("success", false,
+                            "message", "Tên đăng nhập trong hồ sơ không hợp lệ (6-15 ký tự, không khoảng trắng)."));
         }
 
         if (password.length() < 6 || password.length() > 15) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("success", false,
-                    "message", "Mật khẩu trong hồ sơ không hợp lệ (6-15 ký tự)."));
+                    .body(Map.of("success", false,
+                            "message", "Mật khẩu trong hồ sơ không hợp lệ (6-15 ký tự)."));
         }
 
         if (username.contains(" ")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("success", false,
-                    "message", "Tên đăng nhập không được chứa khoảng trắng."));
+                    .body(Map.of("success", false,
+                            "message", "Tên đăng nhập không được chứa khoảng trắng."));
         }
 
         String normalizedPhone = normalizePhone(registration.getPhone());
         if (normalizedPhone == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("success", false,
-                    "message", "Số điện thoại trong hồ sơ không hợp lệ."));
+                    .body(Map.of("success", false,
+                            "message", "Số điện thoại trong hồ sơ không hợp lệ."));
         }
 
         String normalizedEmail = normalizeEmail(registration.getBusinessEmail());
         if (normalizedEmail == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("success", false,
-                    "message", "Email trong hồ sơ không hợp lệ."));
+                    .body(Map.of("success", false,
+                            "message", "Email trong hồ sơ không hợp lệ."));
         }
 
         if (userDAO.findAcc(username) != null) {
@@ -131,7 +132,8 @@ public class FieldOwnerAdminController {
             log.error("Failed to create user for owner {}", username, ex);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("success", false,
-                            "message", "Không thể tạo tài khoản người dùng từ hồ sơ. Vui lòng kiểm tra lại thông tin."));
+                            "message",
+                            "Không thể tạo tài khoản người dùng từ hồ sơ. Vui lòng kiểm tra lại thông tin."));
         }
 
         Authorized authorized = new Authorized();
@@ -190,6 +192,21 @@ public class FieldOwnerAdminController {
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "Đã từ chối yêu cầu."));
+    }
+
+    @DeleteMapping("/requests/{ownerId}")
+    @Transactional
+    public ResponseEntity<Map<String, Object>> deleteRequest(@PathVariable Long ownerId) {
+        Optional<FieldOwnerRegistration> optionalRegistration = registrationService.findById(ownerId);
+        if (optionalRegistration.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("success", false, "message", "Không tìm thấy yêu cầu."));
+        }
+
+        registrationService.deleteById(ownerId);
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Đã xóa yêu cầu."));
     }
 
     private FieldOwnerRegistrationResponse toResponse(FieldOwnerRegistration registration) {

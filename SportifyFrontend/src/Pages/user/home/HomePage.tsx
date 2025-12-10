@@ -129,6 +129,39 @@ export default function HomePage() {
     }
   }, [loading]);
 
+  // array inspire
+  const arrayInspire = [
+    {
+      content: "Thành công không phải là bất ngờ. Đó là công việc khó khăn, kiên trì, học hỏi, học tập, hy sinh và hơn hết, tình yêu của những gì bạn đang làm hoặc học tập để làm.",
+      img: "/user/images/pele.png",
+      name: "Pelé",
+      role: "Ngôi sao vĩ đại trên sân cỏ"
+    },
+    {
+      content: "Mỗi năm tôi đều cố gắng phấn đấu với tư cách là một cầu thủ. Và tôi không muốn sự nghiệp của mình đi theo một lối mòn. Tôi luôn cố gắng trong mỗi trận đấu theo mọi cách có thể.",
+      img: "/user/images/messi.png",
+      name: "Lionel Messi",
+      role: "Cầu thủ xuất sắc nhất thế giới."
+    },
+    {
+      content: "Đã chọn thể thao thì bắt buộc phải nỗ lực và hy sinh, bởi tôi muốn vươn lên đỉnh cao trong sự nghiệp, bởi kỷ lục không bao giờ có giới hạn, nên với tôi ngày hôm nay phải tốt hơn ngày hôm qua.",
+      img: "/user/images/anhvien.png",
+      name: "Nguyễn Thị Ánh Viên",
+      role: "Vận động viên bơi lội"
+    },
+    {
+      content: "Tôi đã trượt hơn 9000 cú ném trong sự nghiệp của mình. Tôi đã thua gần 300 trận đấu. 26 lần tôi được tin tưởng giao cho cú ném quyết định trận đấu và bỏ lỡ chúng. Tôi đã thất bại hết lần này đến lần khác trong đời mình. Và đó là lý do tôi thành công.",
+      img: "/user/images/ro.jpg",
+      name: "Michael Jordan",
+      role: "Cựu cầu thủ bóng rổ thế giới"
+    },
+    {
+      content: "Đừng ngại thất bại, đó là con đường dẫn đến thành công.",
+      img: "/user/images/LeBron_James.jpg",
+      name: "LeBron James",
+      role: "Vận động viên bóng rổ Hoa Kỳ"
+    }
+  ]
   // Add this useEffect after your existing useEffects
   useFtcoAnimation(loading);
 
@@ -367,95 +400,30 @@ export default function HomePage() {
           <div className="row ftco-animate">
             <div className="col-md-12">
               <div className="carousel-testimony owl-carousel">
-                <div className="item">
-                  <div className="testimony-wrap py-4">
-                    <div className="icon d-flex align-items-center justify-content-center">
-                      <span className="fa fa-quote-left"></span>
-                    </div>
-                    <div className="text text-center">
-                      <p className="mb-4 fst-italic" style={{ fontSize: '1.3rem', lineHeight: '1.7', color: '#ffffff' }}>"Thành công không phải là bất ngờ. Đó là công việc khó khăn, kiên trì, học hỏi, học tập, hy sinh và hơn hết, tình yêu của những gì bạn đang làm hoặc học tập để làm".</p>
-                      <br /> <br />
-                      <div className="d-flex align-items-center justify-content-center">
-                        <div className="user-img" style={{ backgroundImage: "url(/user/images/pele.png)" }}></div>
-                        <div className="pl-3 text-center">
-                          <p className="name fw-bold" style={{ fontSize: '1.2rem', color: '#ffffff' }}>Pelé</p>
-                          <span className="position" style={{ fontSize: '1rem', color: '#e0e0e0' }}>Ngôi sao vĩ đại trên sân cỏ</span>
+                {arrayInspire.map((item, index) => (
+                  <div className="item" key={index}>
+                    <div className="testimony-wrap py-4">
+                      <div className="icon d-flex align-items-center justify-content-center">
+                        <span className="fa fa-quote-left"></span>
+                      </div>
+
+                      <div className="text text-center">
+                        <p className="mb-4 fst-italic" style={{ fontSize: '1.3rem', lineHeight: '1.7', color: '#ffffff' }}>
+                          "{item.content}"
+                        </p>
+
+                        <div className="d-flex align-items-center justify-content-center mt-3">
+                          <div className="user-img" style={{ backgroundImage: `url(${item.img})` }}></div>
+                          <div className="pl-3 text-center">
+                            <p className="name fw-bold" style={{ fontSize: '1.2rem', color: '#ffffff' }}>{item.name}</p>
+                            <span className="position" style={{ fontSize: '1rem', color: '#e0e0e0' }}>{item.role}</span>
+                          </div>
                         </div>
+
                       </div>
                     </div>
                   </div>
-                </div>
-                <div className="item">
-                  <div className="testimony-wrap py-4">
-                    <div className="icon d-flex align-items-center justify-content-center">
-                      <span className="fa fa-quote-left"></span>
-                    </div>
-                    <div className="text text-center">
-                      <p className="mb-4 fst-italic" style={{ fontSize: '1.3rem', lineHeight: '1.7', color: '#ffffff' }}>"Mỗi năm tôi đều cố gắng phấn đấu với tư cách là một cầu thủ. Và tôi không muốn sự nghiệp của mình đi theo một lối mòn. Tôi luôn cố gắng trong mỗi trận đấu theo mọi cách có thể."</p>
-                      <br /> <br />
-                      <div className="d-flex align-items-center justify-content-center">
-                        <div className="user-img" style={{ backgroundImage: "url(/user/images/messi.png)" }}></div>
-                        <div className="pl-3 text-center">
-                          <p className="name fw-bold" style={{ fontSize: '1.2rem', color: '#ffffff' }}>Lionel Messi</p>
-                          <span className="position" style={{ fontSize: '1rem', color: '#e0e0e0' }}>Cầu thủ xuất sắc nhất thế giới.</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="item">
-                  <div className="testimony-wrap py-4">
-                    <div className="icon d-flex align-items-center justify-content-center">
-                      <span className="fa fa-quote-left"></span>
-                    </div>
-                    <div className="text text-center">
-                      <p className="mb-4 fst-italic" style={{ fontSize: '1.3rem', lineHeight: '1.7', color: '#ffffff' }}>"Đã chọn thể thao thì bắt buộc phải nỗ lực và hy sinh, bởi tôi muốn vươn lên đỉnh cao trong sự nghiệp, bởi kỷ lục không bao giờ có giới hạn, nên với tôi ngày hôm nay phải tốt hơn ngày hôm qua."</p>
-                      <br />
-                      <div className="d-flex align-items-center justify-content-center">
-                        <div className="user-img" style={{ backgroundImage: "url(/user/images/anhvien.jpg)" }}></div>
-                        <div className="pl-3 text-center">
-                          <p className="name fw-bold" style={{ fontSize: '1.2rem', color: '#ffffff' }}>Nguyễn Thị Ánh Viên</p>
-                          <span className="position" style={{ fontSize: '1rem', color: '#e0e0e0' }}>Vận động viên bơi lội</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="item">
-                  <div className="testimony-wrap py-4">
-                    <div className="icon d-flex align-items-center justify-content-center">
-                      <span className="fa fa-quote-left"></span>
-                    </div>
-                    <div className="text text-center">
-                      <p className="mb-4 fst-italic" style={{ fontSize: '1.3rem', lineHeight: '1.7', color: '#ffffff' }}>"Tôi đã trượt hơn 9000 cú ném trong sự nghiệp của mình. Tôi đã thua gần 300 trận đấu. 26 lần tôi được tin tưởng giao cho cú ném quyết định trận đấu và bỏ lỡ chúng. Tôi đã thất bại hết lần này đến lần khác trong đời mình. Và đó là lý do tôi thành công."</p>
-                      <div className="d-flex align-items-center justify-content-center">
-                        <div className="user-img" style={{ backgroundImage: "url(/user/images/ro.jpg)" }}></div>
-                        <div className="pl-3 text-center">
-                          <p className="name fw-bold" style={{ fontSize: '1.2rem', color: '#ffffff' }}>Michael Jordan</p>
-                          <span className="position" style={{ fontSize: '1rem', color: '#e0e0e0' }}>Cựu cầu thủ bóng rổ thế giới</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="item">
-                  <div className="testimony-wrap py-4">
-                    <div className="icon d-flex align-items-center justify-content-center">
-                      <span className="fa fa-quote-left"></span>
-                    </div>
-                    <div className="text text-center">
-                      <p className="mb-4 fst-italic" style={{ fontSize: '1.3rem', lineHeight: '1.7', color: '#ffffff' }}>"Đừng ngại thất bại, đó là con đường dẫn đến thành công."</p>
-                      <br /> <br />
-                      <div className="d-flex align-items-center justify-content-center">
-                        <div className="user-img" style={{ backgroundImage: "url(/user/images/LeBron_James.jpg)" }}></div>
-                        <div className="pl-3 text-center">
-                          <p className="name fw-bold" style={{ fontSize: '1.2rem', color: '#ffffff' }}>LeBron James</p>
-                          <span className="position" style={{ fontSize: '1rem', color: '#e0e0e0' }}>Vận động viên bóng rổ Hoa Kỳ</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           </div>

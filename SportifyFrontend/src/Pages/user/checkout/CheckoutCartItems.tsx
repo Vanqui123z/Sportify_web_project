@@ -1,6 +1,7 @@
 const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import PaymentExpression from "../../../components/user/PaymentExpression";
 import VoucherSelect from "../../../components/user/VoucherSelect";
 import { useNotification } from "../../../helper/NotificationContext";
 
@@ -43,6 +44,10 @@ const CheckoutCartItems: React.FC = () => {
   // State cho voucher
   const [voucherInfo, setVoucherInfo] = useState<{ voucherId: string; discountPercent: number; isValid: boolean }>({ voucherId: "", discountPercent: 0, isValid: false });
   const [voucherOfUserId, setVoucherOfUserId] = useState<number | null>(null);
+
+  // State cho payment method
+  const [showCardList, setShowCardList] = useState<boolean>(false);
+  const [selectedCardId, setSelectedCardId] = useState<string | undefined>(undefined);
 
 
   useEffect(() => {
@@ -90,8 +95,17 @@ const CheckoutCartItems: React.FC = () => {
     formData.append('phone', data.user.phone.toString());
     formData.append('productid', data.items.map(item => item.cartItemId).join(','));
     formData.append('quantity', data.items.map(item => item.quantity).join(','));
+
     if (voucherInfo.isValid && voucherOfUserId !== null) {
       formData.append('voucherOfUserId', voucherOfUserId.toString());
+    }
+
+    // Thêm thông tin phương thức thanh toán
+    if (showCardList && selectedCardId) {
+      formData.append('paymentMethod', 'saved_card');
+      formData.append('cardId', selectedCardId);
+    } else {
+      formData.append('paymentMethod', 'vnpay');
     }
 
     try {
@@ -296,31 +310,16 @@ const CheckoutCartItems: React.FC = () => {
                   </div>
                 </div>
                 <div className="col-md-6">
-                  <div className="cart-detail p-3 p-md-4" style={{ background: "white" }}>
-                    <h3 className="billing-heading mb-4">Hình thức thanh toán</h3>
-                    <form onSubmit={handleSubmit}>
-                      <div className="form-group">
-                        <div className="col-md-12">
-                          <div className="radio">
-                            <label>
-                              <input type="radio" checked name="optradio" className="mr-2" readOnly />
-                              <img style={{ width: "12%", height: "14%" }} src="/user/images/iconVNP.png" alt="VNPay" /> VNPay
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-                      <div style={{ color: "black" }} className="font-italic">
-                        Khi nhấn vào nút này bạn công nhận mình đã đọc và đồng ý với các
-                        <a href="/sportify/quydinh" style={{ color: "blue" }}> Điều khoản & Điều kiện </a> và
-                        <a href="/sportify/chinhsach" style={{ color: "blue" }}> Chính sách quyền riêng tư</a> của Sportify.
-                        <p>
-                          <button type="submit" className="btn btn-primary py-3 px-4 mt-3">
-                            Thanh toán {items.length} sản phẩm
-                          </button>
-                        </p>
-                      </div>
-                    </form>
-                  </div>
+                  <form onSubmit={handleSubmit}>
+                    <PaymentExpression
+                      titleButton={`Thanh toán ${items.length} sản phẩm`}
+                      showCardList={showCardList}
+                      setShowCardList={setShowCardList}
+                      username={user?.username}
+                      selectedCardId={selectedCardId}
+                      setSelectedCardId={setSelectedCardId}
+                    />
+                  </form>
                 </div>
               </div>
             </div>

@@ -24,23 +24,44 @@ const ListFavorite = () => {
     const [favorites, setFavorites] = useState<FavoriteField[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const [processingIds, setProcessingIds] = useState<number[]>([]);
+
+    const fetchFavorites = async () => {
+        try {
+            const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
+            const response = await axios.get(`${URL_BACKEND}/api/user/favorite`, { withCredentials: true });
+            setFavorites(response.data);
+            setLoading(false);
+        } catch (err) {
+            console.error('Error fetching favorite fields:', err);
+            setError('Failed to load favorite fields');
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchFavorites = async () => {
-            try {
-                const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
-                const response = await axios.get(`${URL_BACKEND}/api/user/favorite`, { withCredentials: true });
-                setFavorites(response.data);
-                setLoading(false);
-            } catch (err) {
-                console.error('Error fetching favorite fields:', err);
-                setError('Failed to load favorite fields');
-                setLoading(false);
-            }
-        };
-
         fetchFavorites();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    const handleRemoveFavorite = async (favorite: FavoriteField) => {
+        if (processingIds.includes(favorite.field.fieldid)) return;
+        if (!window.confirm('Bạn có chắc muốn bỏ sân này khỏi danh sách yêu thích?')) return;
+
+        const fieldId = favorite.field.fieldid;
+        const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
+
+        try {
+            setProcessingIds(prev => [...prev, fieldId]);
+            await axios.delete(`${URL_BACKEND}/api/user/favorite/${fieldId}`, { withCredentials: true });
+            setFavorites(prev => prev.filter(item => item.field.fieldid !== fieldId));
+        } catch (err) {
+            console.error('Error removing favorite field:', err);
+            window.alert('Không thể bỏ yêu thích sân này. Vui lòng thử lại.');
+        } finally {
+            setProcessingIds(prev => prev.filter(id => id !== fieldId));
+        }
+    };
 
     if (loading) {
         return (
@@ -89,8 +110,8 @@ const ListFavorite = () => {
                 <div className="container mt-5">
 
                     <div className="row">
-                        {favorites.map((e) => {
-                            const f = e.field;
+                        {favorites.map((favorite) => {
+                            const f = favorite.field;
 
                             return (
                                 <div key={f.fieldid} className="col-lg-12 d-flex align-items-stretch mb-3">
@@ -130,6 +151,18 @@ const ListFavorite = () => {
                                                 <span className="text-danger font-weight-bold" style={{ fontSize: '1.25rem' }}>
                                                     {f.price.toLocaleString()} VND
                                                 </span>
+                                            </div>
+                                            <div className="d-flex align-items-center justify-content-between mt-3">
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-outline-danger"
+                                                    onClick={() => handleRemoveFavorite(favorite)}
+                                                    disabled={processingIds.includes(f.fieldid)}
+                                                >
+                                                    <i className="fa fa-heart mr-2" style={{ color: '#dc3545' }}></i>
+                                                    {processingIds.includes(f.fieldid) ? 'Đang xử lý...' : 'Bỏ khỏi yêu thích'}
+                                                </button>
+                                                <small className="text-muted">Đã thêm vào yêu thích</small>
                                             </div>
                                         </div>
                                     </div>

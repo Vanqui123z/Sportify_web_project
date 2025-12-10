@@ -238,6 +238,31 @@ const DetailFields: React.FC = () => {
     }, [shiftsNull]);
 
 
+    // Kiểm tra số lần đặt sân
+    const checkBookingCount = async (): Promise<boolean> => {
+        try {
+            const response = await fetch(`${BACKEND_URL}/api/user/field/booking/count`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.bookingCount >= 5) {
+                    alert("Bạn chỉ được đặt sân tối đa 5 lần/ngày. Hãy thử lại vào ngày mai");
+                    return false;
+                }
+                return true;
+            } else {
+                console.error("Không thể kiểm tra số lần đặt sân");
+                return true; // Cho phép tiếp tục nếu API lỗi
+            }
+        } catch (error) {
+            console.error("Lỗi khi kiểm tra số lần đặt sân:", error);
+            return true; // Cho phép tiếp tục nếu API lỗi
+        }
+    };
+
     //favorite
     const toggleFavorite = async () => {
         if (loading) return;
@@ -284,6 +309,8 @@ const DetailFields: React.FC = () => {
             setLoading(false);
         }
     };
+
+    const controlHeight = 52;
 
 
 
@@ -351,7 +378,7 @@ const DetailFields: React.FC = () => {
                                 </p>
                             </div>
 
-                            <div className="border border-secondary rounded col-11 mb-4 mt-3">
+                            <div className="border border-secondary rounded col-11 mb-4 mt-3 " style={{ paddingRight: "50px" }}>
                                 <span className="ml-3 mt-4 mb-1">
                                     Chọn ngày nhận sân
                                     <span className="info-container">
@@ -364,11 +391,11 @@ const DetailFields: React.FC = () => {
                                 <div className="d-flex justify-content-center">
                                     <form
                                         onSubmit={handleSubmit}
-                                        className="mb-2 d-flex justify-content-center col-12"
+                                        className="mb-2 d-flex justify-content-center align-items-center col-12"
                                     >
                                         <input type="hidden" value={mainField?.fieldid} name="fieldid" />
                                         <input
-                                            style={{ border: '2px solid gray', fontWeight: 'lighter' }}
+                                            style={{ border: '2px solid gray', fontWeight: 'lighter', height: `${controlHeight}px`, borderRadius: '10px' }}
                                             id="dateInput"
                                             name="dateInput"
                                             required
@@ -383,7 +410,7 @@ const DetailFields: React.FC = () => {
                                         />
 
                                         <button
-                                            style={{ border: '2px solid #28a745' }}
+                                            style={{ border: '2px solid #28a745', height: `${controlHeight}px`, borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                             className="btn btn-success col-3"
                                             type="submit"
                                             onClick={handleDateBooking}
@@ -392,10 +419,10 @@ const DetailFields: React.FC = () => {
                                         </button>
                                     </form>
                                     <button
-                                        className="btn btn-light border-0"
+                                        className="btn btn-light border-0 "
                                         onClick={toggleFavorite}
                                         disabled={loading}
-                                        style={{ cursor: loading ? "not-allowed" : "pointer" }}
+                                        style={{ cursor: loading ? "not-allowed" : "pointer", height: `${controlHeight}px`, width: `${controlHeight}px`, marginLeft: '8px', borderRadius: '10px', border: liked ? '2px solid #dc3545' : '2px solid #ced4da', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
                                     >
                                         <i
                                             className={`bi ${liked ? "bi-heart-fill text-danger" : "bi-heart"}`}
@@ -434,16 +461,29 @@ const DetailFields: React.FC = () => {
 
                             {shiftsNull && (
                                 <div className="align-self-end mb-5">
-                                    <a
-                                        className="booking-link"
-                                        href={`/sportify/field/booking/${mainField?.fieldid}?shiftid=${selectedShift}&dateselect=${date}`}
+                                    <button
+                                        className="col-4 pt-3 pb-3 btn btn-success"
+                                        style={{ fontSize: '17px', fontWeight: 'bold' }}
+                                        onClick={async () => {
+                                            const canProceed = await checkBookingCount();
+                                            if (canProceed) {
+                                                navigator(`/sportify/field/booking/${mainField?.fieldid}?shiftid=${selectedShift}&dateselect=${date}`);
+                                            }
+                                        }}
                                     >
-                                        <button className="col-4 pt-3 pb-3 btn btn-success" style={{ fontSize: '17px', fontWeight: 'bold' }}>
-                                            Đặt sân ngay
-                                        </button>
-                                    </a>
+                                        Đặt sân ngay
+                                    </button>
 
-                                    <button className="ml-5 col-4 pt-3 pb-3 btn btn-secondary" style={{ fontSize: '17px', fontWeight: 'bold' }} onClick={() => setShowFixedBooking(true)}>
+                                    <button
+                                        className="ml-5 col-4 pt-3 pb-3 btn btn-secondary"
+                                        style={{ fontSize: '17px', fontWeight: 'bold' }}
+                                        onClick={async () => {
+                                            const canProceed = await checkBookingCount();
+                                            if (canProceed) {
+                                                setShowFixedBooking(true);
+                                            }
+                                        }}
+                                    >
                                         Đặt sân cố định
                                     </button>
 

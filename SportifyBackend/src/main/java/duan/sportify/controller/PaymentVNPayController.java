@@ -1,5 +1,21 @@
 package duan.sportify.controller;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -12,22 +28,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.view.RedirectView;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-
-import javax.servlet.http.HttpServletRequest;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import duan.sportify.DTO.PaymentResDTO;
 import duan.sportify.DTO.PermanentPaymentRequest;
-import duan.sportify.config.VNPayConfig;
+import duan.sportify.DTO.ShiftDTO;
 import duan.sportify.config.appConfig;
 import duan.sportify.entities.Bookingdetails;
 import duan.sportify.entities.Bookings;
@@ -40,11 +43,11 @@ import duan.sportify.entities.Users;
 import duan.sportify.service.BookingDetailService;
 import duan.sportify.service.BookingService;
 import duan.sportify.service.OrderDetailService;
+import duan.sportify.service.OrderService;
+import duan.sportify.service.ProductService;
 import duan.sportify.service.UserService;
 import duan.sportify.service.VNPayService;
 import duan.sportify.service.VoucherOfUserService;
-import duan.sportify.service.OrderService;
-import duan.sportify.service.ProductService;
 
 @Controller
 @RequestMapping("/")
@@ -129,7 +132,7 @@ public class PaymentVNPayController {
 	public Map<String, String> getIpAddress() {
 		String apiUrl = "https://api.ipify.org?format=json";
 		Map<String, String> result = new HashMap<>();
-		
+
 		try {
 			ResponseEntity<String> response = restTemplate.getForEntity(apiUrl, String.class);
 			if (response.getStatusCode().is2xxSuccessful()) {
@@ -164,60 +167,97 @@ public class PaymentVNPayController {
 	Orders saveOrder;
 
 	// Gọi API VNPay đặt sân hoặc thanh toán giỏ hàng
-	// Field 
+	// Field
 	@PostMapping("api/user/getIp/create")
-	public ResponseEntity<?> createPayment(@RequestBody PermanentPaymentRequest body, HttpServletRequest request)
-			throws Exception {
-		// Lấy IP từ request thay vì gọi API bên ngoài
+	public ResponseEntity<?> createPayment(
+			@RequestBody PermanentPaymentRequest body,
+			HttpServletRequest request) throws Exception {
+
 		String clientIp = getClientIpAddress(request);
-		System.out.println("Client IP for booking: " + clientIp);
-		
 		String username = (String) request.getSession().getAttribute("username");
-		Integer voucherOfUserId = Integer.parseInt(body.getVoucherOfUserId() != null ? body.getVoucherOfUserId() : "0");
-		System.out.println("voucherOfUserId: " + voucherOfUserId);
 
+		Integer voucherOfUserId = Integer.parseInt(
+				body.getVoucherOfUserId() != null ? body.getVoucherOfUserId() : "0");
+
+		// ================================
+		// ✅ 1. CHECK TRÙNG LỊCH
+		// ================================
+
+		// 👉 CASE 1: PERMANENT BOOKING
 		if (body.getShifts() != null && !body.getShifts().isEmpty()) {
-			bookingService.createBookingPermanent(
-					username,
-					body.getAmount(),
-					body.getPhone(),
-					body.getNote(),
-					body.getShifts(),
-					body.getFieldid(),
-					body.getPricefield(),
-					body.getStartDate(),
-					body.getEndDate());
 
-		} else {
-			bookingService.createBooking(
-					username,
-					body.getAmount(),
-					body.getPhone(),
-					body.getNote(),
-					body.getShiftId(),
-					body.getFieldid(),
-					body.getPlaydate(),
-					body.getPricefield());
+			for (ShiftDTO shift : body.getShifts()) {
+
+				boolean conflict = bookingService
+						.existsOverlappingPermanentBooking(
+								body.getFieldid(),
+								shift.getShiftId(),
+								shift.getDayOfWeek(),
+								body.getStartDate(),
+								body.getEndDate());
+
+				if (conflict) {
+					return ResponseEntity
+							.status(HttpStatus.CONFLICT) // 409
+							.body(
+									Map.of(
+											"message",
+											"Sân đã được người khác đặt, vui lòng chọn sân khác hoặc khung giờ khác."));
+				}
+			}
 		}
-		System.out.println("ip address: " + clientIp);
-		// Store fieldId in session để dùng trong checkoutResult
+		// 👉 CASE 2: BOOKING THEO NGÀY (ONCE)
+		else {
+
+			boolean booked = bookingService.existsBookingDetail(
+					body.getFieldid(),
+					body.getShiftId(),
+					body.getPlaydate());
+
+			if (booked) {
+				return ResponseEntity
+						.status(HttpStatus.CONFLICT) // 409
+						.body(
+								Map.of(
+										"message",
+										"Sân đã được người khác đặt, vui lòng chọn sân khác hoặc khung giờ khác."));
+			}
+		}
+
+		// ================================
+		// ✅ 2. KHÔNG TRÙNG → TIẾP TỤC THANH TOÁN
+		// ================================
+
+		request.getSession().setAttribute("pendingBookingData", body);
+		request.getSession().setAttribute("pendingUsername", username);
 		request.getSession().setAttribute("bookingFieldId", body.getFieldid());
 		request.getSession().setAttribute("voucherOfUserId", voucherOfUserId);
-		
+
 		if (body.getCardId() == null || body.getCardId().isEmpty()) {
-			System.out.println("body no card: " + body.getCardId()+ " voucher: " + voucherOfUserId+ " username: " + username+ " amount: " + body.getAmount().toString() + " ip: " + clientIp + " note: " + body.getNote());
-			// chuyển sang trang thanh toán
-			String paymentUrl = vnPayService.generatePaymentUrl(body.getAmount().toString(), clientIp, voucherOfUserId,username);
-			
-			return ResponseEntity.ok(new PaymentResDTO("Ok", "Successfully", paymentUrl));
+
+			String paymentUrl = vnPayService.generatePaymentUrl(
+					body.getAmount().toString(),
+					clientIp,
+					voucherOfUserId,
+					username);
+
+			return ResponseEntity.ok(
+					new PaymentResDTO("Ok", "Successfully", paymentUrl, null));
+
 		} else {
+
 			Long cardId = Long.parseLong(body.getCardId());
 			String token = paymentMethodService.getPaymentMethod(cardId).getToken();
-			System.out.println("body: " + token);
-			// chuyển sang trang thanh toán
-			String paymentUrl = vnPayService.generatePaymentUrlByToken(body.getAmount().toString(), clientIp,
-					username, token, 	voucherOfUserId);
-			return ResponseEntity.ok(new PaymentResDTO("Ok", "Successfully", paymentUrl));
+
+			String paymentUrl = vnPayService.generatePaymentUrlByToken(
+					body.getAmount().toString(),
+					clientIp,
+					username,
+					token,
+					voucherOfUserId);
+
+			return ResponseEntity.ok(
+					new PaymentResDTO("Ok", "Successfully", paymentUrl, null));
 		}
 	}
 
@@ -229,10 +269,11 @@ public class PaymentVNPayController {
 			@RequestParam("phone") String phone,
 			@RequestParam("productid") String cartItemIds,
 			@RequestParam("quantity") String quantities,
+			@RequestParam(value = "cardId", required = false) String cardId,
 			@RequestParam(value = "voucherOfUserId", required = false, defaultValue = "0") Integer voucherOfUserId,
 			HttpServletRequest request) throws Throwable {
 
-				System.out.println("voucherOfUserId: " + voucherOfUserId);
+		System.out.println("voucherOfUserId: " + voucherOfUserId);
 		// Lấy thông tin user
 		String userlogin = (String) request.getSession().getAttribute("username");
 		Users user = userservice.findByUsername(userlogin);
@@ -260,13 +301,13 @@ public class PaymentVNPayController {
 
 			// Lấy thông tin CartItem từ ID
 			CartItem cartItem = cartItemRepository.findById(cartItemId).orElse(null);
-			
+
 			// Kiểm tra xem CartItem có tồn tại không
 			if (cartItem == null) {
 				System.err.println("Không tìm thấy CartItem với ID: " + cartItemId);
 				continue; // Bỏ qua CartItem không tồn tại
 			}
-			
+
 			// Lấy product từ CartItem
 			Products product = cartItem.getProduct();
 			if (product == null) {
@@ -278,68 +319,40 @@ public class PaymentVNPayController {
 			detail.setOrders(saveOrder);
 			detail.setProducts(product);
 			detail.setQuantity(Double.valueOf(quantity));
-			detail.setPrice(cartItem.getPrice() - (cartItem.getDiscountprice() != null ? cartItem.getDiscountprice() : 0));
-
+			detail.setPrice(
+					cartItem.getPrice() - (cartItem.getDiscountprice() != null ? cartItem.getDiscountprice() : 0));
 			orderDetailService.create(detail);
 		}
 		System.out.println("Username: " + saveOrder.getUsername());
-		
+
 		// Lấy IP từ request thay vì gọi API bên ngoài
 		String clientIp = getClientIpAddress(request);
 		System.out.println("Client IP: " + clientIp);
+		String paymentUrl;
+		// Chuẩn bị thông tin thanh toán VNPay thông qua VNPayService
+		String cartInfo = "Thanh toán giỏ hàng #" + cartid + " cho user " + userlogin;
+		if (cardId != null && !cardId.isEmpty()) {
+			Long cardIdLong = Long.parseLong(cardId);
+			String token = paymentMethodService.getPaymentMethod(cardIdLong).getToken();
+			System.out
+					.println("Generating cart payment URL by token: " + token + " voucherOfUserId: " + voucherOfUserId);
+			paymentUrl = vnPayService.generateCartPaymentUrlByToken(
+					totalPrice.toString(),
+					clientIp,
+					userlogin,
+					token,
+					voucherOfUserId,
+					cartInfo);
 
-		// Chuẩn bị thông tin thanh toán VNPay
-		int amount = (int) (totalPrice * 100);
-
-		// Thêm prefix CART_ cho mã giao dịch giỏ hàng
-		String vnp_TxnRef = "CART_" + VNPayConfig.getRandomNumber(8);
-
-		vnp_Params.put("vnp_Version", VNPayConfig.vnp_Version);
-		vnp_Params.put("vnp_Command", VNPayConfig.vnp_Command);
-		vnp_Params.put("vnp_TmnCode", VNPayConfig.vnp_TmnCode);
-		vnp_Params.put("vnp_Amount", String.valueOf(amount));
-		vnp_Params.put("vnp_Command", "pay");
-		vnp_Params.put("vnp_CurrCode", "VND");
-		vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
-		vnp_Params.put("vnp_OrderInfo", "Thanh toán giỏ hàng #" + cartid +" cho user "+ userlogin + "voi voucher " + voucherOfUserId);
-		vnp_Params.put("vnp_Locale", "vn");
-		vnp_Params.put("vnp_ReturnUrl", VNPayConfig.vnp_Returnurl);
-		vnp_Params.put("vnp_IpAddr", clientIp);
-		vnp_Params.put("vnp_OrderType", "billpayment");
-
-		Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
-		String vnp_CreateDate = formatter.format(cld.getTime());
-		vnp_Params.put("vnp_CreateDate", vnp_CreateDate);
-
-		cld.add(Calendar.MINUTE, 15);
-		String vnp_ExpireDate = formatter.format(cld.getTime());
-		vnp_Params.put("vnp_ExpireDate", vnp_ExpireDate);
-
-		List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
-		Collections.sort(fieldNames);
-		StringBuilder hashData = new StringBuilder();
-		StringBuilder query = new StringBuilder();
-		Iterator<String> itr = fieldNames.iterator();
-		while (itr.hasNext()) {
-			String fieldName = itr.next();
-			String fieldValue = vnp_Params.get(fieldName);
-			if (fieldValue != null && fieldValue.length() > 0) {
-				hashData.append(fieldName).append('=')
-						.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
-				query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII.toString()))
-						.append('=')
-						.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
-				if (itr.hasNext()) {
-					query.append('&');
-					hashData.append('&');
-				}
-			}
+		} else {
+			System.out.println("Generating cart payment URL: " + " voucherOfUserId: " + voucherOfUserId);
+			paymentUrl = vnPayService.generateCartPaymentUrl(
+					totalPrice.toString(),
+					clientIp,
+					voucherOfUserId,
+					userlogin,
+					cartInfo);
 		}
-		String queryUrl = query.toString();
-		String vnp_SecureHash = VNPayConfig.hmacSHA512(VNPayConfig.vnp_HashSecret, hashData.toString());
-		queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
-		paymentUrl = VNPayConfig.vnp_PayUrl + "?" + queryUrl;
 
 		PaymentResDTO paymentResDTO = new PaymentResDTO();
 		paymentResDTO.setStatus("Ok");
@@ -349,14 +362,13 @@ public class PaymentVNPayController {
 		return ResponseEntity.ok(paymentResDTO);
 	}
 
-
 	// Refund
 
 	@PostMapping("/api/user/payment/refund")
-	public ResponseEntity<PaymentResDTO> PaymentRefund(@RequestBody PermanentPaymentRequest body, HttpServletRequest request ) {
+	public ResponseEntity<PaymentResDTO> PaymentRefund(@RequestBody PermanentPaymentRequest body,
+			HttpServletRequest request) {
 		ipAddress = getIpAddress().get("ip");
-				String username = (String) request.getSession().getAttribute("username");
-				System.out.println("username controller: " + username);
+		String username = (String) request.getSession().getAttribute("username");
 		try {
 			Long cardId = Long.parseLong(body.getCardId());
 			String token = paymentMethodService.getPaymentMethod(cardId).getToken();
@@ -364,21 +376,23 @@ public class PaymentVNPayController {
 			// chuyển sang trang thanh toán
 			String paymentUrl = vnPayService.generateRefundUrl(body.getAmount().toString(), ipAddress,
 					username, token, body.getBookingId());
-			return ResponseEntity.ok(new PaymentResDTO("Ok", "Successfully", paymentUrl));
+			return ResponseEntity.ok(new PaymentResDTO("Ok", "Successfully", paymentUrl, null));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body(new PaymentResDTO("Error", "Error generating refund URL", null));}
-		
+					.body(new PaymentResDTO("Error", "Error generating refund URL", null, null));
+		}
+
 	}
-	
+
 	// Xử lý kết quả thanh toán duy nhất một endpoint
 	@GetMapping("api/user/payment/checkoutResult")
 	public RedirectView paymentCheckoutResult(HttpServletRequest request) {
 		System.out.println("VNPAY RETURN: " + request.getQueryString());
 		// user
 		String txnRef = request.getParameter("vnp_TxnRef");
-		String messeage = request.getParameter("vnp_txn_desc") != null ? request.getParameter("vnp_txn_desc") : request.getParameter("vnp_OrderInfo");
+		String messeage = request.getParameter("vnp_txn_desc") != null ? request.getParameter("vnp_txn_desc")
+				: request.getParameter("vnp_OrderInfo");
 
 		// username and voucher
 		String voucherOfUserId = null;
@@ -388,7 +402,9 @@ public class PaymentVNPayController {
 				voucherOfUserId = parts[1];
 			}
 		}
-		Long voucherOfUserIdInt = voucherOfUserId != null && !voucherOfUserId.isEmpty() ? Long.parseLong(voucherOfUserId) : null;
+		Long voucherOfUserIdInt = voucherOfUserId != null && !voucherOfUserId.isEmpty()
+				? Long.parseLong(voucherOfUserId)
+				: null;
 		txnRef = txnRef != null ? txnRef : request.getParameter("vnp_txn_ref");
 		Map<String, String> fields = new HashMap<>();
 		for (Enumeration<String> params = request.getParameterNames(); params.hasMoreElements();) {
@@ -417,22 +433,75 @@ public class PaymentVNPayController {
 					|| "00".equals(request.getParameter("vnp_transaction_status"))) {
 				transactionStatus = "success";
 				try {
-					if (savebooking != null) {
-						bookingservice.create(savebooking);
+					// Lấy thông tin booking từ session và tạo booking khi thanh toán thành công
+					PermanentPaymentRequest pendingBookingData = (PermanentPaymentRequest) request.getSession()
+							.getAttribute("pendingBookingData");
+					String pendingUsername = (String) request.getSession().getAttribute("pendingUsername");
+
+					System.out.println("Processing successful payment for user: " + pendingUsername);
+					System.out.println("Pending booking data: " + (pendingBookingData != null ? "Found" : "NULL"));
+
+					if (pendingBookingData != null && pendingUsername != null) {
+						Bookings createdBooking = null;
+
+						if (pendingBookingData.getShifts() != null && !pendingBookingData.getShifts().isEmpty()) {
+							System.out.println("Creating permanent booking...");
+							createdBooking = bookingService.createBookingPermanent(
+									pendingUsername,
+									pendingBookingData.getAmount(),
+									pendingBookingData.getPhone(),
+									pendingBookingData.getNote(),
+									pendingBookingData.getShifts(),
+									pendingBookingData.getFieldid(),
+									pendingBookingData.getPricefield(),
+									pendingBookingData.getStartDate(),
+									pendingBookingData.getEndDate());
+						} else {
+							System.out.println("Creating once booking...");
+							createdBooking = bookingService.createBooking(
+									pendingUsername,
+									pendingBookingData.getAmount(),
+									pendingBookingData.getPhone(),
+									pendingBookingData.getNote(),
+									pendingBookingData.getShiftId(),
+									pendingBookingData.getFieldid(),
+									pendingBookingData.getPlaydate(),
+									pendingBookingData.getPricefield());
+						}
+
+						if (createdBooking != null) {
+							System.out
+									.println("Booking created successfully with ID: " + createdBooking.getBookingid());
+						} else {
+							System.err.println("Failed to create booking - returned null");
+						}
+
+						// Xóa dữ liệu tạm thời khỏi session
+						request.getSession().removeAttribute("pendingBookingData");
+						request.getSession().removeAttribute("pendingUsername");
+					} else {
+						System.err.println("Missing booking data or username in session");
+						System.err.println("pendingBookingData: " + pendingBookingData);
+						System.err.println("pendingUsername: " + pendingUsername);
 					}
-					if (savebookingdetail != null) {
-						bookingdetailservice.create(savebookingdetail);
-					}
+
+					// Xử lý voucher
 					if (voucherOfUserIdInt != null && voucherOfUserIdInt != 0) {
+						System.out.println("Using voucher ID: " + voucherOfUserIdInt);
 						voucherOfUserService.usedVoucher(voucherOfUserIdInt);
 					}
 				} catch (Exception e) {
+					System.err.println("Error creating booking after successful payment: " + e.getMessage());
 					e.printStackTrace();
+					// Still continue with the redirect even if booking creation fails
 				}
 			} else {
 				transactionStatus = "fail";
+				// Xóa dữ liệu tạm thời khỏi session nếu thanh toán thất bại
+				request.getSession().removeAttribute("pendingBookingData");
+				request.getSession().removeAttribute("pendingUsername");
 			}
-			
+
 			// Lấy field owner từ session
 			Integer bookingFieldId = (Integer) request.getSession().getAttribute("bookingFieldId");
 			if (bookingFieldId != null) {
@@ -445,20 +514,23 @@ public class PaymentVNPayController {
 					System.err.println("Error getting field owner: " + e.getMessage());
 				}
 			}
-			
-			String ownerParam = fieldOwnerUsername != null ? "&owner=" + URLEncoder.encode(fieldOwnerUsername, StandardCharsets.UTF_8) : "";
+
+			String ownerParam = fieldOwnerUsername != null
+					? "&owner=" + URLEncoder.encode(fieldOwnerUsername, StandardCharsets.UTF_8)
+					: "";
 			redirectUrl += "/payment-result?field=true&orderId=" + txnRef
 					+ "&status=" + transactionStatus
 					+ "&amount=" + amountInVND
 					+ ownerParam;
 		} else if (txnRef != null && txnRef.startsWith("CART_")) {
 			// Xử lý giỏ hàng
-			if ("00".equals(request.getParameter("vnp_TransactionStatus"))) {
+			if ("00".equals(request.getParameter("vnp_TransactionStatus"))
+					|| "00".equals(request.getParameter("vnp_transaction_status"))) {
 				transactionStatus = "success";
 				if (saveOrder != null) {
 					saveOrder.setOrderstatus("Đã Thanh Toán");
 					saveOrder.setPaymentstatus(true);
-					if (voucherOfUserIdInt != null)   {
+					if (voucherOfUserIdInt != null) {
 						voucherOfUserService.usedVoucher(voucherOfUserIdInt);
 					}
 					ordersService.update(saveOrder);
@@ -473,28 +545,36 @@ public class PaymentVNPayController {
 			redirectUrl += "/payment-result?cart=true&orderId=" + txnRef
 					+ "&status=" + transactionStatus
 					+ "&amount=" + amountInVND;
-		}else if (txnRef != null && txnRef.startsWith("REFUND_")) {
+		} else if (txnRef != null && txnRef.startsWith("REFUND_")) {
 			// Xử lý hoàn tiền
 			if ("00".equals(request.getParameter("vnp_TransactionStatus"))
 					|| "00".equals(request.getParameter("vnp_transaction_status"))) {
 				transactionStatus = "success";
 				// Xử lý hoàn tiền
-				Integer bookingId = Integer.parseInt(messeage.split("Hoan tien cho san ")[1]);
+				Integer bookingId = null;
+				if (messeage != null && messeage.contains("Hoan tien cho san ")) {
+					try {
+						bookingId = Integer.parseInt(messeage.split("Hoan tien cho san ")[1]);
+					} catch (NumberFormatException e) {
+						System.err.println("Error parsing booking ID from message: " + messeage);
+					}
+				}
 				if (bookingId != null) {
 					Bookings booking = bookingservice.findByBookingid(bookingId);
 					booking.setRefund(true);
 					bookingservice.update(booking);
-					
+
 					// Lấy field owner từ booking
 					try {
 						// Tìm field từ booking details
 						duan.sportify.entities.Field field = null;
 						if (booking.getListOfBookingdetails() != null && !booking.getListOfBookingdetails().isEmpty()) {
 							field = booking.getListOfBookingdetails().get(0).getField();
-						} else if (booking.getListOfPermanentBookings() != null && !booking.getListOfPermanentBookings().isEmpty()) {
+						} else if (booking.getListOfPermanentBookings() != null
+								&& !booking.getListOfPermanentBookings().isEmpty()) {
 							field = booking.getListOfPermanentBookings().get(0).getField();
 						}
-						
+
 						if (field != null && field.getOwner() != null) {
 							fieldOwnerUsername = field.getOwner().getUsername();
 						}
@@ -505,13 +585,14 @@ public class PaymentVNPayController {
 			} else {
 				transactionStatus = "fail";
 			}
-			String refundOwnerParam = fieldOwnerUsername != null ? "&owner=" + URLEncoder.encode(fieldOwnerUsername, StandardCharsets.UTF_8) : "";
+			String refundOwnerParam = fieldOwnerUsername != null
+					? "&owner=" + URLEncoder.encode(fieldOwnerUsername, StandardCharsets.UTF_8)
+					: "";
 			redirectUrl += "/payment-result?refund=true&refundId=" + (txnRef != null ? txnRef : "")
 					+ "&status=" + transactionStatus
 					+ "&amount=" + amountInVND
 					+ refundOwnerParam;
-		} 
-		else {
+		} else {
 			// fallback nếu không xác định được loại đơn
 			redirectUrl += "/payment-result?orderId=" + (txnRef != null ? txnRef : "")
 					+ "&status=fail"
@@ -519,7 +600,6 @@ public class PaymentVNPayController {
 		}
 		return new RedirectView(redirectUrl);
 	}
-
 
 	// Tạo token thanh toán lưu thẻ
 	@PostMapping("api/user/generate-token")

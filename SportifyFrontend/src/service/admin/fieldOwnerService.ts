@@ -1,6 +1,7 @@
 import axios from 'axios';
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 
-const API_BASE_URL = 'http://localhost:8081/api/admin/field-owner';
+const API_BASE_URL = `${URL_BACKEND}/api/admin/field-owner`;
 
 export type FieldOwnerFilter = 'PENDING' | 'APPROVED' | 'REJECTED' | 'ALL';
 
@@ -34,5 +35,9 @@ export const fieldOwnerService = {
 
   async rejectRequest(ownerId: number, reason: string): Promise<void> {
     await axios.post(`${API_BASE_URL}/requests/${ownerId}/reject`, { reason });
+  },
+
+  async deleteRequest(ownerId: number): Promise<void> {
+    await axios.delete(`${API_BASE_URL}/requests/${ownerId}`);
   },
 };

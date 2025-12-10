@@ -63,10 +63,17 @@ public class FieldRestController {
 	}
 
 	@GetMapping("getAll")
-	public ResponseEntity<List<Field>> getAll(Model model) {
+	public ResponseEntity<List<Field>> getAll(Model model,
+			@RequestParam(value = "ownerUsername", required = false) String ownerUsername) {
+		if (ownerUsername != null && !ownerUsername.isEmpty()) {
+			List<Field> fields = fieldDAO.findByOwnerUsername(ownerUsername);
+			// Initialize owner proxy để serialization JSON có đầy đủ dữ liệu
+			fields.forEach(field -> initializeAssociations(field));
+			return ResponseEntity.ok(fields);
+		}
 		List<Field> fields = fieldDAO.findAll();
 		// Initialize owner proxy để serialization JSON có đầy đủ dữ liệu
-		fields.forEach(field -> Hibernate.initialize(field.getOwner()));
+		fields.forEach(field -> initializeAssociations(field));
 		return ResponseEntity.ok(fields);
 	}
 
@@ -74,7 +81,7 @@ public class FieldRestController {
 	public ResponseEntity<List<Field>> getAllActive(Model model) {
 		List<Field> fields = fieldDAO.findAllActive();
 		// Initialize owner proxy để serialization JSON có đầy đủ dữ liệu
-		fields.forEach(field -> Hibernate.initialize(field.getOwner()));
+		fields.forEach(field -> initializeAssociations(field));
 		return ResponseEntity.ok(fields);
 	}
 
@@ -85,8 +92,20 @@ public class FieldRestController {
 		}
 		Field field = fieldDAO.findById(id).get();
 		// Initialize owner proxy
-		Hibernate.initialize(field.getOwner());
+		initializeAssociations(field);
 		return ResponseEntity.ok(field);
+	}
+
+	private void initializeAssociations(Field field) {
+		if (field == null) {
+			return;
+		}
+		if (field.getOwner() != null) {
+			Hibernate.initialize(field.getOwner());
+		}
+		if (field.getSporttype() != null) {
+			Hibernate.initialize(field.getSporttype());
+		}
 	}
 
 	@PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

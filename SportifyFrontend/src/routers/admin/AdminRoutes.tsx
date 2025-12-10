@@ -1,27 +1,31 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
-import Dashboard from "../../Pages/admin/Dashboard";
+import { Route, Routes } from "react-router-dom";
 import AccountPage from "../../Pages/admin/Account";
+import AiSupportPage from "../../Pages/admin/AISupport";
 import BookingPage from "../../Pages/admin/Booking";
-import ProductPage from "../../Pages/admin/Product";
-import FieldPage from "../../Pages/admin/Field";
-import EventPage from "../../Pages/admin/Event";
-import VoucherPage from "../../Pages/admin/Voucher";
-import ContactPage from "../../Pages/admin/Contact";
-import OrderProductPage from "../../Pages/admin/OrderProduct";
 import CategoryProductPage from "../../Pages/admin/CategoryProduct";
 import CategorySportPage from "../../Pages/admin/CategorySport";
+import CommentPage from "../../Pages/admin/Comment";
+import ContactPage from "../../Pages/admin/Contact";
+import Dashboard from "../../Pages/admin/Dashboard";
+import EventPage from "../../Pages/admin/Event";
+import FieldPage from "../../Pages/admin/Field";
+import FieldManager from "../../Pages/admin/FieldManager";
+import FieldOwnerRequests from "../../Pages/admin/FieldOwnerRequests";
+import ManggerFileActive from "../../Pages/admin/ManggerFileActive";
+import ManagerFieldActiveDetail from "../../Pages/admin/ManggerFileActiveDetail";
+import OrderManager from "../../Pages/admin/OrderManager";
+import OrderProductPage from "../../Pages/admin/OrderProduct";
+import ProductPage from "../../Pages/admin/Product";
 import ReportBookingPage from "../../Pages/admin/ReportBooking";
 import ReportOrderPage from "../../Pages/admin/ReportOrder";
-import CommentPage from "../../Pages/admin/Comment";
-import FieldManager from "../../Pages/admin/FieldManager";
-import OrderManager from "../../Pages/admin/OrderManager";
-import AiSupportPage from "../../Pages/admin/AISupport";
-import FieldOwnerRequests from "../../Pages/admin/FieldOwnerRequests";
+import VoucherPage from "../../Pages/admin/Voucher";
 
 const AdminRoutes: React.FC = () => (
   <Routes>
     <Route path="dashboard" element={<Dashboard />} />
+    <Route path="manager-file-active" element={<ManggerFileActive />} />
+    <Route path="manager-file-active-detail/:fieldId" element={<ManagerFieldActiveDetail />} />
     <Route path="accounts" element={<AccountPage />} />
     <Route path="bookings" element={<BookingPage />} />
     <Route path="/manager-bookings" element={<FieldManager />} />

@@ -119,7 +119,7 @@ export default function Header() {
                           )}
                           {userRole === "field owner" && (
                             <li>
-                              <a className="dropdown-item" href="/owner/fields">
+                              <a className="dropdown-item" href="/owner/dashboard">
                                 <i className="fa fa-cogs me-2"></i>Quản trị
                               </a>
                             </li>

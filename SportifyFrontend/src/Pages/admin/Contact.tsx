@@ -1,5 +1,6 @@
 const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 import React, { useEffect, useState } from "react";
+import BootstrapModal from '../../components/admin/BootstrapModal';
 
 interface Contact {
   contactid: string;
@@ -168,73 +169,75 @@ const ContactPage: React.FC = () => {
         </div>
 
         {/* Edit Modal */}
-        {showEdit && (
-          <div className="modal fade show" style={{ display: "block" }}>
-            <div className="modal-dialog modal-lg modal-dialog-centered">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">Chi tiết liên hệ</h5>
-                  <button type="button" className="btn-close" onClick={() => setShowEdit(false)}></button>
+        <BootstrapModal
+          show={showEdit}
+          onHide={() => setShowEdit(false)}
+          title="Chi tiết liên hệ"
+          size="lg"
+          scrollable={false}
+          bodyClassName="contact-modal-body"
+          topOffset="8%"
+          footer={
+            <>
+              <button type="button" className="btn btn-secondary" onClick={() => setShowEdit(false)}>Đóng</button>
+              <button type="button" className="btn btn-danger" onClick={() => handleDeleteContact(form.contactid || "")}>Xóa</button>
+            </>
+          }
+        >
+          <form>
+            <div className="row g-3">
+              <div className="col-sm-12">
+                <div className="form-group">
+                  <label>Người liên hệ <span className="text-danger">*</span></label>
+                  <input className="form-control" type="text"
+                    value={
+                      form.users
+                        ? `${form.users.firstname} ${form.users.lastname}`
+                        : form.username || ""
+                    }
+                    readOnly
+                  />
                 </div>
-                <div className="modal-body">
-                  <form>
-                    <div className="row g-3">
-                      <div className="col-sm-12">
-                        <div className="form-group">
-                          <label>Người liên hệ <span className="text-danger">*</span></label>
-                          <input className="form-control" type="text"
-                            value={
-                              form.users
-                                ? `${form.users.firstname} ${form.users.lastname}`
-                                : form.username || ""
-                            }
-                            readOnly
-                          />
-                        </div>
-                      </div>
-                      <div className="col-sm-12">
-                        <div className="form-group">
-                          <label>Ngày liên hệ <span className="text-danger">*</span></label>
-                          <input className="form-control" type="text"
-                            value={formatDate(form.datecontact || "")}
-                            readOnly
-                          />
-                        </div>
-                      </div>
-                      <div className="col-sm-12">
-                        <div className="form-group">
-                          <label>Loại liên hệ <span className="text-danger">*</span></label>
-                          <input className="form-control" type="text"
-                            value={form.category || ""}
-                            readOnly
-                          />
-                        </div>
-                      </div>
-                      <div className="col-sm-12">
-                        <div className="form-group">
-                          <label>Tiêu đề <span className="text-danger">*</span></label>
-                          <input className="form-control" type="text"
-                            value={form.title || ""}
-                            readOnly
-                          />
-                        </div>
-                      </div>
-                      <div className="col-sm-12">
-                        <div className="form-group">
-                          <label>Tin nhắn <span className="text-danger">*</span></label>
-                          <textarea className="form-control"
-                            value={form.meesagecontact || ""}
-                            readOnly
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </form>
+              </div>
+              <div className="col-sm-12">
+                <div className="form-group">
+                  <label>Ngày liên hệ <span className="text-danger">*</span></label>
+                  <input className="form-control" type="text"
+                    value={form.datecontact ? formatDate(form.datecontact) : ""}
+                    readOnly
+                  />
+                </div>
+              </div>
+              <div className="col-sm-12">
+                <div className="form-group">
+                  <label>Loại liên hệ <span className="text-danger">*</span></label>
+                  <input className="form-control" type="text"
+                    value={form.category || ""}
+                    readOnly
+                  />
+                </div>
+              </div>
+              <div className="col-sm-12">
+                <div className="form-group">
+                  <label>Tiêu đề <span className="text-danger">*</span></label>
+                  <input className="form-control" type="text"
+                    value={form.title || ""}
+                    readOnly
+                  />
+                </div>
+              </div>
+              <div className="col-sm-12">
+                <div className="form-group">
+                  <label>Tin nhắn <span className="text-danger">*</span></label>
+                  <textarea className="form-control"
+                    value={form.meesagecontact || ""}
+                    readOnly
+                  />
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          </form>
+        </BootstrapModal>
 
         {/* Toast/Notification */}
         <div id="toast"></div>

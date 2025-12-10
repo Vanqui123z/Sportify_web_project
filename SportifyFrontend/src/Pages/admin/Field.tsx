@@ -26,6 +26,9 @@ interface Field {
   clientIP?: string;
   latitude?: string;
   longitude?: string;
+  availableShifts?: string; // JSON array: "[1,2,3,4]"
+  startDate?: string; // YYYY-MM-DD
+  endDate?: string; // YYYY-MM-DD
   sporttype?: {
     sporttypeid: string;
     categoryname?: string;
@@ -37,6 +40,12 @@ interface Field {
   } | null;
 }
 
+interface Shift {
+  shiftid: number;
+  nameshift: string;
+  starttime: string;
+  endtime: string;
+}
 
 interface SportType {
   sporttypeid: string;
@@ -70,6 +79,8 @@ const FieldPage: React.FC<FieldPageProps> = ({ context = "admin" }) => {
   const [sportTypes, setSportTypes] = useState<SportType[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [allShifts, setAllShifts] = useState<Shift[]>([]);
+  const [selectedShifts, setSelectedShifts] = useState<string[]>([]);
 
   useEffect(() => {
     return () => {
@@ -195,6 +206,11 @@ const FieldPage: React.FC<FieldPageProps> = ({ context = "admin" }) => {
     fetch(`${URL_BACKEND}/rest/sportTypes/getAll`)
       .then(res => res.json())
       .then(data => setSportTypes(data));
+    // Fetch all shifts
+    fetch(`${URL_BACKEND}/rest/shifts/getAll`)
+      .then(res => res.json())
+      .then(data => setAllShifts(data))
+      .catch(err => console.error("Error fetching shifts:", err));
   }, [context, ownerUsername]);
 
   // Search handler
@@ -254,6 +270,9 @@ const FieldPage: React.FC<FieldPageProps> = ({ context = "admin" }) => {
         }
       });
 
+      // Thêm availableShifts
+      formData.append("availableShifts", JSON.stringify(selectedShifts.map(id => parseInt(id))));
+
       // Thêm username từ auth context
       if (authContext?.user?.username) {
         formData.append("username", authContext.user.username);
@@ -292,7 +311,10 @@ const FieldPage: React.FC<FieldPageProps> = ({ context = "admin" }) => {
       const fieldData = {
         ...form,
         status: form.status ?? true,
-        sporttype: { sporttypeid: form.sporttypeid }
+        sporttype: { sporttypeid: form.sporttypeid },
+        availableShifts: JSON.stringify(selectedShifts.map(id => parseInt(id))),
+        startDate: form.startDate,
+        endDate: form.endDate
       };
       delete fieldData.sporttypeid;
 
@@ -362,8 +384,28 @@ const FieldPage: React.FC<FieldPageProps> = ({ context = "admin" }) => {
     }
     resetImageState();
     setForm({ ...field, sporttypeid });
+    // Parse availableShifts từ JSON string
+    if (field.availableShifts) {
+      try {
+        const shiftsArray = JSON.parse(field.availableShifts);
+        setSelectedShifts(shiftsArray.map((id: number) => id.toString()));
+      } catch (e) {
+        setSelectedShifts([]);
+      }
+    } else {
+      setSelectedShifts([]);
+    }
     setShowEdit(true);
     setErrors([]);
+  };
+
+  // Handle shift checkbox change
+  const handleShiftChange = (shiftId: string) => {
+    setSelectedShifts(prev =>
+      prev.includes(shiftId)
+        ? prev.filter(id => id !== shiftId)
+        : [...prev, shiftId]
+    );
   };
 
   // Handle form change
@@ -843,6 +885,117 @@ const FieldPage: React.FC<FieldPageProps> = ({ context = "admin" }) => {
                   {errors.filter(e => e.field === "descriptionfield").map((e, i) => (
                     <div key={i} className="badge bg-danger mt-1">{e.message}</div>
                   ))}
+                </div>
+              </div>
+
+              {/* Ngày hoạt động */}
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Ngày bắt đầu</label>
+                  <input className="form-control" type="date"
+                    value={form.startDate || ""}
+                    onChange={e => handleFormChange("startDate", e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Ngày kết thúc</label>
+                  <input className="form-control" type="date"
+                    value={form.endDate || ""}
+                    onChange={e => handleFormChange("endDate", e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Chọn giờ */}
+              <div className="col-sm-12">
+                <div className="form-group">
+                  <label className="mb-3"><strong>Chọn giờ hoạt động <span className="text-danger">*</span></strong></label>
+
+                  <div style={{
+                    backgroundColor: "#f8f9fa",
+                    border: "2px solid #dee2e6",
+                    borderRadius: "8px",
+                    padding: "20px",
+                    maxHeight: "400px",
+                    overflowY: "auto"
+                  }}>
+                    {allShifts.length === 0 ? (
+                      <div className="text-center text-muted py-5">
+                        <p className="mb-0">⏳ Đang tải danh sách giờ...</p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+                          {allShifts.map(shift => {
+                            const isSelected = selectedShifts.includes(shift.shiftid.toString());
+                            return (
+                              <div key={shift.shiftid} className="col">
+                                <div
+                                  onClick={() => handleShiftChange(shift.shiftid.toString())}
+                                  style={{
+                                    padding: "12px 15px",
+                                    border: isSelected ? "2px solid #28a745" : "2px solid #e9ecef",
+                                    borderRadius: "6px",
+                                    backgroundColor: isSelected ? "#d4edda" : "#fff",
+                                    cursor: "pointer",
+                                    transition: "all 0.2s ease",
+                                    boxShadow: isSelected ? "0 2px 8px rgba(40, 167, 69, 0.2)" : "none"
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    if (!isSelected) {
+                                      e.currentTarget.style.backgroundColor = "#f1f3f5";
+                                      e.currentTarget.style.borderColor = "#ced4da";
+                                    }
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    if (!isSelected) {
+                                      e.currentTarget.style.backgroundColor = "#fff";
+                                      e.currentTarget.style.borderColor = "#e9ecef";
+                                    }
+                                  }}
+                                >
+                                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                                    <div>
+                                      <div style={{ fontWeight: "600", fontSize: "15px", color: isSelected ? "#28a745" : "#333" }}>
+                                        {shift.nameshift}
+                                      </div>
+                                      <div style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>
+                                        {shift.starttime} → {shift.endtime}
+                                      </div>
+                                    </div>
+                                    {isSelected && (
+                                      <div style={{ fontSize: "18px", color: "#28a745" }}>✓</div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        <div style={{
+                          marginTop: "20px",
+                          paddingTop: "15px",
+                          borderTop: "1px solid #dee2e6",
+                          textAlign: "center"
+                        }}>
+                          <span style={{
+                            display: "inline-block",
+                            backgroundColor: "#e7f3ff",
+                            color: "#0066cc",
+                            padding: "8px 16px",
+                            borderRadius: "20px",
+                            fontSize: "14px",
+                            fontWeight: "500"
+                          }}>
+                            ✓ Đã chọn: <strong>{selectedShifts.length}</strong> / {allShifts.length} giờ
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

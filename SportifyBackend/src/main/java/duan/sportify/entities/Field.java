@@ -27,8 +27,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -43,60 +43,69 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name="field", catalog="sportify")
+@Table(name = "field", catalog = "sportify")
 public class Field implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    //--- ENTITY PRIMARY KEY 
+    // --- ENTITY PRIMARY KEY
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    @Column(name="fieldid", nullable=false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "fieldid", nullable = false)
     private Integer fieldid;
 
-    //--- ENTITY DATA FIELDS
+    // --- ENTITY DATA FIELDS
     @NotBlank(message = "{NotBlank.field.namefield}")
     @Size(max = 50, message = "{Size.field.namefield}")
-    @Column(name="namefield", nullable=false, length=50)
+    @Column(name = "namefield", nullable = false, length = 50)
     private String namefield;
 
     @NotBlank(message = "{NotBlank.field.descriptionfield}")
-    @Column(name="descriptionfield", length=2000)
+    @Column(name = "descriptionfield", length = 2000)
     private String descriptionfield;
 
     @Min(value = 0, message = "{Min.field.price}")
     @NotNull(message = "{NotNull.field.price}")
-    @Column(name="price", nullable=false)
+    @Column(name = "price", nullable = false)
     private Double price;
 
-    @Column(name="image", length=100)
+    @Column(name = "image", length = 100)
     private String image;
 
     @NotBlank(message = "{NotBlank.field.address}")
-    @Column(name="address", nullable=false, length=200)
+    @Column(name = "address", nullable = false, length = 200)
     private String address;
 
-    @Column(name="status")
+    @Column(name = "status")
     private Boolean status;
-    
-    @Column(name="latitude")
+
+    @Column(name = "latitude")
     private Double latitude;
-    
-    @Column(name="longitude")
+
+    @Column(name = "longitude")
     private Double longitude;
 
-    //--- ENTITY RELATIONSHIP
+    @Column(name = "available_shifts", length = 500)
+    private String availableShifts; // JSON array of shift IDs, e.g., "[1,2,3,4,5]"
+
+    @Column(name = "start_date")
+    private String startDate; // Ngày bắt đầu hoạt động
+
+    @Column(name = "end_date")
+    private String endDate; // Ngày kết thúc hoạt động
+
+    // --- ENTITY RELATIONSHIP
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="sporttypeid", nullable=false) // JPA sẽ tự map FK
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JoinColumn(name = "sporttypeid", nullable = false) // JPA sẽ tự map FK
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     private Sporttype sporttype;
 
     @JsonIgnore
-    @OneToMany(mappedBy="field")
+    @OneToMany(mappedBy = "field")
     private List<Bookingdetails> listOfBookingdetails;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "owner_id")
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     private FieldOwnerRegistration owner;
 }

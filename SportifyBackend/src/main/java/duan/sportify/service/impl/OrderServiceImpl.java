@@ -1,22 +1,14 @@
 package duan.sportify.service.impl;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import duan.sportify.dao.AuthorizedDAO;
 import duan.sportify.dao.OrderDAO;
 import duan.sportify.dao.OrderDetailDAO;
-import duan.sportify.entities.Authorized;
 import duan.sportify.entities.Orderdetails;
 import duan.sportify.entities.Orders;
-import duan.sportify.service.AuthorizedService;
 import duan.sportify.service.OrderService;
 
 @SuppressWarnings("unused")
@@ -70,6 +62,11 @@ public class OrderServiceImpl implements OrderService {
 	@Override
 	public List<Orders> findByUsername(String username) {
 		return orderDAO.findByUsername(username);
+	}
+
+	@Override
+	public int countUserBookingsToday(String username) {
+		return orderDetailDAO.countUserBookingsToday(username);
 	}
 
 }

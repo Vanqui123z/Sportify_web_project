@@ -104,7 +104,12 @@ const Contact: React.FC = () => {
                           <div className="col-md-6">
                             <div className="form-group">
                               <label className="label" htmlFor="subject">Loại phản hồi</label>
-                              <select name="contactType" className="custom-select" value={contactType} onChange={(e) => setContactType(e.target.value)}>
+                              <select
+                                name="contactType"
+                                className="custom-select contact-select"
+                                value={contactType}
+                                onChange={(e) => setContactType(e.target.value)}
+                              >
                                 <option value="Giao diện">Giao diện</option>
                                 <option value="Chức năng">Chức năng</option>
                                 <option value="Hiệu suất">Hiệu suất</option>
@@ -117,15 +122,15 @@ const Contact: React.FC = () => {
                           <div className="col-md-12">
                             <div className="form-group">
                               <label className="label" htmlFor="title">Tiêu đề</label>
-                              <input 
-                                type="text" 
-                                className="form-control" 
-                                name="title" 
-                                id="title" 
-                                placeholder="Nhập tiêu đề..." 
-                                maxLength={250} 
-                                value={title} 
-                                onChange={(e) => setTitle(e.target.value)} 
+                              <input
+                                type="text"
+                                className="form-control"
+                                name="title"
+                                id="title"
+                                placeholder="Nhập tiêu đề..."
+                                maxLength={250}
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
                               />
                               {errorTitle && (
                                 <span className="error-message" style={{ display: 'block' }}>
@@ -138,15 +143,15 @@ const Contact: React.FC = () => {
                           <div className="col-md-12">
                             <div className="form-group">
                               <label className="label">Nội dung</label>
-                              <textarea 
-                                className="form-control" 
-                                id="meesagecontact" 
+                              <textarea
+                                className="form-control"
+                                id="meesagecontact"
                                 maxLength={800}
-                                cols={30} 
-                                rows={4} 
-                                placeholder="Nhập nội dung..." 
-                                value={meesagecontact} 
-                                onChange={(e) => setMeesagecontact(e.target.value)} 
+                                cols={30}
+                                rows={4}
+                                placeholder="Nhập nội dung..."
+                                value={meesagecontact}
+                                onChange={(e) => setMeesagecontact(e.target.value)}
                               />
                               {errorMessage && (
                                 <span className="error-message2" style={{ display: 'block' }}>
@@ -187,12 +192,10 @@ const Contact: React.FC = () => {
                   <div className="col-md-5 order-md-first d-flex align-items-stretch" style={{ border: '3px solid #2E7D32' }}>
                     <iframe
                       title="location"
-                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.4435924064874!2d106.62525347460408!3d10.853826357762184!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752b161f50ae47%3A0x2328d1d1acc3b11a!2sFPT%20Polytechnic%20-%20T%C3%B2a%20F!5e0!3m2!1svi!2s!4v1691058165130!5m2!1svi!2s"
-                      width="600" 
-                      height="100%" 
-                      style={{ border: 0 }} 
+                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.7675889130314!2d106.68950957575302!3d10.829089789322925!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x317528f6e9e290ab%3A0xa322309091295c37!2zMTA0IMSQLiBUcuG6p24gQsOhIEdpYW8sIFBoxrDhu51uZyA1LCBHw7IgVuG6pXAsIFRow6BuaCBwaOG7kSBI4buTIENow60gTWluaCwgVmnhu4d0IE5hbQ!5e0!3m2!1svi!2s!4v1765182757073!5m2!1svi!2s"
+                      style={{ border: 0, width: '100%', minHeight: '420px', flexGrow: 1 }}
                       allowFullScreen={true}
-                      loading="lazy" 
+                      loading="lazy"
                       referrerPolicy="no-referrer-when-downgrade"
                     />
                   </div>
@@ -208,8 +211,7 @@ const Contact: React.FC = () => {
                     </div>
                     <div className="text">
                       <p>
-                        <span>Address: </span> Công viên phần mềm Quang Trung QTSC Building
-                        1, Quận 12, Thành phố Hồ Chí Minh, Việt Nam
+                        <span>Address: </span>104 Đ. Trần Bá Giao, Phường 5, Gò Vấp, Hồ Chí Minh, Việt Nam
                       </p>
                     </div>
                   </div>
@@ -221,7 +223,7 @@ const Contact: React.FC = () => {
                     </div>
                     <div className="text">
                       <p>
-                        <span>Phone:</span> + 1235 2355 98
+                        <span>Phone:</span> 0366635625
                       </p>
                     </div>
                   </div>
@@ -233,7 +235,7 @@ const Contact: React.FC = () => {
                     </div>
                     <div className="text">
                       <p>
-                        <span>Email:</span> <a href="mailto:info@yoursite.com">sportify@gmail.com</a>
+                        <span>Email:</span> <a href="mailto:info@yoursite.com">phamleducngoc123@gmail.com</a>
                       </p>
                     </div>
                   </div>
@@ -255,6 +257,16 @@ const Contact: React.FC = () => {
           </div>
         </div>
       </section>
+      <style>{`
+        .contact-select {
+          min-height: 52px;
+          padding: 0.75rem 2.5rem 0.75rem 1rem;
+          font-size: 1rem;
+        }
+        .contact-select option {
+          font-size: 1rem;
+        }
+      `}</style>
     </>
   );
 };

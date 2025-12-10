@@ -93,20 +93,20 @@ const ListCardBank: React.FC<ListCardBankProps> = ({
     const [banks, setBanks] = useState<Array<BankData>>([]); // Danh sách ngân hàng
 
     // Check for return from payment process by keeping the card list in sync
-    useEffect(() => {
-        if (!username) {
-            return;
-        }
+    // useEffect(() => {
+    //     if (!username) {
+    //         return;
+    //     }
 
-        loadCards();
+    //     loadCards();
 
-        // Auto-reload cards every 3 seconds for better sync with backend state
-        const interval = setInterval(() => {
-            loadCards();
-        }, 3000);
+    //     // Auto-reload cards every 3 seconds for better sync with backend state
+    //     const interval = setInterval(() => {
+    //         loadCards();
+    //     }, 3000);
 
-        return () => clearInterval(interval);
-    }, [username]);
+    //     return () => clearInterval(interval);
+    // }, [username]);
 
     // Load cards from backend
     const loadCards = async () => {

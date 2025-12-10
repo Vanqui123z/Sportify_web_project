@@ -1,11 +1,12 @@
 package duan.sportify.rest.controller;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -63,8 +64,13 @@ public class ContactRestController {
 
 	// search
 	@GetMapping("search")
-	public ResponseEntity<List<Contacts>> search(@RequestParam("datecontact") Date datecontact,
-			@RequestParam("category") Optional<String> category) {
-		return ResponseEntity.ok(contactDAO.findByDatecontact(datecontact, category));
+	public ResponseEntity<List<Contacts>> search(
+			@RequestParam(name = "datecontact", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate datecontact,
+			@RequestParam(name = "category", required = false) String category) {
+
+		Date sqlDate = datecontact != null ? Date.valueOf(datecontact) : null;
+		String normalizedCategory = (category != null && !category.isBlank()) ? category.trim() : null;
+
+		return ResponseEntity.ok(contactDAO.searchContacts(sqlDate, normalizedCategory));
 	}
 }

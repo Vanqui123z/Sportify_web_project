@@ -5,10 +5,10 @@ export async function getCartQuantity(): Promise<number> {
     const res = await fetch(`${URL_BACKEND}/api/user/cart/view`, {
       method: "GET",
       credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
     });
+    if (!res.ok) {
+      return 0;
+    }
     const data = await res.json();
     if (data.success && data.cart && Array.isArray(data.cart.items)) {
       return data.cart.items.reduce(

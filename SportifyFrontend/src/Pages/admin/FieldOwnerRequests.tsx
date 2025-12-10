@@ -132,6 +132,24 @@ const FieldOwnerRequests: React.FC = () => {
     }
   };
 
+  const handleDelete = async (ownerId: number) => {
+    const confirmDelete = window.confirm('Bạn có chắc muốn xóa yêu cầu này? Thao tác không thể hoàn tác.');
+    if (!confirmDelete) return;
+
+    try {
+      setLoading(true);
+      await fieldOwnerService.deleteRequest(ownerId);
+      await fetchData();
+      alert('Đã xóa yêu cầu.');
+    } catch (err: any) {
+      console.error(err);
+      const message = err?.response?.data?.message || 'Xóa yêu cầu thất bại.';
+      alert(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div
       className="page-wrapper py-4"
@@ -275,26 +293,35 @@ const FieldOwnerRequests: React.FC = () => {
                         </td>
 
                         <td className="text-end">
-                          {item.status === "PENDING" ? (
-                            <div className="btn-group btn-group-sm">
-                              <button
-                                className="btn btn-success px-3"
-                                onClick={() => handleApprove(item.ownerId)}
-                                disabled={loading}
-                              >
-                                ✔ Duyệt
-                              </button>
-                              <button
-                                className="btn btn-outline-danger px-3"
-                                onClick={() => handleReject(item.ownerId)}
-                                disabled={loading}
-                              >
-                                ✖ Từ chối
-                              </button>
-                            </div>
-                          ) : (
-                            <span className="text-muted small">Đã xử lý</span>
-                          )}
+                          <div className="d-flex justify-content-end align-items-center gap-2">
+                            {item.status === "PENDING" ? (
+                              <div className="btn-group btn-group-sm">
+                                <button
+                                  className="btn btn-success px-3"
+                                  onClick={() => handleApprove(item.ownerId)}
+                                  disabled={loading}
+                                >
+                                  ✔ Duyệt
+                                </button>
+                                <button
+                                  className="btn btn-outline-danger px-3"
+                                  onClick={() => handleReject(item.ownerId)}
+                                  disabled={loading}
+                                >
+                                  ✖ Từ chối
+                                </button>
+                              </div>
+                            ) : (
+                              <span className="text-muted small">Đã xử lý</span>
+                            )}
+                            <button
+                              className="btn btn-danger btn-sm"
+                              onClick={() => handleDelete(item.ownerId)}
+                              disabled={loading}
+                            >
+                              Xóa
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}

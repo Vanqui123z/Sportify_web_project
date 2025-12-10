@@ -34,4 +34,8 @@ public class FieldOwnerRegistrationService {
     public Optional<FieldOwnerRegistration> findById(Long id) {
         return registrationDAO.findById(id);
     }
+
+    public void deleteById(Long id) {
+        registrationDAO.deleteById(id);
+    }
 }

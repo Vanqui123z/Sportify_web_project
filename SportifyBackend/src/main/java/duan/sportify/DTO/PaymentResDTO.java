@@ -2,11 +2,11 @@ package duan.sportify.DTO;
 
 import java.io.Serializable;
 
-
-import lombok.Getter;
-import lombok.Setter;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -15,16 +15,6 @@ public class PaymentResDTO implements Serializable {
 	private String Status;
 	private String Message;
 	private String URL;
-	
-	public void setStatus(String status) {
-		this.Status = status;
-	}
-	
-	public void setMessage(String message) {
-		this.Message = message;
-	}
-	
-	public void setURL(String url) {
-		this.URL = url;
-	}
+	private String type;
+
 }

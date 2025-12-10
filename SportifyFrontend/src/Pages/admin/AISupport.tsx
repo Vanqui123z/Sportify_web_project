@@ -1,5 +1,6 @@
 const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 import React, { useEffect, useState } from "react";
+import { Button, Modal } from "react-bootstrap";
 import { translateHolidayName, translateWeatherCondition } from "../../helper/Translate";
 
 interface BookingForecast {
@@ -7,6 +8,10 @@ interface BookingForecast {
   fieldName: string;
   date: string;
   predictedBookings: number;
+  totalBookings7Day?: number;
+  totalBookings3Day?: number;
+  totalBookings1Day?: number;
+  fieldImage?: string;
 }
 
 interface Weather {
@@ -35,12 +40,37 @@ const AiSupportPage: React.FC = () => {
   const [bookingForecasts, setBookingForecasts] = useState<BookingForecast[]>([]);
   const [weather, setWeather] = useState<Weather | null>(null);
   const [holidays, setHolidays] = useState<Holiday[]>([]);
+  const [forecastSelected, setForecastSelected] = useState<BookingForecast | null>(null);
+  const [_fieldUsageData, setFieldUsageData] = useState<any[]>([]);
+
+  const onHandleShow = (forecast: any) => { setForecastSelected(forecast) };
+  const onHandleClose = () => { setForecastSelected(null) };
 
   useEffect(() => {
     // Fetch booking forecasts
-    fetch(`${URL_BACKEND}/api/forecast/next-week`)
-      .then(res => res.json())
-      .then(data => setBookingForecasts(data));
+    const fetchForecasts = fetch(`${URL_BACKEND}/api/forecast/next-week`)
+      .then(res => res.json());
+
+    // Fetch field usage data
+    const fetchFieldUsage = fetch(`${URL_BACKEND}/api/field-usage/active-fields/by-7daylast`)
+      .then(res => res.json());
+
+    // Merge forecasts with field usage data
+    Promise.all([fetchForecasts, fetchFieldUsage])
+      .then(([forecasts, fieldUsage]) => {
+        setFieldUsageData(fieldUsage);
+        const mergedData = forecasts.map((forecast: any) => {
+          const usageData = fieldUsage.find((field: any) => field.fieldId === forecast.fieldId);
+          return {
+            ...forecast,
+            totalBookings7Day: usageData?.totalBookings7Day || 0,
+            totalBookings3Day: usageData?.totalBookings3Day || 0,
+            totalBookings1Day: usageData?.totalBookings1Day || 0,
+            fieldImage: usageData?.fieldImage
+          };
+        });
+        setBookingForecasts(mergedData);
+      });
 
     // Fetch weather
     fetch(`${URL_BACKEND}/api/forecast/weather`)
@@ -124,6 +154,7 @@ const AiSupportPage: React.FC = () => {
                         <th>Tên Sân</th>
                         <th>Ngày</th>
                         <th>Dự Đoán Số Lượt Đặt</th>
+                        <th>Hành Động</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -144,6 +175,15 @@ const AiSupportPage: React.FC = () => {
                               </div>
                             </div>
                           </td>
+                          <td>
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={() => onHandleShow(forecast)}
+                            >
+                              Xem
+                            </Button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -153,7 +193,79 @@ const AiSupportPage: React.FC = () => {
             </div>
           </div>
         </div>
+        {/* Modal Chi Tiết */}
+        <Modal show={!!forecastSelected} onHide={onHandleClose}>
+          <Modal.Header closeButton>
+            <Modal.Title>Chi Tiết Dự Báo - {forecastSelected?.fieldName}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {forecastSelected && (
+              <>
+                <p><strong>Tên Sân:</strong> {forecastSelected.fieldName}</p>
+                <p><strong>Ngày:</strong> {formatDate(forecastSelected.date)}</p>
+                <p><strong>Dự đoán số lượt đặt:</strong> {forecastSelected.predictedBookings}</p>
 
+                <hr />
+                <h5>Thống Kê Đặt Sân:</h5>
+                <div className="row mb-3">
+                  <div className="col-4">
+                    <div className="text-center p-2 border rounded">
+                      <h6 className="text-primary">{forecastSelected.totalBookings7Day}</h6>
+                      <small>7 ngày qua</small>
+                    </div>
+                  </div>
+                  <div className="col-4">
+                    <div className="text-center p-2 border rounded">
+                      <h6 className="text-warning">{forecastSelected.totalBookings3Day}</h6>
+                      <small>3 ngày qua</small>
+                    </div>
+                  </div>
+                  <div className="col-4">
+                    <div className="text-center p-2 border rounded">
+                      <h6 className="text-success">{forecastSelected.totalBookings1Day}</h6>
+                      <small>Hôm qua</small>
+                    </div>
+                  </div>
+                </div>
+
+                <hr />
+                <h3>Yếu Tố Ảnh Hưởng:</h3>
+                {weather && (
+                  <>
+                    {weather.forecast.filter((day) => day.date === forecastSelected.date).map((day, index) => (
+                      <div key={index} className="row">
+
+                        <div className="col-8">
+                          <p><strong>Nhiệt độ trung bình:</strong> {day.avgtempC}°C</p>
+                          <p><strong>Khả năng mưa:</strong> {day.dailyChanceOfRain}%</p>
+                        </div>
+                        <div className="col-4 text-center">
+                          <img src={day.conditionIcon} alt="weather" />
+                        </div>
+                      </div>
+                    ))}
+
+                  </>
+                )}
+                {holidays && holidays.length > 0 ? (
+                  holidays.filter((h) => forecastSelected.date >= h.startDate && forecastSelected.date <= h.endDate).map((h, index) => (
+                    <p key={index} className="text-center"><strong>Ngày lễ:</strong> {h.summary} ({h.startDate} - {h.endDate})</p>
+                  ))
+                ) : (
+                  <p className="text-center">Không có lịch nghĩ lễ nào!</p>
+                )}
+
+                <hr />
+                <p><strong>Mô tả:</strong> Dựa trên các yếu tố thời tiết, ngày lễ và dữ liệu lịch sử, dự đoán số lượt đặt sân có thể thay đổi. Đây là một dự báo tham khảo.</p>
+              </>
+            )}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={onHandleClose}>
+              Đóng
+            </Button>
+          </Modal.Footer>
+        </Modal>
         {/* Holidays Section */}
         <div className="row">
           <div className="col-12">

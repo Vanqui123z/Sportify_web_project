@@ -1,13 +1,45 @@
-import React, { useContext } from "react";
-import { Outlet } from "react-router-dom";
 import { Helmet } from "@dr.pogodin/react-helmet";
+import React, { useContext, useEffect } from "react";
+import { Outlet } from "react-router-dom";
 import OwnerHeader from "../components/owner/Header";
-import OwnerSidebar from "../components/owner/Sidebar";
 import OwnerAIChatbox from "../components/owner/OwnerAIChatbox";
+import OwnerSidebar from "../components/owner/Sidebar";
 import { AuthContext } from "../helper/AuthContext";
+import { loadScript } from "../helper/LoadScript";
 
 const LayoutOwner: React.FC = () => {
   const { user, loading } = useContext(AuthContext);
+
+  const arrayScript = [
+    "/admin/assets/js/jquery-3.5.1.min.js",
+    "/admin/assets/js/jquery.dataTables.min.js",
+    "/admin/assets/js/dataTables.bootstrap4.min.js",
+    "/admin/assets/js/popper.min.js",
+    "/admin/assets/js/bootstrap.min.js",
+    "/admin/assets/js/jquery.slimscroll.min.js",
+    "/admin/assets/plugins/raphael/raphael.min.js",
+    "/admin/assets/plugins/morris/morris.min.js",
+    "/admin/assets/js/chart.js",
+    "/admin/assets/js/moment.min.js",
+    "/admin/assets/js/bootstrap-datetimepicker.min.js",
+    "/admin/assets/js/select2.min.js",
+    "/admin/assets/js/app.js",
+    // "https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular.min.js",
+    // "https://cdnjs.cloudflare.com/ajax/libs/angular-route/1.8.3/angular-route.min.js",
+  ];
+  useEffect(() => {
+    async function loadScripts() {
+      try {
+        for (const src of arrayScript) {
+          loadScript(src)
+        }
+      } catch (e) {
+        console.error("load script failed : ", e)
+      }
+    }
+
+    loadScripts()
+  }, [])
 
   if (loading) {
     return (
@@ -32,6 +64,7 @@ const LayoutOwner: React.FC = () => {
     );
   }
 
+
   return (
     <>
       <Helmet>
@@ -54,21 +87,7 @@ const LayoutOwner: React.FC = () => {
         <link rel="stylesheet" href="/admin/assets/css/dataTables.bootstrap4.min.css" />
         <link rel="stylesheet" href="/admin/assets/css/select2.min.css" />
         <link rel="stylesheet" href="/admin/assets/css/bootstrap-datetimepicker.min.css" />
-        <script src="/admin/assets/js/jquery-3.5.1.min.js"></script>
-        <script src="/admin/assets/js/jquery.dataTables.min.js"></script>
-        <script src="/admin/assets/js/dataTables.bootstrap4.min.js"></script>
-        <script src="/admin/assets/js/popper.min.js"></script>
-        <script src="/admin/assets/js/bootstrap.min.js"></script>
-        <script src="/admin/assets/js/jquery.slimscroll.min.js"></script>
-        <script src="/admin/assets/plugins/raphael/raphael.min.js"></script>
-        <script src="/admin/assets/plugins/morris/morris.min.js"></script>
-        <script src="/admin/assets/js/chart.js"></script>
-        <script src="/admin/assets/js/moment.min.js"></script>
-        <script src="/admin/assets/js/bootstrap-datetimepicker.min.js"></script>
-        <script src="/admin/assets/js/select2.min.js"></script>
-        <script src="/admin/assets/js/app.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-route/1.8.3/angular-route.min.js"></script>
+
       </Helmet>
 
       <div className="admin-layout">

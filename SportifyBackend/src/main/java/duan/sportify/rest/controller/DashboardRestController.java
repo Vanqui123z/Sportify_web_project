@@ -39,6 +39,7 @@ public class DashboardRestController {
 	ContactDAO contactDAO;
 	@Autowired
 	BookingDetailDAO bookingDetailDAO;
+
 	// API tổng hợp tất cả các thống kê
 	@GetMapping("summary")
 	public java.util.Map<String, Object> getDashboardSummary() {
@@ -61,24 +62,25 @@ public class DashboardRestController {
 		return summary;
 	}
 
-    // API tổng hợp tất cả các dữ liệu còn lại
-    @GetMapping("all-details")
-    public java.util.Map<String, Object> getAllDetails() {
-        java.util.Map<String, Object> details = new java.util.HashMap<>();
-        details.put("thongkebookingtrongngay", bookingDAO.thongkebookingtrongngay());
-        details.put("danhsach3contact", contactDAO.fill3ContactOnDate());
-        details.put("demLienHeTrongNgay", contactDAO.demLienHeTrongNgay());
-        details.put("tongSoPhieuDatSan2Thang", bookingDAO.tongSoPhieuDatSan2Thang());
-        details.put("tongSoPhieuOrder2Thang", orderDAO.tongSoPhieuOrder2Thang());
-        details.put("tongDoanhThuBooking2Month", bookingDAO.tongDoanhThuBooking2Month());
-        details.put("doanhThuOrder2Month", orderDAO.doanhThuOrder2Month());
-        details.put("top3SanDatNhieu", bookingDetailDAO.top3SanDatNhieu());
-        details.put("top3SanPhamBanNhieu", orderDAO.top3SanPhamBanNhieu());
-        details.put("top5UserDatSan", bookingDetailDAO.top5UserDatSan());
-        details.put("top5UserOrder", orderDAO.top5UserOrder());
-        details.put("thongKeOrderInDay", orderDAO.thongKeOrderInDay());
-        return details;
-    }
+	// API tổng hợp tất cả các dữ liệu còn lại
+	@GetMapping("all-details")
+	public java.util.Map<String, Object> getAllDetails() {
+		java.util.Map<String, Object> details = new java.util.HashMap<>();
+		details.put("thongkebookingtrongngay", bookingDAO.thongkebookingtrongngay());
+		details.put("danhsach3contact", contactDAO.fill3ContactOnDate());
+		details.put("demLienHeTrongNgay", contactDAO.demLienHeTrongNgay());
+		details.put("tongSoPhieuDatSan2Thang", bookingDAO.tongSoPhieuDatSan2Thang());
+		details.put("tongSoPhieuOrder2Thang", orderDAO.tongSoPhieuOrder2Thang());
+		details.put("tongDoanhThuBooking2Month", bookingDAO.tongDoanhThuBooking2Month());
+		details.put("doanhThuOrder2Month", orderDAO.doanhThuOrder2Month());
+		details.put("top3SanDatNhieu", bookingDetailDAO.top3SanDatNhieu());
+		details.put("top3SanPhamBanNhieu", orderDAO.top3SanPhamBanNhieu());
+		details.put("top5UserDatSan", bookingDetailDAO.top5UserDatSan());
+		details.put("top5UserOrder", orderDAO.top5UserOrder());
+		details.put("thongKeOrderInDay", orderDAO.thongKeOrderInDay());
+		return details;
+	}
+
 	// tổng sản phẩm
 	@GetMapping("totalProduct")
 	public long countProduct() {
@@ -207,35 +209,39 @@ public class DashboardRestController {
 	public List<Object[]> doanhThuOrder2Month() {
 		return orderDAO.doanhThuOrder2Month();
 	}
+
 	// top 3 san dat nhiều nhất
-		@GetMapping("top3SanDatNhieu")
-		public List<Object[]> top3SanDatNhieu() {
-			return bookingDetailDAO.top3SanDatNhieu();
-		}
+	@GetMapping("top3SanDatNhieu")
+	public List<Object[]> top3SanDatNhieu() {
+		return bookingDetailDAO.top3SanDatNhieu();
+	}
+
 	// top san pham ban nhieu nhat
 	@GetMapping("top3SanPhamBanNhieu")
-	public List<Object[]> top3SanPhamBanNhieu(){
+	public List<Object[]> top3SanPhamBanNhieu() {
 		return orderDAO.top3SanPhamBanNhieu();
 	}
 	// top 5 user dat san nhiều nhat
-	
+
 	@GetMapping("top5UserDatSan")
-	public List<Object[]> top5UserDatSan(){
+	public List<Object[]> top5UserDatSan() {
 		return bookingDetailDAO.top5UserDatSan();
 	}
+
 	// top 5 user mua hang nhieu nhat
 	@GetMapping("top5UserOrder")
-	public List<Object[]> top5UserOrder(){
+	public List<Object[]> top5UserOrder() {
 		return orderDAO.top5UserOrder();
 	}
+
 	// thong ke order trong ngay thongKeOrderInDay
 	@GetMapping("thongKeOrderInDay")
-	public List<Object[]> thongKeOrderInDay(){
+	public List<Object[]> thongKeOrderInDay() {
 		return orderDAO.thongKeOrderInDay();
 	}
 
 	// ============= OWNER ENDPOINTS =============
-	
+
 	// API tổng hợp tất cả các thống kê cho owner
 	@GetMapping("summary/owner")
 	public java.util.Map<String, Object> getDashboardSummaryByOwner(
@@ -257,14 +263,14 @@ public class DashboardRestController {
 	public java.util.Map<String, Object> getAllDetailsByOwner(
 			@RequestParam String ownerUsername) {
 		java.util.Map<String, Object> details = new java.util.HashMap<>();
-		details.put("thongkebookingtrongngay", bookingDAO.thongkebookingtrongngay());
+		details.put("thongkebookingtrongngay", bookingDAO.countFieldsBookedToday(ownerUsername));
 		details.put("danhsach3contact", contactDAO.fill3ContactOnDate());
 		details.put("demLienHeTrongNgay", contactDAO.demLienHeTrongNgay());
 		details.put("tongSoPhieuDatSan2Thang", bookingDAO.tongSoPhieuDatSan2Thang());
 		details.put("tongSoPhieuOrder2Thang", orderDAO.tongSoPhieuOrder2Thang());
 		details.put("tongDoanhThuBooking2Month", bookingDAO.tongDoanhThuBooking2Month());
 		details.put("doanhThuOrder2Month", orderDAO.doanhThuOrder2Month());
-		details.put("top3SanDatNhieu", bookingDetailDAO.top3SanDatNhieu());
+		details.put("top3SanDatNhieu", bookingDAO.getTop3FieldsBookedToday(ownerUsername));
 		details.put("top3SanPhamBanNhieu", orderDAO.top3SanPhamBanNhieu());
 		details.put("top5UserDatSan", bookingDetailDAO.top5UserDatSan());
 		details.put("top5UserOrder", orderDAO.top5UserOrder());

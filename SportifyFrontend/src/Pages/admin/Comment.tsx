@@ -32,6 +32,7 @@ const VITE_CLOUDINARY_BASE_URL = import.meta.env.VITE_CLOUDINARY_BASE_URL || "";
 
 const CommentPage: React.FC = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [allReviews, setAllReviews] = useState<Review[]>([]);
   const [selectedReview, setSelectedReview] = useState<Review | null>(null);
   const [showReplyModal, setShowReplyModal] = useState(false);
   const [replyForm, setReplyForm] = useState<ReplyForm>({
@@ -46,18 +47,41 @@ const CommentPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+  const filterReviews = (source: Review[], criteria: { username: string; status: string }) => {
+    const keyword = criteria.username.trim().toLowerCase();
+    const statusFilter = criteria.status;
+
+    return source.filter(review => {
+      const normalizedUsername = review.username ? review.username.toLowerCase() : "";
+      const normalizedCustomerName = review.customerName ? review.customerName.toLowerCase() : "";
+      const usernameMatch = keyword
+        ? normalizedUsername.includes(keyword) ||
+        normalizedCustomerName.includes(keyword)
+        : true;
+
+      const statusMatch = statusFilter
+        ? review.status === statusFilter
+        : true;
+
+      return usernameMatch && statusMatch;
+    });
+  };
+
   // Fetch all reviews
   useEffect(() => {
-    fetchReviews();
+    fetchReviews(search);
     // Get admin name from localStorage
     const adminName = localStorage.getItem("adminName") || "";
     setReplyForm(prev => ({ ...prev, adminName }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const fetchReviews = async () => {
+  const fetchReviews = async (criteria: { username: string; status: string } = search) => {
     try {
       const response = await axios.get(`${URL_BACKEND}/api/user/reviews/all`, { withCredentials: true });
-      setReviews(response.data);
+      const data = response.data as Review[];
+      setAllReviews(data);
+      setReviews(filterReviews(data, criteria));
     } catch (error) {
       console.error("Error fetching reviews:", error);
       setError("Failed to load reviews. Please try again later.");
@@ -83,6 +107,7 @@ const CommentPage: React.FC = () => {
         ));
         setShowReplyModal(false);
         setReplyForm(prev => ({ ...prev, content: "", status: "active" }));
+        await fetchReviews();
       }
     } catch (error) {
       console.error("Error submitting reply:", error);
@@ -121,10 +146,42 @@ const CommentPage: React.FC = () => {
 
         // Clear the form content but keep the admin name
         setReplyForm(prev => ({ ...prev, content: "", status: "active" }));
+        await fetchReviews();
       }
     } catch (error) {
       console.error("Error deleting reply:", error);
       setError("Failed to delete reply. Please try again.");
+    }
+  };
+
+  const handleDeleteReview = async (review: Review) => {
+    const confirmDelete = window.confirm("Bạn có chắc muốn xóa bình luận này? Thao tác không thể hoàn tác.");
+    if (!confirmDelete) return;
+
+    try {
+      setError(null);
+      setSuccess(null);
+
+      const type = review.fieldId ? "field" : "product";
+
+      const response = await axios.delete(
+        `${URL_BACKEND}/api/user/reviews/${review.reviewId}`,
+        {
+          params: { type },
+          withCredentials: true,
+        }
+      );
+
+      if (response.data?.success) {
+        setSuccess(response.data.message || "Đã xóa bình luận.");
+        await fetchReviews();
+      } else {
+        throw new Error(response.data?.message || "Không thể xóa bình luận.");
+      }
+    } catch (err: any) {
+      console.error("Error deleting review:", err);
+      const message = err?.response?.data?.message || err?.message || "Xóa bình luận thất bại.";
+      setError(message);
     }
   };
 
@@ -143,28 +200,14 @@ const CommentPage: React.FC = () => {
 
   // Handle search
   const handleSearch = () => {
-    fetchReviews().then(() => {
-      const filtered = reviews.filter(review => {
-        const usernameMatch = search.username
-          ? review.username.toLowerCase().includes(search.username.toLowerCase()) ||
-          review.customerName.toLowerCase().includes(search.username.toLowerCase())
-          : true;
-
-        const statusMatch = search.status
-          ? review.status === search.status
-          : true;
-
-        return usernameMatch && statusMatch;
-      });
-
-      setReviews(filtered);
-    });
+    setReviews(filterReviews(allReviews, search));
   };
 
   // Handle refresh
   const handleRefresh = () => {
-    setSearch({ username: "", status: "" });
-    fetchReviews();
+    const defaultFilter = { username: "", status: "" };
+    setSearch(defaultFilter);
+    fetchReviews(defaultFilter);
   };
 
   // Format date
@@ -324,18 +367,24 @@ const CommentPage: React.FC = () => {
                       </td>
                       <td>
                         <span className={`badge ${review.status === 'active' ? 'bg-success' :
-                            review.status === 'hidden' ? 'bg-warning' :
-                              'bg-danger'
+                          review.status === 'hidden' ? 'bg-warning' :
+                            'bg-danger'
                           }`}>
                           {review.status === 'active' ? 'Đang hiển thị' :
                             review.status === 'hidden' ? 'Đã ẩn' : 'Đã xóa'}
                         </span>
                       </td>
                       <td className="text-center">
-                        <button className="btn btn-outline-primary btn-sm"
-                          onClick={() => openReplyModal(review)}>
-                          <i className="fa fa-reply me-1"></i> Phản hồi
-                        </button>
+                        <div className="d-flex justify-content-center gap-2">
+                          <button className="btn btn-outline-primary btn-sm"
+                            onClick={() => openReplyModal(review)}>
+                            <i className="fa fa-reply me-1"></i> Phản hồi
+                          </button>
+                          <button className="btn btn-outline-danger btn-sm"
+                            onClick={() => handleDeleteReview(review)}>
+                            <i className="fa fa-trash me-1"></i> Xóa
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

@@ -1,16 +1,9 @@
 package duan.sportify.controller;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.sql.Date;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -18,24 +11,21 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.RestController;
 
 import duan.sportify.DTO.FieldWithDistanceDTO;
-import duan.sportify.DTO.booking.PermanentBookingRequest;
-import duan.sportify.entities.Authorized;
 import duan.sportify.entities.Bookings;
 import duan.sportify.entities.FavoriteField;
 import duan.sportify.entities.Field;
@@ -43,7 +33,6 @@ import duan.sportify.entities.FieldOwnerRegistration;
 import duan.sportify.entities.Shifts;
 import duan.sportify.entities.Sporttype;
 import duan.sportify.entities.Users;
-import duan.sportify.entities.Voucher;
 import duan.sportify.service.BookingDetailService;
 import duan.sportify.service.BookingService;
 import duan.sportify.service.FieldService;
@@ -52,12 +41,6 @@ import duan.sportify.service.SportTypeService;
 import duan.sportify.service.UserService;
 import duan.sportify.service.VoucherService;
 import duan.sportify.utils.BookingCalculator;
-
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 @SuppressWarnings("unused")
 @RestController
@@ -427,45 +410,41 @@ public class FieldController {
 
 	// Kiểm tra giờ trống của sân trong Detail
 	@PostMapping("sportify/field/detail/check")
-	public ResponseEntity<?> searchShiftDefault(Model model, @RequestParam("fieldid") int idField,
+	public ResponseEntity<?> searchShiftDefault(
+			Model model,
+			@RequestParam("fieldid") Integer fieldId,
 			@RequestParam("dateInput") String date) {
-		dateselect = date; // Ngày được chọn
-		List<Field> fieldListById = fieldservice.findFieldById(idField); // Đổ sân theo id lấy giao diện về.
-		String nameSportype = fieldservice.findNameSporttypeById(idField); // Tên môn thể thao để hiện thị trong các sân
-																			// liên quan ở Detail
-		String idSporttype = fieldservice.findIdSporttypeById(idField); // Lấy id môn thể thao dựa vào sân đang chọn
-																		// Detail
-		List<Field> fieldListByIdSporttype = fieldservice.findBySporttypeIdlimit3(idSporttype); // Danh sách 3 sân liên
-																								// quan đến môn thể thao
-																								// đang xem.
-		List<Shifts> shiftsempty = shiftservice.findShiftDate(idField, date); // List ca trống thỏa mản điều kiện đầu
-																				// vào
 
-		LocalTime currentTime = LocalTime.now(); // Lấy giờ hiện tại
-		LocalDate currentDate = LocalDate.now(); // lấy ngày hiện tại
-		LocalDate selectedDate = LocalDate.parse(date, DateTimeFormatter.ISO_DATE); // Parse date về kiểu LocalDate
-		if (selectedDate.equals(currentDate)) { // Nếu ngày chọn = ngày hiện tại
-			List<Shifts> shiftsNull = new ArrayList<>(); // Ca trống
-			for (Shifts shift : shiftsempty) {
-				LocalTime shiftStartTime = shift.getStarttime(); // Lấy thời gian bắt đầu của ca làm việc
-				if (shiftStartTime.isAfter(currentTime)) { // Kiểm tra thời gian bắt đầu của ca làm việc
-					shiftsNull.add(shift); // Thêm vào danh sách nếu thỏa mãn điều kiện
-				}
-			}
-			model.addAttribute("shiftsNull", shiftsNull);
-		} else { // Đổ tất cả các ca trống
-			model.addAttribute("shiftsNull", shiftsempty);
+		// Lấy thông tin sân
+		List<Field> fieldListById = fieldservice.findFieldById(fieldId);
+		if (fieldListById.isEmpty()) {
+			return ResponseEntity.badRequest().body("Không tìm thấy sân");
 		}
-		// Format yyyy-mm-dd thành dd-mm-yyyy
-		LocalDate dateformat = LocalDate.parse(date);
+
+		// ✅ LẤY DANH SÁCH CA TRỐNG TỪ SERVICE
+		List<Shifts> emptyShifts = shiftservice.findShiftDate(fieldId, date);
+
+		// ✅ Nếu ngày chọn là hôm nay → lọc các ca chưa tới giờ
+		LocalDate selectedDate = LocalDate.parse(date);
+		LocalDate currentDate = LocalDate.now();
+		LocalTime currentTime = LocalTime.now();
+
+		if (selectedDate.equals(currentDate)) {
+			emptyShifts = emptyShifts.stream()
+					.filter(shift -> shift.getStarttime().isAfter(currentTime))
+					.toList();
+		}
+
+		// Format ngày dd-MM-yyyy
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-		String formattedDate = dateformat.format(formatter);
-		// Dữ liệu hiển thị trong trang Detail
+		String formattedDate = selectedDate.format(formatter);
+
+		// Đổ dữ liệu ra view
+		model.addAttribute("shiftsNull", emptyShifts);
 		model.addAttribute("date", date);
 		model.addAttribute("formattedDate", formattedDate);
-		model.addAttribute("fieldListByIdSporttype", fieldListByIdSporttype);
-		model.addAttribute("nameSportype", nameSportype);
 		model.addAttribute("fieldListById", fieldListById);
+
 		return ResponseEntity.ok(cleanModelData(model));
 	}
 
@@ -647,14 +626,14 @@ public class FieldController {
 
 		return ResponseEntity.ok(favoriteFields);
 	}
+
 	@GetMapping("user/favorite/check")
-	public Object checkFavoriteField( @RequestParam Integer fieldId, HttpServletRequest request) {
+	public Object checkFavoriteField(@RequestParam Integer fieldId, HttpServletRequest request) {
 		// Lấy username người dùng đã đăng nhập
 		String username = (String) request.getSession().getAttribute("username");
 		boolean isFavorite = fieldservice.checkFavoriteField(username, fieldId);
 		return ResponseEntity.ok(Collections.singletonMap("isFavorite", isFavorite));
 	}
-	
 
 	// favorite
 	@PostMapping("user/favorite/{fieldId}")
@@ -674,78 +653,92 @@ public class FieldController {
 		fieldservice.removeFavoriteField(userlogin, fieldId);
 		return ResponseEntity.ok().body(Collections.singletonMap("message", "Xóa sân yêu thích thành công"));
 	}
-	
+
 	// API tìm sân gần nhất dựa trên tọa độ người dùng
 	@GetMapping("sportify/field/nearest")
 	public ResponseEntity<?> findNearestFields(
-	        @RequestParam Double latitude,
-	        @RequestParam Double longitude,
-	        @RequestParam(required = false, defaultValue = "tatca") String categorySelect,
-	        @RequestParam(required = false, defaultValue = "10") Integer limit,
-	        @RequestParam(required = false, defaultValue = "50") Integer maxDistance,
-	        Model model) {
-	        
-	    // Kiểm tra và đảm bảo tọa độ hợp lệ cho Việt Nam
-	    if (latitude < 8 || latitude > 23 || longitude < 102 || longitude > 109) {
-	        System.out.println("CẢNH BÁO: Tọa độ không nằm trong Việt Nam. Đang điều chỉnh...");
-	        latitude = 10.7769;  // Tọa độ mặc định TP.HCM
-	        longitude = 106.7;
-	    }
-	        
-	    System.out.println("Đang tìm sân gần nhất với tọa độ: " + latitude + ", " + longitude + 
-	                      ", loại sân: " + categorySelect + ", khoảng cách tối đa: " + maxDistance + "km");
-	        
-	    // Lấy các sân gần nhất - Truyền thêm maxDistance vào để lọc
-	    List<FieldWithDistanceDTO> nearestFieldsWithDistance = fieldservice.findNearestFields(latitude, longitude, categorySelect, limit, maxDistance != null ? maxDistance.doubleValue() : null);
-	    
-	    // Trích xuất danh sách Field từ DTO để sử dụng trong các phương thức hiện tại
-	    List<Field> nearestFields = new ArrayList<>();
-	    for (FieldWithDistanceDTO dto : nearestFieldsWithDistance) {
-	        nearestFields.add(dto.getField());
-	    }
-	    
-	    // Thêm các thông tin khác cần thiết cho view (tương tự như viewField)
-	    selectedSportTypeId = categorySelect;
-	    List<Shifts> shift = shiftservice.findAll();
-	    List<Sporttype> sporttypeListNotAll = sporttypeservice.findAll();
-	    List<Sporttype> sporttypeList = sporttypeservice.findAll();
-	    Sporttype tatca = new Sporttype();
-	    tatca.setCategoryname("Tất cả");
-	    tatca.setSporttypeid("tatca");
-	    sporttypeList.add(tatca);
-	    
-	    // Sắp xếp danh sách loại môn thể thao theo: Tất cả đầu tiên => các môn khác
-	    Collections.sort(sporttypeList, new Comparator<Sporttype>() {
-	        @Override
-	        public int compare(Sporttype s1, Sporttype s2) {
-	            // Xác định logic sắp xếp
-	            if (s1.getCategoryname().equals("Tất cả")) {
-	                return -1; // Đẩy "Tất cả" lên đầu
-	            } else if (s2.getCategoryname().equals("Tất cả")) {
-	                return 1; // Đẩy "Tất cả" lên đầu
-	            } else {
-	                return s1.getCategoryname().compareTo(s2.getCategoryname());
-	            }
-	        }
-	    });
-	    
-	    // Tạo map khoảng cách cho các field để hiển thị
-	    Map<Integer, String> fieldDistances = new HashMap<>();
-	    for (FieldWithDistanceDTO dto : nearestFieldsWithDistance) {
-	        fieldDistances.put(dto.getField().getFieldid(), dto.getFormattedDistance());
-	    }
-	    
-	    // Add các đối tượng vào model để qua giao diện hiển thị
-	    model.addAttribute("cateNotAll", sporttypeListNotAll);
-	    model.addAttribute("shift", shift);
-	    model.addAttribute("fieldList", nearestFields);
-	    model.addAttribute("fieldDistances", fieldDistances);
-	    model.addAttribute("selectedSportTypeId", selectedSportTypeId);
-	    model.addAttribute("cates", sporttypeList);
-	    model.addAttribute("userLatitude", latitude);
-	    model.addAttribute("userLongitude", longitude);
-	    model.addAttribute("isNearestSearch", true);
-	    
-	    return ResponseEntity.ok(cleanModelData(model));
+			@RequestParam Double latitude,
+			@RequestParam Double longitude,
+			@RequestParam(required = false, defaultValue = "tatca") String categorySelect,
+			@RequestParam(required = false, defaultValue = "10") Integer limit,
+			@RequestParam(required = false, defaultValue = "50") Integer maxDistance,
+			Model model) {
+
+		// Kiểm tra và đảm bảo tọa độ hợp lệ cho Việt Nam
+		if (latitude < 8 || latitude > 23 || longitude < 102 || longitude > 109) {
+			System.out.println("CẢNH BÁO: Tọa độ không nằm trong Việt Nam. Đang điều chỉnh...");
+			latitude = 10.7769; // Tọa độ mặc định TP.HCM
+			longitude = 106.7;
+		}
+
+		System.out.println("Đang tìm sân gần nhất với tọa độ: " + latitude + ", " + longitude +
+				", loại sân: " + categorySelect + ", khoảng cách tối đa: " + maxDistance + "km");
+
+		// Lấy các sân gần nhất - Truyền thêm maxDistance vào để lọc
+		List<FieldWithDistanceDTO> nearestFieldsWithDistance = fieldservice.findNearestFields(latitude, longitude,
+				categorySelect, limit, maxDistance != null ? maxDistance.doubleValue() : null);
+
+		// Trích xuất danh sách Field từ DTO để sử dụng trong các phương thức hiện tại
+		List<Field> nearestFields = new ArrayList<>();
+		for (FieldWithDistanceDTO dto : nearestFieldsWithDistance) {
+			nearestFields.add(dto.getField());
+		}
+
+		// Thêm các thông tin khác cần thiết cho view (tương tự như viewField)
+		selectedSportTypeId = categorySelect;
+		List<Shifts> shift = shiftservice.findAll();
+		List<Sporttype> sporttypeListNotAll = sporttypeservice.findAll();
+		List<Sporttype> sporttypeList = sporttypeservice.findAll();
+		Sporttype tatca = new Sporttype();
+		tatca.setCategoryname("Tất cả");
+		tatca.setSporttypeid("tatca");
+		sporttypeList.add(tatca);
+
+		// Sắp xếp danh sách loại môn thể thao theo: Tất cả đầu tiên => các môn khác
+		Collections.sort(sporttypeList, new Comparator<Sporttype>() {
+			@Override
+			public int compare(Sporttype s1, Sporttype s2) {
+				// Xác định logic sắp xếp
+				if (s1.getCategoryname().equals("Tất cả")) {
+					return -1; // Đẩy "Tất cả" lên đầu
+				} else if (s2.getCategoryname().equals("Tất cả")) {
+					return 1; // Đẩy "Tất cả" lên đầu
+				} else {
+					return s1.getCategoryname().compareTo(s2.getCategoryname());
+				}
+			}
+		});
+
+		// Tạo map khoảng cách cho các field để hiển thị
+		Map<Integer, String> fieldDistances = new HashMap<>();
+		for (FieldWithDistanceDTO dto : nearestFieldsWithDistance) {
+			fieldDistances.put(dto.getField().getFieldid(), dto.getFormattedDistance());
+		}
+
+		// Add các đối tượng vào model để qua giao diện hiển thị
+		model.addAttribute("cateNotAll", sporttypeListNotAll);
+		model.addAttribute("shift", shift);
+		model.addAttribute("fieldList", nearestFields);
+		model.addAttribute("fieldDistances", fieldDistances);
+		model.addAttribute("selectedSportTypeId", selectedSportTypeId);
+		model.addAttribute("cates", sporttypeList);
+		model.addAttribute("userLatitude", latitude);
+		model.addAttribute("userLongitude", longitude);
+		model.addAttribute("isNearestSearch", true);
+
+		return ResponseEntity.ok(cleanModelData(model));
 	}
+
+	// API lấy số lượng đặt sân của người dùng trong ngày hôm nay
+	@GetMapping("user/field/booking/count")
+	public ResponseEntity<?> getTodayBookingCount(HttpServletRequest request) {
+		String username = (String) request.getSession().getAttribute("username");
+		if (username == null) {
+			return ResponseEntity.status(401)
+					.body(Collections.singletonMap("error", "Bạn chưa đăng nhập"));
+		}
+		int bookingCount = bookingservice.countUserBookingsToday(username);
+		return ResponseEntity.ok(Collections.singletonMap("bookingCount", bookingCount));
+	}
+
 }

@@ -96,45 +96,54 @@ public class OrderController {
 	}
 
 	@PostMapping("/order/cart/voucher")
-public ResponseEntity<?> cartVoucher(@RequestParam String voucherId) {
-    if (voucherId == null || voucherId.isBlank()) {
-        return ResponseEntity.badRequest()
-                .body(Map.of("success", false, "message", "voucherId is required"));
-    }
+	public ResponseEntity<?> cartVoucher(@RequestParam String voucherId) {
+		if (voucherId == null || voucherId.isBlank()) {
+			return ResponseEntity.badRequest()
+					.body(Map.of("success", false, "message", "voucherId is required"));
+		}
 
-    Voucher voucher = voucherDAO.findByVoucherId(voucherId);
+		Voucher voucher = voucherDAO.findByVoucherId(voucherId);
 
-    if (voucher == null) {
-        return ResponseEntity.ok(Map.of(
-                "success", false,
-                "message", "Không tìm thấy voucher '" + voucherId + "'"
-        ));
-    }
+		if (voucher == null) {
+			return ResponseEntity.ok(Map.of(
+					"success", false,
+					"message", "Không tìm thấy voucher '" + voucherId + "'"));
+		}
 
-    // Lấy ngày hiện tại và ngày hiệu lực của voucher
-    LocalDate currentDate = LocalDate.now();
-    LocalDate startDate = Instant.ofEpochMilli(voucher.getStartdate().getTime())
-            .atZone(ZoneId.systemDefault())
-            .toLocalDate();
-    LocalDate endDate = Instant.ofEpochMilli(voucher.getEnddate().getTime())
-            .atZone(ZoneId.systemDefault())
-            .toLocalDate();
+		// Lấy ngày hiện tại và ngày hiệu lực của voucher
+		LocalDate currentDate = LocalDate.now();
+		LocalDate startDate = Instant.ofEpochMilli(voucher.getStartdate().getTime())
+				.atZone(ZoneId.systemDefault())
+				.toLocalDate();
+		LocalDate endDate = Instant.ofEpochMilli(voucher.getEnddate().getTime())
+				.atZone(ZoneId.systemDefault())
+				.toLocalDate();
 
-    boolean isValid = !startDate.isAfter(currentDate) && !endDate.isBefore(currentDate);
+		boolean isValid = !startDate.isAfter(currentDate) && !endDate.isBefore(currentDate);
 
-    if (!isValid) {
-        return ResponseEntity.ok(Map.of(
-                "success", false,
-                "message", "Voucher '" + voucherId + "' đã hết hạn sử dụng"
-        ));
-    }
+		if (!isValid) {
+			return ResponseEntity.ok(Map.of(
+					"success", false,
+					"message", "Voucher '" + voucherId + "' đã hết hạn sử dụng"));
+		}
 
-    // Nếu hợp lệ
-    return ResponseEntity.ok(Map.of(
-            "success", true,
-            "voucherId", voucherId,
-            "discountPercent", voucher.getDiscountpercent(),
-            "message", "Voucher hợp lệ!"
-    ));
-}
+		// Nếu hợp lệ
+		return ResponseEntity.ok(Map.of(
+				"success", true,
+				"voucherId", voucherId,
+				"discountPercent", voucher.getDiscountpercent(),
+				"message", "Voucher hợp lệ!"));
+	}
+
+	// Đếm số đơn đặt của user trong hôm nay
+	@GetMapping("order/count-today")
+	public ResponseEntity<?> countUserBookingsToday(HttpServletRequest request) {
+		String username = (String) request.getSession().getAttribute("username");
+		if (username == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+					.body(Map.of("success", false, "message", "User not logged in"));
+		}
+		int count = (orderService.countUserBookingsToday(username));
+		return ResponseEntity.ok(Map.of("success", true, "count", count));
+	}
 }

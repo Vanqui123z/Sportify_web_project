@@ -5,12 +5,9 @@ import java.util.Date;
 import java.util.List;
 
 import duan.sportify.DTO.ShiftDTO;
-import duan.sportify.DTO.booking.BookingEventDTO;
 import duan.sportify.DTO.booking.BookingDetailDTO;
-import duan.sportify.entities.Authorized;
+import duan.sportify.DTO.booking.BookingEventDTO;
 import duan.sportify.entities.Bookings;
-import duan.sportify.entities.PermanentBooking;
-
 
 @SuppressWarnings("unused")
 public interface BookingService {
@@ -34,12 +31,26 @@ public interface BookingService {
 
 	List<Object[]> getBookingInfoByUsername(String username);
 
-
 	List<Object[]> getPermanentBookingByBookingId(Integer bookingId);
 
 	List<Object[]> getBookingInfoByBookingDetail(Integer bookingid);
 
 	int countBooking();
+
 	List<BookingEventDTO> getCalendarEvents();
+
+	List<BookingEventDTO> getCalendarEventsField(Integer fieldId);
+
 	List<BookingDetailDTO> getBookingDetail(Integer bookingId);
+
+	int countUserBookingsToday(String username);
+
+	boolean existsBookingDetail(Integer fieldId, Integer shiftId, Date playDate);
+
+	boolean existsOverlappingPermanentBooking(
+			Integer fieldId,
+			Integer shiftId,
+			Integer dayOfWeek,
+			LocalDate startDate,
+			LocalDate endDate);
 }

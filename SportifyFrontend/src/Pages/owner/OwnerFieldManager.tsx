@@ -1,24 +1,27 @@
-import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import { Form, Alert } from 'react-bootstrap';
-import { Bar } from 'react-chartjs-2';
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
+  ArcElement,
   BarElement,
+  CategoryScale,
+  Chart as ChartJS,
+  Legend,
+  LinearScale,
   Title,
   Tooltip,
-  Legend,
 } from 'chart.js';
-import getImageUrl from '../../helper/getImageUrl';
+import React, { useContext, useEffect, useState } from 'react';
+import { Alert, Form } from 'react-bootstrap';
+import { Bar, Pie } from 'react-chartjs-2';
 import { AuthContext } from '../../helper/AuthContext';
+import getImageUrl from '../../helper/getImageUrl';
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 
 // Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
   BarElement,
+  ArcElement,
   Title,
   Tooltip,
   Legend
@@ -29,23 +32,35 @@ interface FieldUsageDetailDTO {
   fieldId: number;
   fieldName: string;
   fieldImage: string;
+  fieldPrice: number;
   oneTimeBookings: number;
   permanentBookings: number;
   totalBookings: number;
+  totalRevenue: number;
+}
+interface Props {
+  selectDate?: string;
 }
 
-const OwnerFieldManager: React.FC = () => {
+const OwnerFieldManager: React.FC<Props> = ({ selectDate }) => {
   const { user } = useContext(AuthContext);
   const ownerUsername = user?.username || '';
 
   // State variables
-  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState<string>(selectDate || new Date().toISOString().split('T')[0]);
   const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7));
   const [dailyDetailData, setDailyDetailData] = useState<FieldUsageDetailDTO[]>([]);
   const [monthlyDetailData, setMonthlyDetailData] = useState<FieldUsageDetailDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'daily' | 'monthly'>('daily');
   const [loading, setLoading] = useState(false);
+
+  // Sync selectedDate with prop
+  useEffect(() => {
+    if (selectDate) {
+      setSelectedDate(selectDate);
+    }
+  }, [selectDate]);
 
   // Fetch initial data
   useEffect(() => {
@@ -66,12 +81,19 @@ const OwnerFieldManager: React.FC = () => {
   }, [selectedMonth, ownerUsername]);
 
   // Helper functions for calculations
-  const calculateTotal = (data: FieldUsageDetailDTO[], property: keyof Pick<FieldUsageDetailDTO, 'oneTimeBookings' | 'permanentBookings' | 'totalBookings'>) => {
+  const calculateTotal = (data: FieldUsageDetailDTO[], property: keyof Pick<FieldUsageDetailDTO, 'oneTimeBookings' | 'permanentBookings' | 'totalBookings' | 'totalRevenue'>) => {
     return data.reduce((sum, item) => sum + item[property], 0);
   };
-  
+
   const calculatePercentage = (part: number, total: number) => {
     return Math.round((part / (total || 1)) * 100);
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(amount);
   };
 
   // Data fetching functions - filter by owner
@@ -79,7 +101,7 @@ const OwnerFieldManager: React.FC = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `http://localhost:8081/api/field-usage/active-fields/by-date?date=${date}&ownerUsername=${ownerUsername}`
+        `${URL_BACKEND}/api/field-usage/active-fields/by-date?date=${date}&ownerUsername=${ownerUsername}`
       );
       setDailyDetailData(response.data);
       setError(null);
@@ -96,7 +118,7 @@ const OwnerFieldManager: React.FC = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `http://localhost:8081/api/field-usage/active-fields/by-month?yearMonth=${yearMonth}&ownerUsername=${ownerUsername}`
+        `${URL_BACKEND}/api/field-usage/active-fields/by-month?yearMonth=${yearMonth}&ownerUsername=${ownerUsername}`
       );
       setMonthlyDetailData(response.data);
       setError(null);
@@ -121,7 +143,7 @@ const OwnerFieldManager: React.FC = () => {
     const fieldNames = dailyDetailData.map(item => item.fieldName);
     const oneTimeData = dailyDetailData.map(item => item.oneTimeBookings);
     const permanentData = dailyDetailData.map(item => item.permanentBookings);
-    
+
     return {
       labels: fieldNames,
       datasets: [
@@ -138,12 +160,12 @@ const OwnerFieldManager: React.FC = () => {
       ],
     };
   };
-  
+
   const prepareMonthlyChartData = () => {
     const fieldNames = monthlyDetailData.map(item => item.fieldName);
     const oneTimeData = monthlyDetailData.map(item => item.oneTimeBookings);
     const permanentData = monthlyDetailData.map(item => item.permanentBookings);
-    
+
     return {
       labels: fieldNames,
       datasets: [
@@ -159,6 +181,66 @@ const OwnerFieldManager: React.FC = () => {
         }
       ],
     };
+  };
+
+  // Prepare pie chart data for booking percentage
+  const prepareBookingPieData = () => {
+    const data = getCurrentData();
+    const colors = [
+      '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+      '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'
+    ];
+
+    return {
+      labels: data.map(item => item.fieldName),
+      datasets: [
+        {
+          data: data.map(item => item.totalBookings),
+          backgroundColor: colors.slice(0, data.length),
+          borderWidth: 2,
+        },
+      ],
+    };
+  };
+
+  // Prepare pie chart data for revenue percentage
+  const prepareRevenuePieData = () => {
+    const data = getCurrentData();
+    const colors = [
+      '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+      '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'
+    ];
+
+    return {
+      labels: data.map(item => item.fieldName),
+      datasets: [
+        {
+          data: data.map(item => item.totalRevenue),
+          backgroundColor: colors.slice(0, data.length),
+          borderWidth: 2,
+        },
+      ],
+    };
+  };
+
+  const pieOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'bottom' as const,
+      },
+      tooltip: {
+        callbacks: {
+          label: function (context: any) {
+            const label = context.label || '';
+            const value = context.parsed;
+            const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
+            const percentage = ((value / total) * 100).toFixed(1);
+            return `${label}: ${percentage}%`;
+          }
+        }
+      }
+    },
   };
 
   const chartOptions = {
@@ -187,22 +269,24 @@ const OwnerFieldManager: React.FC = () => {
     if (data.length === 0) {
       return (
         <tr>
-          <td colSpan={7} className="text-center">
+          <td colSpan={9} className="text-center">
             {activeTab === 'daily' ? 'Không có dữ liệu cho ngày đã chọn' : 'Không có dữ liệu cho tháng đã chọn'}
           </td>
         </tr>
       );
     }
-    
+
     return data.map((item, idx) => (
       <tr key={item.fieldId}>
         <td>{idx + 1}</td>
         <td>{item.fieldId}</td>
         <td><img src={getImageUrl(item.fieldImage)} alt={item.fieldName} style={{ width: '80px', height: '50px', objectFit: 'cover' }} /></td>
         <td>{item.fieldName}</td>
-        <td>{item.oneTimeBookings}</td>
-        <td>{item.permanentBookings}</td>
-        <td>{item.totalBookings}</td>
+        <td className="text-end">{formatCurrency(item.fieldPrice)}</td>
+        <td className="text-center">{item.oneTimeBookings}</td>
+        <td className="text-center">{item.permanentBookings}</td>
+        <td className="text-center">{item.totalBookings}</td>
+        <td className="text-end fw-bold text-success">{formatCurrency(item.totalRevenue)}</td>
       </tr>
     ));
   };
@@ -221,18 +305,13 @@ const OwnerFieldManager: React.FC = () => {
   }
 
   return (
-    <div className="page-wrapper py-4">
-      <div className="container bg-white rounded shadow-sm p-4">
+    <div className="">
+      <div className="bg-white rounded shadow-sm p-4">
         {/* Page Header */}
         <div className="row align-items-center mb-4">
           <div className="col">
-            <h3 className="mb-0">Quản Lý Sử Dụng Sân</h3>
-            <nav aria-label="breadcrumb">
-              <ol className="breadcrumb bg-transparent p-0">
-                <li className="breadcrumb-item"><a href="/owner/dashboard">Trang Chủ</a></li>
-                <li className="breadcrumb-item active" aria-current="page">Thống Kê Sân</li>
-              </ol>
-            </nav>
+            <h3 className="booking-board__title">Quản Lý Sử Dụng Sân</h3>
+            <p className='booking-board__subtitle'>Quản lí lượt đạt và doanh thu sân</p>
           </div>
           <div className="col-auto">
             <button className="btn btn-primary" onClick={() => window.print()}>
@@ -260,9 +339,9 @@ const OwnerFieldManager: React.FC = () => {
           <div className="col-md-6 col-lg-3 mb-3">
             <div className="card border-0 shadow-sm h-100">
               <div className="card-body text-center">
-                <h5 className="card-title">Số Sân Của Tôi</h5>
-                <p className="display-4 mb-0 fw-bold text-success">
-                  {getCurrentData().length}
+                <h5 className="card-title">Tổng Doanh Thu</h5>
+                <p className="display-6 mb-0 fw-bold text-success">
+                  {formatCurrency(calculateTotal(getCurrentData(), 'totalRevenue'))}
                 </p>
               </div>
             </div>
@@ -302,7 +381,7 @@ const OwnerFieldManager: React.FC = () => {
         {/* Tab Navigation */}
         <ul className="nav nav-tabs mb-4">
           <li className="nav-item">
-            <button 
+            <button
               className={`nav-link ${activeTab === 'daily' ? 'active' : ''}`}
               onClick={() => setActiveTab('daily')}
             >
@@ -310,7 +389,7 @@ const OwnerFieldManager: React.FC = () => {
             </button>
           </li>
           <li className="nav-item">
-            <button 
+            <button
               className={`nav-link ${activeTab === 'monthly' ? 'active' : ''}`}
               onClick={() => setActiveTab('monthly')}
             >
@@ -362,6 +441,42 @@ const OwnerFieldManager: React.FC = () => {
           </div>
         </div>
 
+        {/* Pie Charts Section */}
+        <div className="row mb-4">
+          <div className="col-md-6 mb-3">
+            <div className="card border-0 shadow-sm h-100">
+              <div className="card-header bg-white">
+                <h5 className="mb-0">Phân Bố Lượt Đặt Sân</h5>
+              </div>
+              <div className="card-body">
+                {getCurrentData().length > 0 ? (
+                  <div style={{ maxWidth: '400px', maxHeight: '400px', margin: '0 auto' }}>
+                    <Pie data={prepareBookingPieData()} options={pieOptions} />
+                  </div>
+                ) : (
+                  <p className="text-center">Không có dữ liệu để hiển thị</p>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="col-md-6 mb-3">
+            <div className="card border-0 shadow-sm h-100">
+              <div className="card-header bg-white">
+                <h5 className="mb-0">Phân Bố Doanh Thu Theo Sân</h5>
+              </div>
+              <div className="card-body">
+                {getCurrentData().length > 0 ? (
+                  <div style={{ maxWidth: '400px', maxHeight: '400px', margin: '0 auto' }}>
+                    <Pie data={prepareRevenuePieData()} options={pieOptions} />
+                  </div>
+                ) : (
+                  <p className="text-center">Không có dữ liệu để hiển thị</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Detail Data Table */}
         <div className="row mb-4">
           <div className="col-12">
@@ -380,9 +495,11 @@ const OwnerFieldManager: React.FC = () => {
                         <th>ID Sân</th>
                         <th>Hình Ảnh</th>
                         <th>Tên Sân</th>
+                        <th>Giá Sân</th>
                         <th>Đặt Một Lần</th>
                         <th>Đặt Cố Định</th>
                         <th>Tổng Đặt Sân</th>
+                        <th>Tổng Doanh Thu</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -390,15 +507,18 @@ const OwnerFieldManager: React.FC = () => {
                     </tbody>
                     <tfoot>
                       <tr className="table-secondary">
-                        <td colSpan={4}><strong>Tổng Cộng</strong></td>
-                        <td>
+                        <td colSpan={5}><strong>Tổng Cộng</strong></td>
+                        <td className="text-center">
                           <strong>{calculateTotal(getCurrentData(), 'oneTimeBookings')}</strong>
                         </td>
-                        <td>
+                        <td className="text-center">
                           <strong>{calculateTotal(getCurrentData(), 'permanentBookings')}</strong>
                         </td>
-                        <td>
+                        <td className="text-center">
                           <strong>{calculateTotal(getCurrentData(), 'totalBookings')}</strong>
+                        </td>
+                        <td className="text-end">
+                          <strong className="text-success">{formatCurrency(calculateTotal(getCurrentData(), 'totalRevenue'))}</strong>
                         </td>
                       </tr>
                     </tfoot>
@@ -422,7 +542,8 @@ const OwnerFieldManager: React.FC = () => {
                     <tr>
                       <th>#</th>
                       <th>Tên Sân</th>
-                      <th>Tổng Lượt Đặt</th>
+                      <th>Lượt Đặt</th>
+                      <th>Doanh Thu</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -434,12 +555,13 @@ const OwnerFieldManager: React.FC = () => {
                           <tr key={item.fieldId}>
                             <td>{idx + 1}</td>
                             <td>{item.fieldName}</td>
-                            <td>{item.totalBookings}</td>
+                            <td className="text-center">{item.totalBookings}</td>
+                            <td className="text-end">{formatCurrency(item.totalRevenue)}</td>
                           </tr>
                         ))
                     ) : (
                       <tr>
-                        <td colSpan={3} className="text-center">Không có dữ liệu</td>
+                        <td colSpan={4} className="text-center">Không có dữ liệu</td>
                       </tr>
                     )}
                   </tbody>
@@ -459,7 +581,7 @@ const OwnerFieldManager: React.FC = () => {
                       <h6>Đặt Một Lần</h6>
                       <div className="display-6 text-primary">
                         {calculatePercentage(
-                          calculateTotal(getCurrentData(), 'oneTimeBookings'), 
+                          calculateTotal(getCurrentData(), 'oneTimeBookings'),
                           calculateTotal(getCurrentData(), 'totalBookings')
                         )}%
                       </div>
@@ -468,7 +590,7 @@ const OwnerFieldManager: React.FC = () => {
                       <h6>Đặt Cố Định</h6>
                       <div className="display-6 text-warning">
                         {calculatePercentage(
-                          calculateTotal(getCurrentData(), 'permanentBookings'), 
+                          calculateTotal(getCurrentData(), 'permanentBookings'),
                           calculateTotal(getCurrentData(), 'totalBookings')
                         )}%
                       </div>

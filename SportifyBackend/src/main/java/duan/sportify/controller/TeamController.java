@@ -1,20 +1,16 @@
 package duan.sportify.controller;
 
-import java.awt.SystemColor;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,10 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import duan.sportify.entities.Users;
-import duan.sportify.service.UserService;
 import duan.sportify.dao.TeamDAO;
 import duan.sportify.dao.TeamDetailDAO;
 import duan.sportify.entities.Sporttype;
@@ -37,14 +30,7 @@ import duan.sportify.service.SportTypeService;
 import duan.sportify.service.TeamDetailService;
 import duan.sportify.service.TeamService;
 import duan.sportify.service.UploadService;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import java.time.LocalDate;
-import java.net.URLEncoder;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import duan.sportify.service.UserService;
 
 @SuppressWarnings("unused")
 @RequestMapping("/api")
@@ -206,6 +192,7 @@ public class TeamController {
         if (findTeamout != null) {
             if (count <= 1) {
                 detailDAO.deleteByUsernameAndTeamId(username, teamId);
+                detailDAO.deleteAllByTeamId(teamId);
                 detailDAO.deleteTeamId(username, teamId);
                 return ResponseEntity.ok(Map.of(
                         "success", true,
@@ -264,8 +251,9 @@ public class TeamController {
         }
 
         // ✅ Nếu user đã trong team
-        Teamdetails checkTeamUser = detailDAO.checkTeamUser(teamId,username);
-       System.out.println("Kiểm tra đã là thành viên chưa: " + (checkTeamUser == null ? "yes  thành viên" : "no thành viên"));
+        Teamdetails checkTeamUser = detailDAO.checkTeamUser(teamId, username);
+        System.out.println(
+                "Kiểm tra đã là thành viên chưa: " + (checkTeamUser == null ? "yes  thành viên" : "no thành viên"));
         if (checkTeamUser != null) {
             System.out.println("Đã là thành viên");
             List<Object[]> userTeam = detailDAO.findUserByIdTeam(teamId);
@@ -280,7 +268,7 @@ public class TeamController {
             response.put("listMember", userTeam);
             response.put("listMemberCheck", userCheckTeam);
             response.put("ownerInfo", team.getUsers());
-            response.put("infouser", checkTeamUser.getInfouser()); 
+            response.put("infouser", checkTeamUser.getInfouser());
             response.put("role", "member");
             response.put("permissions", List.of());
             return ResponseEntity.ok(response);

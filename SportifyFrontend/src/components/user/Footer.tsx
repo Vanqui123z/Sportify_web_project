@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function Footer() {
 
   return (
@@ -33,14 +35,14 @@ export default function Footer() {
                 <h2 className="ftco-heading-2">Chính sách và điều kiện</h2>
                 <ul className="list-unstyled">
                   <li>
-                    <a href="/sportify/chinhsach">
+                    <Link to="/sportify/policy">
                       <span className="fa fa-chevron-right mr-2"></span>Chính sách
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="/sportify/quydinh">
+                    <Link to="/sportify/regulations">
                       <span className="fa fa-chevron-right mr-2"></span>Quy Định & Điều Kiện
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               </div>

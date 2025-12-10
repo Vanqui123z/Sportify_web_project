@@ -1,16 +1,42 @@
-import { Outlet } from "react-router-dom";
 import { Helmet } from "@dr.pogodin/react-helmet";
-import Navbar from "../components/user/Navbar";
-import Footer from "../components/user/Footer";
+import { useEffect } from "react";
+import { Outlet } from "react-router-dom";
 import AIChatbox from "../components/Others/AIChatbox";
+import Footer from "../components/user/Footer";
 import Header from "../components/user/Header";
+import Navbar from "../components/user/Navbar";
+import { loadScript } from "../helper/LoadScript";
 import { CartProvider } from "../helper/useCartCount";
 
 export default function Layout() {
-
+  const arrayScript = [
+    "/user/js/jquery.min.js",
+    "/user/js/jquery-migrate-3.0.1.min.js",
+    "/user/js/popper.min.js",
+    "/user/js/bootstrap.min.js",
+    "/user/js/jquery.easing.1.3.js",
+    "/user/js/jquery.waypoints.min.js",
+    "/user/js/jquery.stellar.min.js",
+    "/user/js/owl.carousel.min.js",
+    "/user/js/jquery.magnific-popup.min.js",
+    "/user/js/jquery.animateNumber.min.js",
+    "/user/js/scrollax.min.js",
+    "/user/js/main.js",
+  ]
+  useEffect(() => {
+    async function loadScripts() {
+      try {
+        for (const src of arrayScript) {
+          await loadScript(src);
+        }
+      } catch (e) {
+        console.error("load script failed : ", e)
+      }
+    }
+    loadScripts();
+  }, [])
 
   return (
-
     <>
       <Helmet>
         <title>Sportify</title>
@@ -29,19 +55,6 @@ export default function Layout() {
         <link rel="stylesheet" href="/user/css/flaticon.css" />
         <link rel="stylesheet" href="/user/css/style.css" />
 
-        <script src="/user/js/jquery.min.js"></script>
-        {/* <script src="/user/js/angular.min.js"></script> */}
-        <script src="/user/js/jquery-migrate-3.0.1.min.js"></script>
-        <script src="/user/js/popper.min.js"></script>
-        <script src="/user/js/bootstrap.min.js"></script>
-        <script src="/user/js/jquery.easing.1.3.js"></script>
-        <script src="/user/js/jquery.waypoints.min.js"></script>
-        <script src="/user/js/jquery.stellar.min.js"></script>
-        <script src="/user/js/owl.carousel.min.js"></script>
-        <script src="/user/js/jquery.magnific-popup.min.js"></script>
-        <script src="/user/js/jquery.animateNumber.min.js"></script>
-        <script src="/user/js/scrollax.min.js"></script>
-        <script src="/user/js/main.js"></script>
       </Helmet>
 
       <CartProvider>
@@ -65,5 +78,6 @@ export default function Layout() {
     </>
 
   );
+
 
 }

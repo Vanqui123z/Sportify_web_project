@@ -1,7 +1,8 @@
-import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
+import React, { useContext, useEffect, useState } from "react";
 import ListCardBank from "../../components/user/ListCardBank";
 import { AuthContext } from "../../helper/AuthContext";
+const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 
 interface User {
   username: string;
@@ -61,7 +62,7 @@ interface BookingDetail {
 const OwnerBookingListPage: React.FC = () => {
   const { user } = useContext(AuthContext);
   const ownerUsername = user?.username || "";
-  
+
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [bookingPermanent, setBookingPermanent] = useState<Permanent[]>([]);
   const [form, setForm] = useState<Partial<Booking>>({});
@@ -78,7 +79,7 @@ const OwnerBookingListPage: React.FC = () => {
   const [showCardSelection, setShowCardSelection] = useState(false);
   const [selectedCard, setSelectedCard] = useState<string>("");
   const [showCardConfirm, setShowCardConfirm] = useState(false);
-  const [selectedCardData, setSelectedCardData] = useState<{cardId: string, amount: number} | null>(null);
+  const [selectedCardData, setSelectedCardData] = useState<{ cardId: string, amount: number } | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Fetch bookings for owner's fields only
@@ -92,7 +93,7 @@ const OwnerBookingListPage: React.FC = () => {
       try {
         console.log("Fetching bookings for owner:", ownerUsername);
         const res = await axios.get(
-          `http://localhost:8081/rest/bookings/getByOwner/${ownerUsername}`
+          `${URL_BACKEND}/rest/bookings/getByOwner/${ownerUsername}`
         );
         console.log("Bookings fetched:", res.data);
         setBookings(res.data || []);
@@ -109,7 +110,7 @@ const OwnerBookingListPage: React.FC = () => {
   // Search handler
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     let filtered = bookings;
 
     if (search.keyword) {
@@ -135,8 +136,8 @@ const OwnerBookingListPage: React.FC = () => {
   const handleRefresh = () => {
     setSearch({ keyword: "", datebook: "", status: "" });
     if (!ownerUsername) return;
-    
-    axios.get(`http://localhost:8081/rest/bookings/getByOwner/${ownerUsername}`)
+
+    axios.get(`${URL_BACKEND}/rest/bookings/getByOwner/${ownerUsername}`)
       .then(res => setBookings(res.data || []));
   };
 
@@ -144,7 +145,7 @@ const OwnerBookingListPage: React.FC = () => {
   const openEditModal = (booking: Booking) => {
     setForm(booking);
     setShowEdit(true);
-    axios.get(`http://localhost:8081/rest/bookingdetails/${booking.bookingid}`)
+    axios.get(`${URL_BACKEND}/rest/bookingdetails/${booking.bookingid}`)
       .then((res) => {
         setBookingDetail(res.data.bookingDetail);
         setBookingPermanent(res.data.bookingPermanent);
@@ -159,7 +160,7 @@ const OwnerBookingListPage: React.FC = () => {
   // Update booking handler
   const handleUpdateBooking = () => {
     if (!form.bookingid) return;
-    axios.put(`http://localhost:8081/rest/bookings/update/${form.bookingid}`, form)
+    axios.put(`${URL_BACKEND}/rest/bookings/update/${form.bookingid}`, form)
       .then(res => {
         setBookings(prev => prev.map(b => b.bookingid === res.data.bookingid ? res.data : b));
         setShowEdit(false);
@@ -204,7 +205,7 @@ const OwnerBookingListPage: React.FC = () => {
     if (selectedBookings.length === 0) return;
 
     if (window.confirm(`Bạn có chắc chắn muốn xóa ${selectedBookings.length} phiếu đặt sân đã chọn?`)) {
-      axios.post("http://localhost:8081/rest/bookings/deleteMultiple", selectedBookings)
+      axios.post(`${URL_BACKEND}/rest/bookings/deleteMultiple`, selectedBookings)
         .then(() => {
           setBookings(prev => prev.filter(booking => !selectedBookings.includes(booking.bookingid)));
           setSelectedBookings([]);
@@ -228,7 +229,7 @@ const OwnerBookingListPage: React.FC = () => {
 
   const getRefundAmount = () => {
     if (!form.bookingprice) return 0;
-    
+
     switch (form.bookingstatus) {
       case "Đã Cọc":
         return form.bookingprice * 0.3;
@@ -256,17 +257,17 @@ const OwnerBookingListPage: React.FC = () => {
 
   const handleFinalConfirm = async () => {
     if (!selectedCardData) return;
-    
+
     try {
       const res = await axios.post(
-        "http://localhost:8081/api/user/payment/refund",
+        `${URL_BACKEND}/api/user/payment/refund`,
         {
           amount: selectedCardData.amount,
           cardId: selectedCardData.cardId,
           bookingId: form.bookingid
         },
         {
-          withCredentials: true 
+          withCredentials: true
         }
       );
 
@@ -279,7 +280,7 @@ const OwnerBookingListPage: React.FC = () => {
         setShowCardConfirm(false);
         setShowEdit(false);
         // Refresh booking list
-        await axios.get(`http://localhost:8081/rest/bookings/getByOwner/${ownerUsername}`)
+        await axios.get(`${URL_BACKEND}/rest/bookings/getByOwner/${ownerUsername}`)
           .then(res => setBookings(res.data || []));
       }
     } catch (error) {
@@ -317,8 +318,8 @@ const OwnerBookingListPage: React.FC = () => {
         <form className="row g-2 mb-3" onSubmit={handleSearch}>
           <div className="col-sm-6 col-md-3">
             <label className="form-label">Họ tên người đặt</label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               className="form-control"
               placeholder="Nhập họ hoặc tên"
               value={search.keyword}
@@ -327,8 +328,8 @@ const OwnerBookingListPage: React.FC = () => {
           </div>
           <div className="col-sm-6 col-md-3">
             <label className="form-label">Ngày đặt</label>
-            <input 
-              type="date" 
+            <input
+              type="date"
               className="form-control"
               value={search.datebook}
               onChange={e => setSearch(s => ({ ...s, datebook: e.target.value }))}
@@ -336,7 +337,7 @@ const OwnerBookingListPage: React.FC = () => {
           </div>
           <div className="col-sm-6 col-md-3">
             <label className="form-label">Trạng thái</label>
-            <select 
+            <select
               className="form-select"
               value={search.status}
               onChange={e => setSearch(s => ({ ...s, status: e.target.value }))}
@@ -422,7 +423,7 @@ const OwnerBookingListPage: React.FC = () => {
                           {item.bookingstatus}
                         </td>
                         <td className="text-center">
-                          <button 
+                          <button
                             className="btn btn-outline-primary btn-sm"
                             onClick={() => openEditModal(item)}
                           >
@@ -477,7 +478,7 @@ const OwnerBookingListPage: React.FC = () => {
                       <div className="col-sm-6">
                         <div className="form-group">
                           <label>Trạng thái <span className="text-danger">*</span></label>
-                          <select 
+                          <select
                             className="form-select"
                             value={form.bookingstatus || ""}
                             onChange={e => handleFormChange("bookingstatus", e.target.value)}
@@ -546,17 +547,17 @@ const OwnerBookingListPage: React.FC = () => {
                       </div>
                     </div>
                     <div className="mt-4 text-end">
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         className={`btn ${form.refund === true ? 'btn-secondary' : 'btn-warning'} me-2`}
                         onClick={handleRefundClick}
                         disabled={form.refund === true}
                       >
                         {form.refund === true ? 'Đã hoàn tiền' : 'Hoàn tiền'}
                       </button>
-                      <button 
-                        type="button" 
-                        className="btn btn-primary" 
+                      <button
+                        type="button"
+                        className="btn btn-primary"
                         onClick={handleUpdateBooking}
                       >
                         Chỉnh sửa phiếu đặt sân
@@ -581,8 +582,8 @@ const OwnerBookingListPage: React.FC = () => {
                 <div className="modal-body">
                   <p>Bạn muốn hoàn {formatCurrency(getRefundAmount())} cho đơn {form.bookingid}?</p>
                   <small className="text-muted">
-                    {form.bookingstatus === "Đã Cọc" 
-                      ? "(Hoàn lại tiền cọc 30%)" 
+                    {form.bookingstatus === "Đã Cọc"
+                      ? "(Hoàn lại tiền cọc 30%)"
                       : "(Hoàn lại toàn bộ số tiền)"}
                   </small>
                 </div>
@@ -625,9 +626,9 @@ const OwnerBookingListPage: React.FC = () => {
               <div className="modal-content">
                 <div className="modal-header">
                   <h5 className="modal-title">Xác nhận cuối cùng</h5>
-                  <button 
-                    type="button" 
-                    className="btn-close" 
+                  <button
+                    type="button"
+                    className="btn-close"
                     onClick={() => setShowCardConfirm(false)}
                   ></button>
                 </div>
@@ -640,16 +641,16 @@ const OwnerBookingListPage: React.FC = () => {
                   </ul>
                 </div>
                 <div className="modal-footer">
-                  <button 
-                    type="button" 
-                    className="btn btn-secondary" 
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
                     onClick={() => setShowCardConfirm(false)}
                   >
                     Hủy
                   </button>
-                  <button 
-                    type="button" 
-                    className="btn btn-primary" 
+                  <button
+                    type="button"
+                    className="btn btn-primary"
                     onClick={handleFinalConfirm}
                   >
                     Xác nhận hoàn tiền

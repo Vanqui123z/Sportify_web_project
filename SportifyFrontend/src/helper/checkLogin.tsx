@@ -9,21 +9,19 @@ export async function checkLogin(): Promise<{ loggedIn: boolean, username?: stri
       method: "GET",
       credentials: "include"
     });
-    console.log("checkLogin response:", `${URL_BACKEND}/api/user/rest/security/authentication`);
 
     if (!response.ok) {
       return { loggedIn: false };
     }
-
     const data = await response.json();
     return {
-      loggedIn: data.loggedIn,
-      username: data.username,
-      role: data.roles.roles.rolename,
+      loggedIn: data.loggedIn ?? false,
+      username: data.username ?? null,
+      role: data.roles?.roles?.rolename ?? null,
 
     };
   } catch (error) {
     console.error("Error checking login:", error);
-    return { loggedIn: false }; // network error → coi như chưa đăng nhập
+    return { loggedIn: false };
   }
 }

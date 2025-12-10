@@ -1,6 +1,7 @@
 const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 import axios from 'axios';
 import {
+  ArcElement,
   BarElement,
   CategoryScale,
   Chart as ChartJS,
@@ -11,7 +12,7 @@ import {
 } from 'chart.js';
 import React, { useEffect, useState } from 'react';
 import { Alert, Form } from 'react-bootstrap';
-import { Bar } from 'react-chartjs-2';
+import { Bar, Pie } from 'react-chartjs-2';
 
 import getImageUrl from '../../helper/getImageUrl';
 
@@ -20,11 +21,11 @@ ChartJS.register(
   CategoryScale,
   LinearScale,
   BarElement,
+  ArcElement,
   Title,
   Tooltip,
   Legend
 );
-
 
 
 // Define types for our data
@@ -32,9 +33,11 @@ interface FieldUsageDetailDTO {
   fieldId: number;
   fieldName: string;
   fieldImage: string;
+  fieldPrice: number;
   oneTimeBookings: number;
   permanentBookings: number;
   totalBookings: number;
+  totalRevenue: number;
 }
 
 const FieldManager: React.FC = () => {
@@ -63,12 +66,19 @@ const FieldManager: React.FC = () => {
   }, [selectedMonth]);
 
   // Helper functions for calculations
-  const calculateTotal = (data: FieldUsageDetailDTO[], property: keyof Pick<FieldUsageDetailDTO, 'oneTimeBookings' | 'permanentBookings' | 'totalBookings'>) => {
+  const calculateTotal = (data: FieldUsageDetailDTO[], property: keyof Pick<FieldUsageDetailDTO, 'oneTimeBookings' | 'permanentBookings' | 'totalBookings' | 'totalRevenue'>) => {
     return data.reduce((sum, item) => sum + item[property], 0);
   };
 
   const calculatePercentage = (part: number, total: number) => {
     return Math.round((part / (total || 1)) * 100);
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(amount);
   };
 
   // Data fetching functions - keeping only the two specified API calls
@@ -143,6 +153,66 @@ const FieldManager: React.FC = () => {
     };
   };
 
+  // Prepare pie chart data for booking percentage
+  const prepareBookingPieData = () => {
+    const data = getCurrentData();
+    const colors = [
+      '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+      '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'
+    ];
+
+    return {
+      labels: data.map(item => item.fieldName),
+      datasets: [
+        {
+          data: data.map(item => item.totalBookings),
+          backgroundColor: colors.slice(0, data.length),
+          borderWidth: 2,
+        },
+      ],
+    };
+  };
+
+  // Prepare pie chart data for revenue percentage
+  const prepareRevenuePieData = () => {
+    const data = getCurrentData();
+    const colors = [
+      '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+      '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'
+    ];
+
+    return {
+      labels: data.map(item => item.fieldName),
+      datasets: [
+        {
+          data: data.map(item => item.totalRevenue),
+          backgroundColor: colors.slice(0, data.length),
+          borderWidth: 2,
+        },
+      ],
+    };
+  };
+
+  const pieOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'bottom' as const,
+      },
+      tooltip: {
+        callbacks: {
+          label: function (context: any) {
+            const label = context.label || '';
+            const value = context.parsed;
+            const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
+            const percentage = ((value / total) * 100).toFixed(1);
+            return `${label}: ${percentage}%`;
+          }
+        }
+      }
+    },
+  };
+
   const chartOptions = {
     responsive: true,
     plugins: {
@@ -169,7 +239,7 @@ const FieldManager: React.FC = () => {
     if (data.length === 0) {
       return (
         <tr>
-          <td colSpan={6} className="text-center">
+          <td colSpan={9} className="text-center">
             {activeTab === 'daily' ? 'Không có dữ liệu cho ngày đã chọn' : 'Không có dữ liệu cho tháng đã chọn'}
           </td>
         </tr>
@@ -182,9 +252,11 @@ const FieldManager: React.FC = () => {
         <td>{item.fieldId}</td>
         <td><img src={getImageUrl(item.fieldImage)} alt={item.fieldName} style={{ width: '80px', height: '50px', objectFit: 'cover' }} /></td>
         <td>{item.fieldName}</td>
-        <td>{item.oneTimeBookings}</td>
-        <td>{item.permanentBookings}</td>
-        <td>{item.totalBookings}</td>
+        <td className="text-end">{formatCurrency(item.fieldPrice)}</td>
+        <td className="text-center">{item.oneTimeBookings}</td>
+        <td className="text-center">{item.permanentBookings}</td>
+        <td className="text-center">{item.totalBookings}</td>
+        <td className="text-end fw-bold text-success">{formatCurrency(item.totalRevenue)}</td>
       </tr>
     ));
   };
@@ -231,9 +303,9 @@ const FieldManager: React.FC = () => {
           <div className="col-md-6 col-lg-3 mb-3">
             <div className="card border-0 shadow-sm h-100">
               <div className="card-body text-center">
-                <h5 className="card-title">Số Sân Đang Hoạt Động</h5>
-                <p className="display-4 mb-0 fw-bold text-success">
-                  {getCurrentData().length}
+                <h5 className="card-title">Tổng Doanh Thu</h5>
+                <p className="display-6 mb-0 fw-bold text-success">
+                  {formatCurrency(calculateTotal(getCurrentData(), 'totalRevenue'))}
                 </p>
               </div>
             </div>
@@ -333,6 +405,38 @@ const FieldManager: React.FC = () => {
           </div>
         </div>
 
+        {/* Pie Charts Section */}
+        <div className="row mb-4">
+          <div className="col-md-6 mb-3">
+            <div className="card border-0 shadow-sm h-100">
+              <div className="card-header bg-white">
+                <h5 className="mb-0">Phân Bố Lượt Đặt Sân</h5>
+              </div>
+              <div className="card-body">
+                {getCurrentData().length > 0 ? (
+                  <Pie data={prepareBookingPieData()} options={pieOptions} />
+                ) : (
+                  <p className="text-center">Không có dữ liệu để hiển thị</p>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="col-md-6 mb-3">
+            <div className="card border-0 shadow-sm h-100">
+              <div className="card-header bg-white">
+                <h5 className="mb-0">Phân Bố Doanh Thu Theo Sân</h5>
+              </div>
+              <div className="card-body">
+                {getCurrentData().length > 0 ? (
+                  <Pie data={prepareRevenuePieData()} options={pieOptions} />
+                ) : (
+                  <p className="text-center">Không có dữ liệu để hiển thị</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Detail Data Table */}
         <div className="row mb-4">
           <div className="col-12">
@@ -351,9 +455,11 @@ const FieldManager: React.FC = () => {
                         <th>ID Sân</th>
                         <th>Hình Ảnh</th>
                         <th>Tên Sân</th>
+                        <th>Giá Sân</th>
                         <th>Đặt Một Lần</th>
                         <th>Đặt Cố Định</th>
                         <th>Tổng Đặt Sân</th>
+                        <th>Tổng Doanh Thu</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -361,15 +467,18 @@ const FieldManager: React.FC = () => {
                     </tbody>
                     <tfoot>
                       <tr className="table-secondary">
-                        <td colSpan={4}><strong>Tổng Cộng</strong></td>
-                        <td>
+                        <td colSpan={5}><strong>Tổng Cộng</strong></td>
+                        <td className="text-center">
                           <strong>{calculateTotal(getCurrentData(), 'oneTimeBookings')}</strong>
                         </td>
-                        <td>
+                        <td className="text-center">
                           <strong>{calculateTotal(getCurrentData(), 'permanentBookings')}</strong>
                         </td>
-                        <td>
+                        <td className="text-center">
                           <strong>{calculateTotal(getCurrentData(), 'totalBookings')}</strong>
+                        </td>
+                        <td className="text-end">
+                          <strong className="text-success">{formatCurrency(calculateTotal(getCurrentData(), 'totalRevenue'))}</strong>
                         </td>
                       </tr>
                     </tfoot>
@@ -393,7 +502,8 @@ const FieldManager: React.FC = () => {
                     <tr>
                       <th>#</th>
                       <th>Tên Sân</th>
-                      <th>Tổng Lượt Đặt</th>
+                      <th>Lượt Đặt</th>
+                      <th>Doanh Thu</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -404,7 +514,8 @@ const FieldManager: React.FC = () => {
                         <tr key={item.fieldId}>
                           <td>{idx + 1}</td>
                           <td>{item.fieldName}</td>
-                          <td>{item.totalBookings}</td>
+                          <td className="text-center">{item.totalBookings}</td>
+                          <td className="text-end">{formatCurrency(item.totalRevenue)}</td>
                         </tr>
                       ))}
                   </tbody>
