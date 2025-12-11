@@ -42,7 +42,7 @@ const AiSupportPage: React.FC = () => {
   const [holidays, setHolidays] = useState<Holiday[]>([]);
   // modal 
   const [forecastSelected, setForecastSelected] = useState<BookingForecast | null>(null);
-  const [_fieldUsageData, setFieldUsageData] = useState<any[]>([]);
+  const [fieldUsageData, setFieldUsageData] = useState<any[]>([]);
   const onHandleShow = (forecast: any) => { setForecastSelected(forecast) };
   const onHandleClose = () => setForecastSelected(null);
 

@@ -210,7 +210,7 @@ export default function Register() {
 				formData.append('businessLicense', ownerForm.businessLicense);
 			}
 
-			const response = await fetch('${URL_BACKEND}/api/sportify/field-owner/register', {
+			const response = await fetch(`${URL_BACKEND}/api/sportify/field-owner/register`, {
 				method: 'POST',
 				body: formData,
 			});

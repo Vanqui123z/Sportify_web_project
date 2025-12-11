@@ -16,4 +16,6 @@ public class FieldManagerDetailDTO {
     private Long permanentBookings;
     private Long totalBookings;
     private Long totalRevenue;
+    private String ownerName ;
+    private Long ownerId ;
 }

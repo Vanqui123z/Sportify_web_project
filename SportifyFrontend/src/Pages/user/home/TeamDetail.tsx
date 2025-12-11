@@ -254,14 +254,14 @@ const TeamDetail: FC<{ teamIdProp?: string }> = ({ teamIdProp }) => {
 					{ label: "Chi tiết đội" }
 				]}
 			/>
-			<div className="container py-4">
+			<div className="container-fluid py-2 py-md-4">
 				<div
-					className="bg-white rounded-4 shadow-lg p-4"
+					className="bg-white rounded-4 shadow-lg p-2 p-md-4"
 					style={{ minHeight: 300 }}
 				>
 					<div className="row mb-4">
 						{/* LEFT SIDE */}
-						<div className="col-8">
+						<div className="col-12 col-lg-8 mb-3 mb-lg-0">
 							{/* Team Info */}
 							<div data-teamdetail-left className="border-right pr-4">
 								{/* Chủ sân */}
@@ -286,17 +286,17 @@ const TeamDetail: FC<{ teamIdProp?: string }> = ({ teamIdProp }) => {
 								</div>
 								{/* 2 cột: Ảnh sân + Thông tin sân */}
 								<div className="row g-2">
-									<div className="col-5">
+									<div className="col-5 col-sm-4">
 										<div className="p-2 h-100 d-flex flex-column align-items-center justify-content-center">
 											<img
 												src={teamInfo.avatar ? getImageUrl(teamInfo.avatar) : "/user/images/noavatar.jpg"}
 												alt="avatar"
-												style={{ width: 200, height: "auto", objectFit: "cover" }}
+												style={{ maxWidth: 200, height: "auto", objectFit: "cover" }}
 											/>
 											<div className="fw-bold mt-2 text-center">{teamInfo.nameteam}</div>
 										</div>
 									</div>
-									<div className="col-7">
+									<div className="col-7 col-sm-8	">
 										<div className="p-3 h-100">
 											<div className="mb-2">
 												<span className="fw-bold">Môn thể thao: </span>
@@ -333,7 +333,7 @@ const TeamDetail: FC<{ teamIdProp?: string }> = ({ teamIdProp }) => {
 							</div>
 						</div>
 						{/* RIGHT SIDE */}
-						<div className="col-4">
+						<div className="col-12 col-lg-4">
 							{/* Danh sách thành viên */}
 							<div className="mb-4 p-3 bg-white">
 								<h5 className="fw-bold mb-3">
@@ -447,14 +447,15 @@ const TeamDetail: FC<{ teamIdProp?: string }> = ({ teamIdProp }) => {
 						</div>
 					</div>
 					{/* Bottom Action */}
-					<div className="row justify-content-end mt-4">
-						<div className="col-2">
+					<div className="row justify-content-center justify-content-md-end mt-4">
+						<div className="col-12 col-md-6 col-lg-4 col-xl-3">
 							<button
 								onClick={handleExit}
 								className={`btn ${role === "owner" ? "btn-danger" : "btn-warning"} w-100`}
 							>
 								<i className={`fa ${role === "owner" ? "fa-ban" : "fa-door-open"} me-2`}></i>
-								{role === "owner" ? "Giải tán đội" : "Rời khỏi đội"}
+								<span className="d-none d-sm-inline">{role === "owner" ? "Giải tán đội" : "Rời khỏi đội"}</span>
+								<span className="d-sm-none">{role === "owner" ? "Giải tán" : "Rời đội"}</span>
 							</button>
 						</div>
 					</div>

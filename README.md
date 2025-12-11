@@ -13,12 +13,13 @@
   - Môi trường
 * Spring Tool Suite 4
 * Link cài đặt: https://spring.io/tools
-  - Hệ Quản trị cơ sở dữ liệu
-* MySQL 8.0.33
-* Link cài đặt: MySQL :: MySQL Community Downloads
+*Nếu sử dụng Vscode cài thêm Spring boot dasbboard
 
 3. HƯỚNG DẪN SỬ DỤNG
-   - Mở file và Execute database: Sportify_Data.sql trong MySQL Workbench
+  Chạy backend: chạy lệnh run hoặc chạy bằng Spring boot dasbboard trong vscode
+  Chạy frontend : 1. cd .\SportifyFrontend\
+                  2. npm i 
+                  3.npm run dev
    - Trang web chia thành 3 loại tài khoản đăng nhập
    - Tài khoản mẩu quyền user:
      - username: usertest
@@ -50,23 +51,36 @@
 4.  CÁC HÌNH ẢNH VỀ DỰ ÁN
 
 - Màn hình trang chủ
-  ![Screenshot 2024-02-20 153850](https://github.com/hoaibaohbvn/Sportify/assets/54605058/834fcd25-6888-42aa-8da6-7f43881df9b1)
+  <img width="1903" height="914" alt="image" src="https://github.com/user-attachments/assets/b11b1af7-b619-4f0d-8f6e-b5517969a530" />
 - Màn hình trang sân
-  ![Screenshot 2024-02-20 154253](https://github.com/hoaibaohbvn/Sportify/assets/54605058/c2fc29db-a18e-4fee-bb43-cb17cd499b6e)
+  <img width="1908" height="912" alt="image" src="https://github.com/user-attachments/assets/1991a8c6-e908-40a1-845d-5294bc91cedc" />
 - Màn hình chi tiết sân
-  ![Screenshot 2024-02-20 154413](https://github.com/hoaibaohbvn/Sportify/assets/54605058/7da0af62-20cb-40e6-b7f7-a67718ba39b0)
+  <img width="1905" height="912" alt="image" src="https://github.com/user-attachments/assets/f91a3f21-6cde-46c5-971b-a15f2c5b8fab" />
 - Màn hình đặt sân
-  ![Screenshot 2024-02-20 154645](https://github.com/hoaibaohbvn/Sportify/assets/54605058/993e4362-0c8d-4ebd-b962-c5db30a8bd3a)
+  <img width="847" height="822" alt="image" src="https://github.com/user-attachments/assets/a5034193-0072-43df-8ff8-9551afb7a3f9" />
 - Màn hình trang đội
-  ![Screenshot 2024-02-20 154311](https://github.com/hoaibaohbvn/Sportify/assets/54605058/f934dfa5-0456-48ac-bf3e-7c2701ad0b35)
+  <img width="1898" height="921" alt="image" src="https://github.com/user-attachments/assets/28d92ab7-630b-4a8e-84d7-af3e7af4e81b" />
+- Màn hình trang nhắn tin trong hội nhóm
+  <img width="1089" height="900" alt="image" src="https://github.com/user-attachments/assets/78621687-dcfe-4bd2-b1bf-ae5b1c3563c3" />
 - Màn hình trang cửa hàng
-  ![Screenshot 2024-02-20 154344](https://github.com/hoaibaohbvn/Sportify/assets/54605058/c19c75ef-2108-415b-91e7-0b9687aa70ce)
+  <img width="1903" height="907" alt="image" src="https://github.com/user-attachments/assets/3c8ccea8-410e-4e1a-ae1d-77cbe1f70b2c" />
 - Màn hình trang tin tức
-  ![Screenshot 2024-02-20 154330](https://github.com/hoaibaohbvn/Sportify/assets/54605058/e101daac-e858-4e6f-a45e-3b0bdb7061ff)
-- Màn hình trang quản trị
-  ![Screenshot 2024-02-20 154452](https://github.com/hoaibaohbvn/Sportify/assets/54605058/d7a9a1ba-9d9e-4ddb-ab93-a7bf1222fb10)
-- Màn hình trang báo cáo thống kê
-  ![Screenshot 2024-02-20 154538](https://github.com/hoaibaohbvn/Sportify/assets/54605058/984ee499-49f5-4953-985c-42b1b6497e14)
+  <img width="1911" height="910" alt="image" src="https://github.com/user-attachments/assets/e2a258fb-74ae-472d-b302-c75d031cefd9" />
+- Màn hình trang liên hệ
+  <img width="1904" height="905" alt="image" src="https://github.com/user-attachments/assets/3f77e1c0-2d1b-4390-b5f1-d6ed6cc243ae" />
+- Màn hình trang quản trị của admin
+  <img width="1902" height="909" alt="image" src="https://github.com/user-attachments/assets/2988bda7-e2a7-40b2-9ed3-8e0128358df2" />
+- Màn hình trang quản trị của chủ sân
+  <img width="1903" height="909" alt="image" src="https://github.com/user-attachments/assets/c53421c6-7963-419b-88fa-62c5c7317863" />
+- Chatbox của chủ sân
+  <img width="1902" height="908" alt="image" src="https://github.com/user-attachments/assets/a3966491-5744-40e2-92c1-0a07d4945b65" />
+- Chatbox của admin
+  <img width="1905" height="961" alt="image" src="https://github.com/user-attachments/assets/26bcd0f1-7ce8-445c-92d8-a8afb516f8d5" />
+- Chatbox của user
+  <img width="1900" height="922" alt="image" src="https://github.com/user-attachments/assets/db668580-0eae-4a6a-9099-101863e701a5" />
+- Màn hình trang dự đoán tỉ số
+  <img width="1910" height="907" alt="image" src="https://github.com/user-attachments/assets/e40dc975-f633-4a4e-a005-ac6d5ea835fd" />
+
 - Hình ảnh về EER Diagram
   ![Screenshot 2024-02-20 155848](https://github.com/hoaibaohbvn/Sportify/assets/54605058/92edcf82-d62b-4a32-b34c-e65db6783f02)
 

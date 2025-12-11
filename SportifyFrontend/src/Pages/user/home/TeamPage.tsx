@@ -56,6 +56,7 @@ const TeamPage: React.FC = () => {
   const [showMyTeamsOnly, setShowMyTeamsOnly] = useState(false);
   const navigate = useNavigate();
 
+  const URL_BACKEND = import.meta.env.VITE_BACKEND_URL;
 
   const handleEnterTeam = async (team: TeamItem) => {
     try {

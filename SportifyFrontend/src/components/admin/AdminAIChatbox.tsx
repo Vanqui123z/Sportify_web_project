@@ -369,12 +369,13 @@ const AdminAIChatbox: React.FC = () => {
         style={{
           display: open ? "flex" : "none",
           flexDirection: "column",
-          width: isMaximized ? "100%" : "450px",
-          height: isMaximized ? "100%" : "600px",
-          right: isMaximized ? "0" : "20px",
-          bottom: isMaximized ? "0" : "90px",
-          borderRadius: isMaximized ? "0" : "16px",
-          maxHeight: isMaximized ? "100vh" : "600px",
+          width: isMaximized ? "100%" : window.innerWidth <= 768 ? "calc(100vw - 20px)" : "450px",
+          height: isMaximized ? "100%" : window.innerWidth <= 768 ? "calc(100vh - 140px)" : "600px",
+          right: isMaximized ? "0" : window.innerWidth <= 768 ? "10px" : "20px",
+          bottom: isMaximized ? "0" : window.innerWidth <= 768 ? "70px" : "90px",
+          borderRadius: isMaximized ? "0" : window.innerWidth <= 768 ? "12px" : "16px",
+          maxHeight: isMaximized ? "100vh" : window.innerWidth <= 768 ? "calc(100vh - 140px)" : "600px",
+          left: window.innerWidth <= 768 && !isMaximized ? "10px" : "auto",
         }}
       >
         <div className="ai-chat-header">
