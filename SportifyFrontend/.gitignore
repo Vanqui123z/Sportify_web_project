@@ -26,3 +26,4 @@ dist-ssr
 .netlify
 
 .env
+dist/

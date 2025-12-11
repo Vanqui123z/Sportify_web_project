@@ -1,17 +1,5 @@
 // Helper: Map dayOfWeek (1-7) to Vietnamese weekday name
-const getVietnameseDayName = (dayOfWeek: number) => {
-  const dayNames: { [key: number]: string } = {
-    2: 'Thứ 2',
-    3: 'Thứ 3',
-    4: 'Thứ 4',
-    5: 'Thứ 5',
-    6: 'Thứ 6',
-    7: 'Thứ 7',
-    1: 'CN',
-    8: 'Thứ 2', // 8 is also Monday in your logic
-  };
-  return dayNames[dayOfWeek] || '';
-};
+
 import {
   BarElement,
   CategoryScale,
