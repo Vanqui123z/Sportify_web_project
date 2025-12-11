@@ -41,7 +41,6 @@ vertex-ai-key.json
 service-account-key.json
 gcloud-key.json
 
-application.properties
-application*.properties
+
 
 
