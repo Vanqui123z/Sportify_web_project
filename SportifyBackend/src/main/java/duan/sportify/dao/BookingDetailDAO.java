@@ -91,200 +91,210 @@ public interface BookingDetailDAO extends JpaRepository<Bookingdetails, Integer>
 
 	// ================= LƯỢT ĐẶT & DOANH THU THEO NGÀY =================
 	@Query(value = """
-			    SELECT
-			        f.fieldid,
-			        f.namefield,
-			        f.image,
-			        f.price,
+    SELECT
+        f.fieldid,
+        f.namefield,
+        f.image,
+        f.price,
 
-			        COUNT(DISTINCT bd.bookingdetailid) AS one_time_bookings,
-			        COUNT(DISTINCT pb.permanent_id) AS permanent_bookings,
+        COUNT(DISTINCT bd.bookingdetailid) AS one_time_bookings,
+        COUNT(DISTINCT pb.permanent_id) AS permanent_bookings,
 
-			        (COUNT(DISTINCT bd.bookingdetailid) + COUNT(DISTINCT pb.permanent_id)) AS total_bookings,
+        (COUNT(DISTINCT bd.bookingdetailid) + COUNT(DISTINCT pb.permanent_id)) AS total_bookings,
 
-			        (
-			            /* BOOKING ONCE */
-			            COALESCE(
-			                SUM(
-			                    CASE
-			                        WHEN b.bookingstatus IN ('Đã Cọc', 'Hoàn Thành') THEN b.bookingprice
-			                        ELSE 0
-			                    END
-			                ), 0
-			            )
+        (
+            /* BOOKING ONCE */
+            COALESCE(
+                SUM(
+                    CASE
+                        WHEN b.bookingstatus IN ('Đã Cọc', 'Hoàn Thành') THEN b.bookingprice
+                        ELSE 0
+                    END
+                ), 0
+            )
+            +
+            /* PERMANENT DOANH THU LẦN ĐẦU */
+            COALESCE(
+                SUM(
+                    CASE
+                        WHEN pb.permanent_id IS NOT NULL
+                             AND :date = DATE_FORMAT(
+                                DATE_ADD(pb.start_date,
+                                         INTERVAL ((pb.day_of_week - DAYOFWEEK(pb.start_date) + 7) % 7) DAY),
+                                '%Y-%m-%d'
+                             )
+                        THEN
+                            CASE
+                                WHEN b2.bookingstatus IN ('Đã Cọc', 'Hoàn Thành') THEN b2.bookingprice
+                                ELSE f.price
+                            END
+                        ELSE 0
+                    END
+                ), 0
+            )
+        ) AS total_revenue,
 
-			            +
+        o.business_name AS owner_name,
+        o.owner_id AS owner_id
 
-			            /* BOOKING PERMANENT (CHỈ LẦN ĐẦU THEO SHIFT / dayOfWeek) */
-			            COALESCE(
-			                SUM(
-			                    CASE
-			                        WHEN pb.permanent_id IS NOT NULL
-			                             AND :date = DATE_FORMAT(
-			                                 DATE_ADD(pb.start_date, INTERVAL ((pb.day_of_week - DAYOFWEEK(pb.start_date) + 7) % 7) DAY),
-			                                 '%Y-%m-%d'
-			                             )
-			                        THEN
-			                            CASE
-			                                WHEN b2.bookingstatus IN ('Đã Cọc', 'Hoàn Thành') THEN b2.bookingprice
-			                                ELSE f.price
-			                            END
-			                        ELSE 0
-			                    END
-			                ), 0
-			            )
-			        ) AS total_revenue
+    FROM field f
 
-			    FROM field f
+    LEFT JOIN infor_owner o
+        ON f.owner_id = o.owner_id
 
-			    LEFT JOIN bookingdetails bd
-			        ON f.fieldid = bd.fieldid
-			        AND DATE_FORMAT(bd.playdate, '%Y-%m-%d') = :date
+    LEFT JOIN bookingdetails bd
+        ON f.fieldid = bd.fieldid
+        AND DATE_FORMAT(bd.playdate, '%Y-%m-%d') = :date
 
-			    LEFT JOIN bookings b
-			        ON bd.bookingid = b.bookingid
+    LEFT JOIN bookings b
+        ON bd.bookingid = b.bookingid
 
-			    LEFT JOIN permanent_booking pb
-			        ON f.fieldid = pb.field_id
-			        AND pb.start_date <= :date
-			        AND pb.end_date >= :date
-			        AND pb.day_of_week = DAYOFWEEK(STR_TO_DATE(:date, '%Y-%m-%d'))
-			        AND pb.active = 1
+    LEFT JOIN permanent_booking pb
+        ON f.fieldid = pb.field_id
+        AND pb.start_date <= :date
+        AND pb.end_date >= :date
+        AND pb.day_of_week = DAYOFWEEK(STR_TO_DATE(:date, '%Y-%m-%d'))
+        AND pb.active = 1
 
-			    LEFT JOIN bookings b2
-			        ON pb.booking_id = b2.bookingid
+    LEFT JOIN bookings b2
+        ON pb.booking_id = b2.bookingid
 
-			    WHERE (bd.bookingdetailid IS NULL OR b.bookingid IS NOT NULL)
-			      AND (pb.permanent_id IS NULL OR b2.bookingid IS NOT NULL)
+    WHERE (bd.bookingdetailid IS NULL OR b.bookingid IS NOT NULL)
+      AND (pb.permanent_id IS NULL OR b2.bookingid IS NOT NULL)
 
-			    GROUP BY f.fieldid, f.namefield, f.image, f.price
-			""", nativeQuery = true)
-	List<Object[]> findActiveFieldsByDate(@Param("date") String date);
+    GROUP BY f.fieldid, f.namefield, f.image, f.price, o.business_name, o.owner_id
+""", nativeQuery = true)
+List<Object[]> findActiveFieldsByDate(@Param("date") String date);
+
 
 	// ================= LƯỢT ĐẶT & DOANH THU THEO THÁNG =================
 	@Query(value = """
-			    SELECT
-			        f.fieldid,
-			        f.namefield,
-			        f.image,
-			        f.price,
+    SELECT
+        f.fieldid,
+        f.namefield,
+        f.image,
+        f.price,
 
-			        COUNT(DISTINCT bd.bookingdetailid) AS one_time_bookings,
+        COUNT(DISTINCT bd.bookingdetailid) AS one_time_bookings,
 
-			        /* PERMANENT BOOKINGS COUNT (THEO TUẦN) */
-			        SUM(
-			            CASE
-			                WHEN pb.permanent_id IS NOT NULL THEN
-			                    FLOOR(
-			                        LEAST(
-			                            DATEDIFF(
-			                                LAST_DAY(STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d')),
-			                                GREATEST(
-			                                    STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d'),
-			                                    pb.start_date
-			                                )
-			                            ) / 7,
-			                            DATEDIFF(
-			                                pb.end_date,
-			                                GREATEST(
-			                                    STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d'),
-			                                    pb.start_date
-			                                )
-			                            ) / 7
-			                        ) + 1
-			                    )
-			                ELSE 0
-			            END
-			        ) AS permanent_bookings,
+        /* COUNT PERMANENT */
+        SUM(
+            CASE
+                WHEN pb.permanent_id IS NOT NULL THEN
+                    FLOOR(
+                        LEAST(
+                            DATEDIFF(
+                                LAST_DAY(STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d')),
+                                GREATEST(
+                                    STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d'),
+                                    pb.start_date
+                                )
+                            ) / 7,
+                            DATEDIFF(
+                                pb.end_date,
+                                GREATEST(
+                                    STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d'),
+                                    pb.start_date
+                                )
+                            ) / 7
+                        ) + 1
+                    )
+                ELSE 0
+            END
+        ) AS permanent_bookings,
 
-			        /* TOTAL BOOKINGS */
-			        (
-			            COUNT(DISTINCT bd.bookingdetailid)
-			            +
-			            SUM(
-			                CASE
-			                    WHEN pb.permanent_id IS NOT NULL THEN
-			                        FLOOR(
-			                            LEAST(
-			                                DATEDIFF(
-			                                    LAST_DAY(STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d')),
-			                                    GREATEST(
-			                                        STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d'),
-			                                        pb.start_date
-			                                    )
-			                                ) / 7,
-			                                DATEDIFF(
-			                                    pb.end_date,
-			                                    GREATEST(
-			                                        STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d'),
-			                                        pb.start_date
-			                                    )
-			                                ) / 7
-			                            ) + 1
-			                        )
-			                    ELSE 0
-			                END
-			            )
-			        ) AS total_bookings,
+        /* TOTAL BOOKINGS */
+        (
+            COUNT(DISTINCT bd.bookingdetailid)
+            +
+            SUM(
+                CASE
+                    WHEN pb.permanent_id IS NOT NULL THEN
+                        FLOOR(
+                            LEAST(
+                                DATEDIFF(
+                                    LAST_DAY(STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d')),
+                                    GREATEST(
+                                        STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d'),
+                                        pb.start_date
+                                    )
+                                ) / 7,
+                                DATEDIFF(
+                                    pb.end_date,
+                                    GREATEST(
+                                        STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d'),
+                                        pb.start_date
+                                    )
+                                ) / 7
+                            ) + 1
+                        )
+                    ELSE 0
+                END
+            )
+        ) AS total_bookings,
 
-			        /* TOTAL REVENUE */
-			        (
-			            /* BOOKING ONCE */
-			            COALESCE(
-			                SUM(
-			                    CASE
-			                        WHEN b.bookingstatus IN ('Đã Cọc', 'Hoàn Thành') THEN b.bookingprice
-			                        ELSE 0
-			                    END
-			                ), 0
-			            )
+        /* TOTAL REVENUE */
+        (
+            COALESCE(
+                SUM(
+                    CASE
+                        WHEN b.bookingstatus IN ('Đã Cọc', 'Hoàn Thành') THEN b.bookingprice
+                        ELSE 0
+                    END
+                ), 0
+            )
+            +
+            COALESCE(
+                SUM(
+                    CASE
+                        WHEN pb.permanent_id IS NOT NULL
+                             AND DATE_FORMAT(
+                                 DATE_ADD(pb.start_date,
+                                          INTERVAL ((pb.day_of_week - DAYOFWEEK(pb.start_date) + 7) % 7) DAY),
+                                 '%Y-%m'
+                             ) = :yearMonth
+                        THEN
+                            CASE
+                                WHEN b2.bookingstatus IN ('Đã Cọc', 'Hoàn Thành') THEN b2.bookingprice
+                                ELSE f.price
+                            END
+                        ELSE 0
+                    END
+                ), 0
+            )
+        ) AS total_revenue,
 
-			            +
+        o.business_name AS owner_name,
+        o.owner_id AS owner_id
 
-			            /* BOOKING PERMANENT (CHỈ LẦN ĐẦU THEO SHIFT / dayOfWeek TRONG THÁNG) */
-			            COALESCE(
-			                SUM(
-			                    CASE
-			                        WHEN pb.permanent_id IS NOT NULL
-			                             AND DATE_FORMAT(
-			                                 DATE_ADD(pb.start_date, INTERVAL ((pb.day_of_week - DAYOFWEEK(pb.start_date) + 7) % 7) DAY),
-			                                 '%Y-%m'
-			                             ) = :yearMonth
-			                        THEN
-			                            CASE
-			                                WHEN b2.bookingstatus IN ('Đã Cọc', 'Hoàn Thành') THEN b2.bookingprice
-			                                ELSE f.price
-			                            END
-			                        ELSE 0
-			                    END
-			                ), 0
-			            )
-			        ) AS total_revenue
+    FROM field f
 
-			    FROM field f
+    LEFT JOIN infor_owner o
+        ON f.owner_id = o.owner_id
 
-			    LEFT JOIN bookingdetails bd
-			        ON f.fieldid = bd.fieldid
-			        AND DATE_FORMAT(bd.playdate, '%Y-%m') = :yearMonth
+    LEFT JOIN bookingdetails bd
+        ON f.fieldid = bd.fieldid
+        AND DATE_FORMAT(bd.playdate, '%Y-%m') = :yearMonth
 
-			    LEFT JOIN bookings b
-			        ON bd.bookingid = b.bookingid
+    LEFT JOIN bookings b
+        ON bd.bookingid = b.bookingid
 
-			    LEFT JOIN permanent_booking pb
-			        ON f.fieldid = pb.field_id
-			        AND pb.start_date <= LAST_DAY(STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d'))
-			        AND pb.end_date >= STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d')
-			        AND pb.active = 1
+    LEFT JOIN permanent_booking pb
+        ON f.fieldid = pb.field_id
+        AND pb.start_date <= LAST_DAY(STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d'))
+        AND pb.end_date >= STR_TO_DATE(CONCAT(:yearMonth, '-01'), '%Y-%m-%d')
+        AND pb.active = 1
 
-			    LEFT JOIN bookings b2
-			        ON pb.booking_id = b2.bookingid
+    LEFT JOIN bookings b2
+        ON pb.booking_id = b2.bookingid
 
-			    WHERE (bd.bookingdetailid IS NULL OR b.bookingid IS NOT NULL)
-			      AND (pb.permanent_id IS NULL OR b2.bookingid IS NOT NULL)
+    WHERE (bd.bookingdetailid IS NULL OR b.bookingid IS NOT NULL)
+      AND (pb.permanent_id IS NULL OR b2.bookingid IS NOT NULL)
 
-			    GROUP BY f.fieldid, f.namefield, f.image, f.price
-			""", nativeQuery = true)
-	List<Object[]> findActiveFieldsByMonth(@Param("yearMonth") String yearMonth);
+    GROUP BY f.fieldid, f.namefield, f.image, f.price, o.business_name, o.owner_id
+""", nativeQuery = true)
+List<Object[]> findActiveFieldsByMonth(@Param("yearMonth") String yearMonth);
+	// ================= LƯỢT ĐẶT THEO 7-3-1 NGÀY GẦN NHẤT =================
 
 	// 7 ngày trước đó
 	@Query(value = "SELECT f.fieldid AS fieldId, f.namefield AS fieldName, f.image AS fieldImage, " +
@@ -374,81 +384,92 @@ public interface BookingDetailDAO extends JpaRepository<Bookingdetails, Integer>
 	// """, nativeQuery = true)
 
 	// List<Object[]> getListfieldsAction(@Param("date") String date);
+@Query(value = """
+    SELECT
+        f.fieldid,
+        f.namefield,
+        f.image,
+        f.price,
 
-	@Query(value = """
-			    SELECT
-			        f.fieldid,
-			        f.namefield,
-			        f.image,
-			        f.price,
+        COUNT(DISTINCT bd.bookingdetailid) AS one_time_bookings,
+        COUNT(DISTINCT pb.permanent_id) AS permanent_bookings,
 
-			        COUNT(DISTINCT bd.bookingdetailid) AS one_time_bookings,
-			        COUNT(DISTINCT pb.permanent_id) AS permanent_bookings,
+        (COUNT(DISTINCT bd.bookingdetailid) + COUNT(DISTINCT pb.permanent_id)) AS total_bookings,
 
-			        (COUNT(DISTINCT bd.bookingdetailid) + COUNT(DISTINCT pb.permanent_id)) AS total_bookings,
+        (
+            /* ================= BOOKING ONCE ================= */
+            COALESCE(
+                SUM(
+                    CASE
+                        WHEN b.bookingstatus IN ('Đã Cọc', 'Hoàn Thành') THEN b.bookingprice
+                        ELSE 0
+                    END
+                ), 0
+            )
+            +
+            /* ===== BOOKING PERMANENT (CHỈ LẦN ĐẦU THEO SHIFT/DAYOFWEEK) ===== */
+            COALESCE(
+                SUM(
+                    CASE
+                        WHEN pb.permanent_id IS NOT NULL
+                             AND :date = DATE_FORMAT(
+                                 DATE_ADD(
+                                     pb.start_date,
+                                     INTERVAL ((pb.day_of_week - DAYOFWEEK(pb.start_date) + 7) % 7) DAY
+                                 ),
+                                 '%Y-%m-%d'
+                             )
+                        THEN
+                            CASE
+                                WHEN b2.bookingstatus IN ('Đã Cọc', 'Hoàn Thành') THEN b2.bookingprice
+                                ELSE f.price
+                            END
+                        ELSE 0
+                    END
+                ), 0
+            )
+        ) AS total_revenue,
 
-			        (
-			            /* ================= BOOKING ONCE ================= */
-			            COALESCE(
-			                SUM(
-			                    CASE
-			                        WHEN b.bookingstatus IN ('Đã Cọc', 'Hoàn Thành') THEN b.bookingprice
-			                        ELSE 0
-			                    END
-			                ), 0
-			            )
+        o.business_name AS owner_name,
+        o.owner_id AS owner_id
 
-			            +
+    FROM field f
 
-			            /* ============ BOOKING PERMANENT (CHỈ LẦN ĐẦU THEO SHIFT/DAYOFWEEK) ============ */
-			            COALESCE(
-			                SUM(
-			                    CASE
-			                        WHEN pb.permanent_id IS NOT NULL
-			                             AND :date = DATE_FORMAT(
-			                                 DATE_ADD(
-			                                     pb.start_date,
-			                                     INTERVAL ((pb.day_of_week - DAYOFWEEK(pb.start_date) + 7) % 7) DAY
-			                                 ),
-			                                 '%Y-%m-%d'
-			                             )
-			                        THEN
-			                            CASE
-			                                WHEN b2.bookingstatus IN ('Đã Cọc', 'Hoàn Thành') THEN b2.bookingprice
-			                                ELSE f.price
-			                            END
-			                        ELSE 0
-			                    END
-			                ), 0
-			            )
-			        ) AS total_revenue
+    LEFT JOIN infor_owner o
+        ON f.owner_id = o.owner_id
 
-			    FROM field f
+    LEFT JOIN bookingdetails bd
+        ON f.fieldid = bd.fieldid
+        AND DATE_FORMAT(bd.playdate, '%Y-%m-%d') = :date
 
-			    LEFT JOIN bookingdetails bd
-			        ON f.fieldid = bd.fieldid
-			        AND DATE_FORMAT(bd.playdate, '%Y-%m-%d') = :date
+    LEFT JOIN bookings b
+        ON bd.bookingid = b.bookingid
 
-			    LEFT JOIN bookings b
-			        ON bd.bookingid = b.bookingid
+    LEFT JOIN permanent_booking pb
+        ON f.fieldid = pb.field_id
+        AND pb.start_date <= :date
+        AND pb.end_date >= :date
+        AND pb.day_of_week = DAYOFWEEK(STR_TO_DATE(:date, '%Y-%m-%d'))
+        AND pb.active = 1
 
-			    LEFT JOIN permanent_booking pb
-			        ON f.fieldid = pb.field_id
-			        AND pb.start_date <= :date
-			        AND pb.end_date >= :date
-			        AND pb.day_of_week = DAYOFWEEK(STR_TO_DATE(:date, '%Y-%m-%d'))
-			        AND pb.active = 1
+    LEFT JOIN bookings b2
+        ON pb.booking_id = b2.bookingid
 
-			    LEFT JOIN bookings b2
-			        ON pb.booking_id = b2.bookingid
+    WHERE (bd.bookingdetailid IS NULL OR b.bookingid IS NOT NULL)
+      AND (pb.permanent_id IS NULL OR b2.bookingid IS NOT NULL)
 
-			    WHERE (bd.bookingdetailid IS NULL OR b.bookingid IS NOT NULL)
-			      AND (pb.permanent_id IS NULL OR b2.bookingid IS NOT NULL)
+    GROUP BY 
+        f.fieldid, 
+        f.namefield, 
+        f.image, 
+        f.price,
+        o.business_name,
+        o.owner_id
 
-			    GROUP BY f.fieldid, f.namefield, f.image, f.price
-			    ORDER BY f.fieldid
-			""", nativeQuery = true)
-	List<Object[]> getListfieldsAction(@Param("date") String date);
+    ORDER BY f.fieldid
+    """, nativeQuery = true)
+List<Object[]> getListfieldsAction(@Param("date") String date);
+
 
 	// checkbooking detail tồn tại
 	@Query("""

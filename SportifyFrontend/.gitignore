@@ -8,7 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-dist
+
 dist-ssr
 *.local
 
@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 # netlyfy
 .netlify
+
+.env
+dist/

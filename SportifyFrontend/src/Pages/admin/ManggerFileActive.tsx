@@ -12,6 +12,7 @@ const ManggerFileActive: React.FC = () => {
         new Date().toISOString().split('T')[0]
     );
     const [searchTerm, setSearchTerm] = useState<string>('');
+    const [selectedOwner, setSelectedOwner] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(true);
 
     // Fetch dữ liệu từ API
@@ -35,11 +36,13 @@ const ManggerFileActive: React.FC = () => {
         }
     };
 
-    // Lọc dữ liệu theo tên sân
+    // Lọc dữ liệu theo tên sân và chủ sân
     const filterFields = () => {
-        const filtered = fields.filter(field =>
-            field.fieldName.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+        const filtered = fields.filter(field => {
+            const matchesSearchTerm = field.fieldName.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesOwner = selectedOwner === '' || field.ownerName === selectedOwner;
+            return matchesSearchTerm && matchesOwner;
+        });
         setFilteredFields(filtered);
     };
 
@@ -48,10 +51,10 @@ const ManggerFileActive: React.FC = () => {
         fetchFieldData(selectedDate);
     }, [selectedDate]);
 
-    // Effect để lọc khi search term thay đổi
+    // Effect để lọc khi search term hoặc owner thay đổi
     useEffect(() => {
         filterFields();
-    }, [searchTerm, fields]);
+    }, [searchTerm, selectedOwner, fields]);
 
     // Xử lý thay đổi ngày
     const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,6 +64,17 @@ const ManggerFileActive: React.FC = () => {
     // Xử lý tìm kiếm
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(event.target.value);
+    };
+
+    // Xử lý thay đổi chủ sân
+    const handleOwnerChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        setSelectedOwner(event.target.value);
+    };
+
+    // Lấy danh sách chủ sân duy nhất
+    const getUniqueOwners = () => {
+        const owners = [...new Set(fields.map(field => field.ownerName))];
+        return owners.sort();
     };
 
     // Làm mới dữ liệu
@@ -94,6 +108,10 @@ const ManggerFileActive: React.FC = () => {
                 <div className="card-body">
                     <NavLink to={`/admin/manager-file-active-detail/${field.fieldId}`} className="text-decoration-none">
                         <h5 className="card-title fw-bold mb-2 text-dark">{field.fieldName}</h5>
+                        <p className="mb-2">
+                            <span className="fw-semibold ">Chủ sân:</span>{' '}
+                            <span className="text-primary fw-bold">{field.ownerName}</span>
+                        </p>
                         <p className="mb-2">
                             <span className="fw-semibold ">Giá sân:</span>{' '}
                             <span>{field.fieldPrice.toLocaleString('vi-VN')} VND</span>
@@ -148,7 +166,7 @@ const ManggerFileActive: React.FC = () => {
                         />
                     </div>
 
-                    <div className="filter-group col-md-6 col-sm-6 mb-3">
+                    <div className="filter-group col-md-4 col-sm-6 mb-3">
                         <label htmlFor="search-input">Tìm kiếm sân:</label>
                         <input
                             id="search-input"
@@ -158,6 +176,29 @@ const ManggerFileActive: React.FC = () => {
                             onChange={handleSearchChange}
                             className="search-input"
                         />
+                    </div>
+
+                    <div className="filter-group col-md-2 col-sm-6 mb-3">
+                        <label htmlFor="owner-select">Chủ sân:</label>
+                        <select
+                            id="owner-select"
+                            value={selectedOwner}
+                            onChange={handleOwnerChange}
+                            className="form-select"
+                            style={{
+                                padding: '8px 12px',
+                                borderRadius: '6px',
+                                border: '1px solid #ddd',
+                                fontSize: '14px'
+                            }}
+                        >
+                            <option value="">Tất cả chủ sân</option>
+                            {getUniqueOwners().map((owner) => (
+                                <option key={owner} value={owner}>
+                                    {owner}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                     <div className='col-md-2 col-sm-12 d-flex align-items-end justify-content-end mb-3'>
 
@@ -169,6 +210,14 @@ const ManggerFileActive: React.FC = () => {
 
                 {/* Thống kê tổng quan */}
                 <div className="summary-stats">
+                    {selectedOwner && (
+                        <div className="summary-item">
+                            <span className="summary-label">Chủ sân đang xem:</span>
+                            <span className="summary-value" style={{ color: '#007bff', fontWeight: 'bold' }}>
+                                {selectedOwner}
+                            </span>
+                        </div>
+                    )}
                     <div className="summary-item">
                         <span className="summary-label">Tổng số sân:</span>
                         <span className="summary-value">{filteredFields.length}</span>

@@ -48,4 +48,6 @@ export interface FieldUsage {
   permanentBookings: number;
   totalBookings: number;
   totalRevenue: number;
+  ownerName: string;
+  ownerId: number;
 }

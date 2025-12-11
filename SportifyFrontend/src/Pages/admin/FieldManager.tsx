@@ -38,6 +38,13 @@ interface FieldUsageDetailDTO {
   permanentBookings: number;
   totalBookings: number;
   totalRevenue: number;
+  ownerName: string;
+  ownerId: number;
+}
+
+interface OwnerOption {
+  ownerId: number;
+  ownerName: string;
 }
 
 const FieldManager: React.FC = () => {
@@ -46,6 +53,10 @@ const FieldManager: React.FC = () => {
   const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7));
   const [dailyDetailData, setDailyDetailData] = useState<FieldUsageDetailDTO[]>([]);
   const [monthlyDetailData, setMonthlyDetailData] = useState<FieldUsageDetailDTO[]>([]);
+  const [filteredDailyData, setFilteredDailyData] = useState<FieldUsageDetailDTO[]>([]);
+  const [filteredMonthlyData, setFilteredMonthlyData] = useState<FieldUsageDetailDTO[]>([]);
+  const [selectedOwner, setSelectedOwner] = useState<string>('');
+  const [ownerOptions, setOwnerOptions] = useState<OwnerOption[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [_loading, setLoading] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<'daily' | 'monthly'>('daily');
@@ -65,6 +76,11 @@ const FieldManager: React.FC = () => {
     fetchMonthlyDetailData(selectedMonth);
   }, [selectedMonth]);
 
+  // Filter data when owner selection changes
+  useEffect(() => {
+    filterDataByOwner();
+  }, [selectedOwner, dailyDetailData, monthlyDetailData]);
+
   // Helper functions for calculations
   const calculateTotal = (data: FieldUsageDetailDTO[], property: keyof Pick<FieldUsageDetailDTO, 'oneTimeBookings' | 'permanentBookings' | 'totalBookings' | 'totalRevenue'>) => {
     return data.reduce((sum, item) => sum + item[property], 0);
@@ -81,14 +97,47 @@ const FieldManager: React.FC = () => {
     }).format(amount);
   };
 
+  // Owner filtering functions
+  const extractOwnerOptions = (data: FieldUsageDetailDTO[]) => {
+    const uniqueOwners = Array.from(
+      new Map(data.map(item => [item.ownerId, { ownerId: item.ownerId, ownerName: item.ownerName }])).values()
+    );
+    return uniqueOwners.sort((a, b) => a.ownerName.localeCompare(b.ownerName));
+  };
+
+  const filterDataByOwner = () => {
+    let filteredDaily = dailyDetailData;
+    let filteredMonthly = monthlyDetailData;
+
+    if (selectedOwner) {
+      filteredDaily = dailyDetailData.filter(item => item.ownerId.toString() === selectedOwner);
+      filteredMonthly = monthlyDetailData.filter(item => item.ownerId.toString() === selectedOwner);
+    }
+
+    setFilteredDailyData(filteredDaily);
+    setFilteredMonthlyData(filteredMonthly);
+
+    // Update owner options from both datasets
+    const allData = [...dailyDetailData, ...monthlyDetailData];
+    const owners = extractOwnerOptions(allData);
+    setOwnerOptions(owners);
+  };
+
+  const handleOwnerChange = (ownerId: string) => {
+    setSelectedOwner(ownerId);
+  };
+
   // Data fetching functions - keeping only the two specified API calls
   const fetchDailyDetailData = async (date: string) => {
     try {
       setLoading(true);
       const response = await axios.get(`${URL_BACKEND}/api/field-usage/active-fields/by-date?date=${date}`);
       setDailyDetailData(response.data);
+      setError(null);
     } catch (err) {
       setError('Failed to fetch daily detail data');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -97,22 +146,26 @@ const FieldManager: React.FC = () => {
       setLoading(true);
       const response = await axios.get(`${URL_BACKEND}/api/field-usage/active-fields/by-month?yearMonth=${yearMonth}`);
       setMonthlyDetailData(response.data);
+      setError(null);
     } catch (err) {
       setError('Failed to fetch monthly detail data');
+    } finally {
+      setLoading(false);
     }
   };
 
   // Refresh handler
   const handleRefresh = () => {
+    setSelectedOwner('');
     fetchDailyDetailData(selectedDate);
     fetchMonthlyDetailData(selectedMonth);
   };
 
   // Prepare chart data based on detail data
   const prepareDailyChartData = () => {
-    const fieldNames = dailyDetailData.map(item => item.fieldName);
-    const oneTimeData = dailyDetailData.map(item => item.oneTimeBookings);
-    const permanentData = dailyDetailData.map(item => item.permanentBookings);
+    const fieldNames = filteredDailyData.map(item => item.fieldName);
+    const oneTimeData = filteredDailyData.map(item => item.oneTimeBookings);
+    const permanentData = filteredDailyData.map(item => item.permanentBookings);
 
     return {
       labels: fieldNames,
@@ -132,9 +185,9 @@ const FieldManager: React.FC = () => {
   };
 
   const prepareMonthlyChartData = () => {
-    const fieldNames = monthlyDetailData.map(item => item.fieldName);
-    const oneTimeData = monthlyDetailData.map(item => item.oneTimeBookings);
-    const permanentData = monthlyDetailData.map(item => item.permanentBookings);
+    const fieldNames = filteredMonthlyData.map(item => item.fieldName);
+    const oneTimeData = filteredMonthlyData.map(item => item.oneTimeBookings);
+    const permanentData = filteredMonthlyData.map(item => item.permanentBookings);
 
     return {
       labels: fieldNames,
@@ -239,7 +292,7 @@ const FieldManager: React.FC = () => {
     if (data.length === 0) {
       return (
         <tr>
-          <td colSpan={9} className="text-center">
+          <td colSpan={10} className="text-center">
             {activeTab === 'daily' ? 'Không có dữ liệu cho ngày đã chọn' : 'Không có dữ liệu cho tháng đã chọn'}
           </td>
         </tr>
@@ -252,6 +305,7 @@ const FieldManager: React.FC = () => {
         <td>{item.fieldId}</td>
         <td><img src={getImageUrl(item.fieldImage)} alt={item.fieldName} style={{ width: '80px', height: '50px', objectFit: 'cover' }} /></td>
         <td>{item.fieldName}</td>
+        <td>{item.ownerName}</td>
         <td className="text-end">{formatCurrency(item.fieldPrice)}</td>
         <td className="text-center">{item.oneTimeBookings}</td>
         <td className="text-center">{item.permanentBookings}</td>
@@ -262,7 +316,7 @@ const FieldManager: React.FC = () => {
   };
 
   // Get current data based on active tab
-  const getCurrentData = () => activeTab === 'daily' ? dailyDetailData : monthlyDetailData;
+  const getCurrentData = () => activeTab === 'daily' ? filteredDailyData : filteredMonthlyData;
 
   return (
     <div className="page-wrapper py-4">
@@ -334,8 +388,24 @@ const FieldManager: React.FC = () => {
 
         {/* Search Filter */}
         <form className="row g-3 mb-4">
+          <div className="col-sm-6 col-md-3">
+            <label className="form-label">Lọc theo chủ sân</label>
+            <select 
+              className="form-select" 
+              value={selectedOwner} 
+              onChange={(e) => handleOwnerChange(e.target.value)}
+            >
+              <option value="">Tất cả chủ sân</option>
+              {ownerOptions.map(owner => (
+                <option key={owner.ownerId} value={owner.ownerId.toString()}>
+                  {owner.ownerName}
+                </option>
+              ))}
+            </select>
+          </div>
           <div className="col-sm-6 col-md-2">
-            <button type="button" className="btn btn-secondary w-100" onClick={handleRefresh}>
+            <label className="form-label">&nbsp;</label>
+            <button type="button" className="btn btn-secondary w-100 d-block" onClick={handleRefresh}>
               <i className="fa fa-refresh me-1"></i> Làm Mới
             </button>
           </div>
@@ -455,6 +525,7 @@ const FieldManager: React.FC = () => {
                         <th>ID Sân</th>
                         <th>Hình Ảnh</th>
                         <th>Tên Sân</th>
+                        <th>Chủ Sân</th>
                         <th>Giá Sân</th>
                         <th>Đặt Một Lần</th>
                         <th>Đặt Cố Định</th>
@@ -467,7 +538,7 @@ const FieldManager: React.FC = () => {
                     </tbody>
                     <tfoot>
                       <tr className="table-secondary">
-                        <td colSpan={5}><strong>Tổng Cộng</strong></td>
+                        <td colSpan={6}><strong>Tổng Cộng</strong></td>
                         <td className="text-center">
                           <strong>{calculateTotal(getCurrentData(), 'oneTimeBookings')}</strong>
                         </td>

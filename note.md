@@ -1,3 +1,18 @@
+
+1.
+
+tên file: application.properties
+đường dẫn tạo : Khoa_Luan_Tot_Nghiep\SportifyBackend\src\main\resources\application.properties
+
+
+
+
+
+
+
+
+
+
 # Cáº¥u hÃ¬nh káº¿t ná»i MySQL
 #spring.datasource.url=jdbc:mysql://localhost:3306/sportify?useSSL=false&serverTimezone=UTC
 
@@ -98,3 +113,17 @@ google.api.calendar.key=AIzaSyBP2xn3R1PvK4TMYGUciYTVRzNZzqNWdPA
 
 # openweather.api.key
 weatherapi.api.key=09362d07d8434157bba151740230110
+
+
+
+
+
+
+
+
+2. file .env
+
+
+VITE_CLOUDINARY_BASE_URL="https://res.cloudinary.com/dp5gkt29r/image/upload"
+VITE_BACKEND_URL="http://localhost:8081"
+VITE_STRIPE_PUBLIC_KEY="pk_test_51SFG6yJXeaC61e1UJ6xL6ndWS2lp6mLCzmq2WIvIf3lrYz5dWs6N37AJf9UnfjHfwVkOaPVLOyiNrFjQmG1DJrhB00BDlLuLgm"

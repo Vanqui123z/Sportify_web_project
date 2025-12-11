@@ -1,5 +1,6 @@
 package duan.sportify.service;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -85,10 +86,15 @@ public class FieldManagerService {
                 Long permanentBookings = ((Number) field[5]).longValue();
                 Long totalBookings = ((Number) field[6]).longValue();
                 Long totalRevenue = ((Number) field[7]).longValue();
+                String ownerName = field[8] != null ? field[8].toString() : null;
+                Long ownerId = field[9] != null
+                        ? ((BigInteger) field[9]).longValue()
+                        : null;
+
                 if (totalBookings > 0) {
                     result.add(new FieldManagerDetailDTO(fieldId, fieldName, fieldImage, fieldPrice, oneTimeBookings,
                             permanentBookings,
-                            totalBookings, totalRevenue));
+                            totalBookings, totalRevenue, ownerName, ownerId));
                 }
             } catch (Exception e) {
                 System.out.println("Error processing field: " + Arrays.toString(field));
@@ -136,6 +142,8 @@ public class FieldManagerService {
             dto.setPermanentBookings(((Number) row[5]).longValue());
             dto.setTotalBookings(((Number) row[6]).longValue());
             dto.setTotalRevenue(((Number) row[7]).longValue());
+            dto.setOwnerName(row[8] != null ? row[8].toString() : null);
+            dto.setOwnerId(row[9] != null ? ((Number) row[9]).longValue() : null);
 
             // ❗ Quan trọng: phải put vào map
             bookingMap.put(fieldId, dto);
@@ -169,6 +177,8 @@ public class FieldManagerService {
                 dto.setPermanentBookings(0L);
                 dto.setTotalBookings(0L);
                 dto.setTotalRevenue(0L);
+                dto.setOwnerName(f.getOwner().getBusinessName());
+                dto.setOwnerId(f.getOwner().getOwnerId());
 
                 result.add(dto);
             }
@@ -223,12 +233,16 @@ public class FieldManagerService {
             Long permanentBookings = ((Number) field[5]).longValue();
             Long totalBookings = ((Number) field[6]).longValue();
             Long totalRevenue = ((Number) field[7]).longValue();
+            String ownerName = field[8] != null ? field[8].toString() : null;
+            Long ownerId = field[9] != null
+                    ? ((BigInteger) field[9]).longValue()
+                    : null;
 
             if (totalBookings > 0) {
                 result.add(
                         new FieldManagerDetailDTO(fieldId, fieldName, fieldImage, fieldPrice, oneTimeBookings,
                                 permanentBookings,
-                                totalBookings, totalRevenue));
+                                totalBookings, totalRevenue, ownerName, ownerId));
             }
         }
         return result;

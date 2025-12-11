@@ -145,10 +145,16 @@ export default function PaymentResult() {
                 {/* Buttons */}
                 <div className="d-flex flex-column flex-sm-row gap-3 justify-content-center">
                   {refundId ? (
+                    <>
                     <a href={getBackUrl()} className="btn btn-primary btn-lg px-4 text-decoration-none">
                       <i className="fa fa-arrow-left me-2"></i>
-                      Trở về Quản lý đặt sân
+                      Trở về trang chủ sân
                     </a>
+                    <a href="/admin/bookings" className="btn btn-primary btn-lg px-4 text-decoration-none">
+                      <i className="fa fa-arrow-left me-2"></i>
+                      Trở về trang admin
+                    </a>
+                    </>
                   ) : (
                     <>
                       <a href="/sportify" className="btn btn-primary btn-lg px-4 text-decoration-none">
