@@ -100,6 +100,7 @@ const OwnerBookingBoard: React.FC<OwnerBookingBoardProps> = ({ selectedDate: pro
     const [fieldsFromApi, setFieldsFromApi] = useState<FieldInfo[]>([]);
 
     const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
+    const [selectedSport, setSelectedSport] = useState<string>("ALL");
     const [fieldFilter, setFieldFilter] = useState<string>("");
     const [selectedDate, setSelectedDate] = useState<string>(() => propSelectedDate || formatInputDate(new Date()));
 
@@ -200,7 +201,17 @@ const OwnerBookingBoard: React.FC<OwnerBookingBoardProps> = ({ selectedDate: pro
         }
     }, [ownerUsername]);
 
-    const statusOptions = useMemo(
+    const statusOptions = useMemo(() => {
+        const set = new Set<string>();
+        rawEvents.forEach((item) => {
+            if (item.bookingStatus) {
+                set.add(item.bookingStatus);
+            }
+        });
+        return Array.from(set).sort((a, b) => a.localeCompare(b, "vi", { sensitivity: "base" }));
+    }, [rawEvents]);
+
+    const sportOptions = useMemo(
         () => Array.from(new Set(fieldsFromApi.map((f) => f.type).filter(Boolean))) as string[],
         [fieldsFromApi]
     );
@@ -209,6 +220,16 @@ const OwnerBookingBoard: React.FC<OwnerBookingBoardProps> = ({ selectedDate: pro
         // Lọc booking chỉ cho sân của chủ sân hiện tại
         const ownerFieldIds = new Set(fieldsFromApi.map(f => f.id));
         console.log("🔑 Owner field IDs:", Array.from(ownerFieldIds));
+
+        const matchesStatus = (value?: string) => {
+            if (selectedStatus === "ALL") {
+                return true;
+            }
+            if (!value) {
+                return false;
+            }
+            return value === selectedStatus;
+        };
 
         const results: Array<{
             id: string;
@@ -227,6 +248,11 @@ const OwnerBookingBoard: React.FC<OwnerBookingBoardProps> = ({ selectedDate: pro
         rawEvents.forEach((event) => {
             // Chỉ lấy booking của sân thuộc về chủ sân này
             if (!ownerFieldIds.has(event.fieldId)) {
+                return;
+            }
+
+            // Kiểm tra trạng thái booking
+            if (!matchesStatus(event.bookingStatus)) {
                 return;
             }
 
@@ -275,8 +301,6 @@ const OwnerBookingBoard: React.FC<OwnerBookingBoardProps> = ({ selectedDate: pro
                     return;
                 }
             }
-            // 3️⃣ Kiểm tra trạng thái (nếu cần, có thể thêm logic matchesStatus)
-            // 4️⃣ Tạo booking cho NGÀY ĐANG XEM
             const start = new Date(selectedDateObj);
             start.setHours(startRange.getHours(), startRange.getMinutes(), 0, 0);
 
@@ -307,11 +331,11 @@ const OwnerBookingBoard: React.FC<OwnerBookingBoardProps> = ({ selectedDate: pro
             });
         });
         return results;
-    }, [rawEvents, selectedDateObj, fieldsFromApi]);
+    }, [rawEvents, selectedDateObj, fieldsFromApi, selectedStatus]);
 
     const filteredFields = useMemo(() => {
         return fieldsFromApi.filter((field) => {
-            if (selectedStatus !== "ALL" && field.type !== selectedStatus) {
+            if (selectedSport !== "ALL" && field.type !== selectedSport) {
                 return false;
             }
 
@@ -321,7 +345,7 @@ const OwnerBookingBoard: React.FC<OwnerBookingBoardProps> = ({ selectedDate: pro
 
             return true;
         });
-    }, [fieldsFromApi, selectedStatus, fieldFilter]);
+    }, [fieldsFromApi, selectedSport, fieldFilter]);
 
     const openBookingDetail = (bookingId: number) => {
         setSelectedBookingId(bookingId);
@@ -345,117 +369,163 @@ const OwnerBookingBoard: React.FC<OwnerBookingBoardProps> = ({ selectedDate: pro
             </div>
 
             <div className="card-body booking-board__body">
-                <div className="booking-board__filters">
-                    <div className="filter-control">
-                        <label htmlFor="status-filter">Loại sân</label>
-                        <select
-                            id="status-filter"
-                            value={selectedStatus}
-                            onChange={(event) => setSelectedStatus(event.target.value)}
-                        >
-                            <option value="ALL">Tất cả</option>
-                            {statusOptions.map((status) => (
-                                <option key={status} value={status}>
-                                    {status}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                {/* Filters Section */}
+                <div className="booking-board__filters-container">
+                    <div className="booking-board__filters">
+                        <div className="filter-row">
+                            <div className="filter-control filter-control--select">
+                                <label htmlFor="status-filter" className="form-label">Trạng thái</label>
+                                <select
+                                    id="status-filter"
+                                    className="form-select filter-select"
+                                    value={selectedStatus}
+                                    onChange={(event) => setSelectedStatus(event.target.value)}
+                                >
+                                    <option value="ALL">Tất cả</option>
+                                    {statusOptions.map((status) => (
+                                        <option key={status} value={status}>
+                                            {status}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
 
-                    <div className="filter-control">
-                        <label htmlFor="field-filter">Tên sân</label>
-                        <input
-                            id="field-filter"
-                            type="text"
-                            placeholder="Nhập tên sân..."
-                            value={fieldFilter}
-                            onChange={(event) => setFieldFilter(event.target.value)}
-                        />
-                    </div>
+                            <div className="filter-control filter-control--select">
+                                <label htmlFor="sport-filter" className="form-label">Loại thể thao</label>
+                                <select
+                                    id="sport-filter"
+                                    className="form-select filter-select"
+                                    value={selectedSport}
+                                    onChange={(event) => setSelectedSport(event.target.value)}
+                                >
+                                    <option value="ALL">Tất cả</option>
+                                    {sportOptions.map((sport) => (
+                                        <option key={sport} value={sport}>
+                                            {sport}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
 
-                    <div className="filter-control">
-                        <label htmlFor="date-filter">Ngày</label>
-                        <div className="filter-control__date filter-control__date--with-nav">
-                            <button
-                                type="button"
-                                className="date-nav-button"
-                                aria-label="Ngày trước"
-                                onClick={() => goToRelativeDate(-1)}
-                            >
-                                <IconChevron direction="left" />
-                            </button>
-                            <input
-                                id="date-filter"
-                                type="date"
-                                value={selectedDate}
-                                onChange={(event) => handleDateChange(event.target.value)}
-                            />
-                            <button
-                                type="button"
-                                className="date-nav-button"
-                                aria-label="Ngày tiếp theo"
-                                onClick={() => goToRelativeDate(1)}
-                            >
-                                <IconChevron direction="right" />
-                            </button>
-                            <i className="bi bi-calendar-event" />
+                            <div className="filter-control filter-control--search">
+                                <label htmlFor="field-filter" className="form-label">Tìm kiếm sân</label>
+                                <div className="search-input-wrapper">
+                                    <input
+                                        id="field-filter"
+                                        type="text"
+                                        className="form-control filter-input"
+                                        placeholder="Nhập tên sân..."
+                                        value={fieldFilter}
+                                        onChange={(event) => setFieldFilter(event.target.value)}
+                                    />
+                                    <i className="search-icon">🔍</i>
+                                </div>
+                            </div>
+
+                            <div className="filter-control filter-control--date">
+                                <label htmlFor="date-filter" className="form-label">Ngày</label>
+                                <div className="date-input-group">
+                                    <button
+                                        type="button"
+                                        className="date-nav-button date-nav-button--prev"
+                                        aria-label="Ngày trước"
+                                        onClick={() => goToRelativeDate(-1)}
+                                        title="Ngày trước"
+                                    >
+                                        <IconChevron direction="left" />
+                                    </button>
+                                    <input
+                                        id="date-filter"
+                                        type="date"
+                                        className="form-control date-input"
+                                        value={selectedDate}
+                                        onChange={(event) => handleDateChange(event.target.value)}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="date-nav-button date-nav-button--next"
+                                        aria-label="Ngày tiếp theo"
+                                        onClick={() => goToRelativeDate(1)}
+                                        title="Ngày tiếp theo"
+                                    >
+                                        <IconChevron direction="right" />
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="color-legend">
-                    <div className="legend-item">
-                        <div className="legend-color permanent"></div>
-                        <span>Đặt cố định</span>
-                    </div>
-                    <div className="legend-item">
-                        <div className="legend-color temporary"></div>
-                        <span>Đặt lẻ</span>
-                    </div>
-                    <div className="legend-item">
-                        <div className="legend-color available"></div>
-                        <span>Còn trống</span>
-                    </div>
-                    <div className="legend-item">
-                        <div className="legend-color ribbon-shape" style={{ backgroundColor: '#dc3545' }}></div>
-                        <span>Đã Cọc</span>
-                    </div>
-                    <div className="legend-item">
-                        <div className="legend-color ribbon-shape" style={{ backgroundColor: '#ffc107' }}></div>
-                        <span>Hoàn Thành</span>
-                    </div>
-                    <div className="legend-item">
-                        <div className="legend-color ribbon-shape" style={{ backgroundColor: '#6c757d' }}></div>
-                        <span>Đã Hủy</span>
+                <div className="booking-board__legend-section">
+                    <div className="legend-container">
+                        <div className="legend-title">
+                            <span>Chú thích trạng thái</span>
+                        </div>
+                        <div className="legend-items">
+                            <div className="legend-group">
+                                <div className="legend-item">
+                                    <div className="legend-color permanent"></div>
+                                    <span>Đặt cố định</span>
+                                </div>
+                                <div className="legend-item">
+                                    <div className="legend-color temporary"></div>
+                                    <span>Đặt lẻ</span>
+                                </div>
+                                <div className="legend-item">
+                                    <div className="legend-color available"></div>
+                                    <span>Còn trống</span>
+                                </div>
+                            </div>
+                            <div className="legend-group">
+                                <div className="legend-item">
+                                    <div className="legend-status-dot status-dacoc"></div>
+                                    <span>Đã Cọc</span>
+                                </div>
+                                <div className="legend-item">
+                                    <div className="legend-status-dot status-hoanthanh"></div>
+                                    <span>Hoàn Thành</span>
+                                </div>
+                                <div className="legend-item">
+                                    <div className="legend-status-dot status-dahuy"></div>
+                                    <span>Đã Hủy</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div className="d-flex mb-3 align-items-center justify-content-between">
-                    <div className="w-100" style={{
-                        backgroundColor: '#e8f5e9',
-                        padding: '5px 15px',
-                        fontSize: '12px',
-                        color: '#2E7D32',
-                        fontWeight: 'bold'
-                    }}>
-                        {new Date(selectedDate).toLocaleDateString('vi-VN', { weekday: 'long' })}<br />
-                        {new Date(selectedDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}
+                <div className="date-display-section">
+                    <div className="date-display-card">
+                        <div className="date-info">
+                            <div className="date-weekday">
+                                {new Date(selectedDate).toLocaleDateString('vi-VN', { weekday: 'long' })}
+                            </div>
+                            <div className="date-number">
+                                {new Date(selectedDate).toLocaleDateString('vi-VN', { 
+                                    day: '2-digit', 
+                                    month: 'long', 
+                                    year: 'numeric' 
+                                })}
+                            </div>
+                        </div>
+                        <button className="btn btn-success " onClick={() => setShow(true)}>
+                            + Tạo đặt sân
+                        </button>
                     </div>
-                    <button className="btn btn-success booking-board__create-btn" onClick={() => setShow(true)}>
-                        + Tạo đặt sân
-                    </button>
-
+                  
                 </div>
 
                 {/* Calendar Table */}
-                <div className="calendar-table-container">
+                <div className="table-responsive calendar-table-container">
                     {loading && (
-                        <div style={{ padding: '20px', textAlign: 'center' }}>
-                            <span className="visibly-hidden">Đang tải...</span>
+                        <div className="text-center p-4">
+                            <div className="spinner-border" role="status">
+                                <span className="visually-hidden">Đang tải...</span>
+                            </div>
                         </div>
                     )}
                     {error && (
-                        <div className="alert alert-danger" role="alert" style={{ margin: '20px' }}>
+                        <div className="alert alert-danger m-3" role="alert">
                             {error}
                         </div>
                     )}
@@ -519,8 +589,8 @@ const OwnerBookingBoard: React.FC<OwnerBookingBoardProps> = ({ selectedDate: pro
                                                                     <div className={`booking-tag ${booking.type === 'PERMANENT' ? 'permanent' :
                                                                         booking.type === 'ONCE' ? 'once' : 'temporary'
                                                                         }`}>
-                                                                        {booking.customerName && <div style={{ fontSize: '0.7em', marginTop: '2px' }}>{booking.customerName}</div>}
-                                                                        {booking.customerPhone && <div style={{ fontSize: '0.7em', marginTop: '1px' }}>{booking.customerPhone}</div>}
+                                                                        {booking.customerName || 'Khách hàng'}<br />
+                                                                        {booking.customerPhone}
                                                                     </div>
                                                                 </div>
                                                             </td>

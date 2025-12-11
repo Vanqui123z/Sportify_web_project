@@ -136,15 +136,15 @@ export default function GroupChat() {
   };
   return (
     <div className="card shadow-sm border-0">
-      <div className="card-header bg-primary text-white d-flex align-items-center justify-content-between">
-        <span className="fw-bold"><i className="fa fa-comments me-2"></i>Phòng: {roomId}</span>
+      <div className="card-header bg-primary text-white d-flex align-items-center justify-content-between flex-wrap">
+        <span className="fw-bold mb-1 mb-sm-0"><i className="fa fa-comments me-2"></i><span className="d-none d-sm-inline">Phòng: </span>{roomId}</span>
         <span className="badge bg-success">{onlineUsers.length} online</span>
       </div>
-      <div className="card-body p-3">
+      <div className="card-body p-2 p-md-3">
         <div
           className="mb-3"
           ref={chatBoxRef}
-          style={{ height: 400, overflowY: "auto", background: "#f8f9fa", borderRadius: 8, border: "1px solid #eee", position: "relative" }}
+          style={{ height: window.innerWidth <= 768 ? 300 : 400, overflowY: "auto", background: "#f8f9fa", borderRadius: 8, border: "1px solid #eee", position: "relative" }}
           onScroll={handleScroll}
         >
           {messages.length === 0 ? (

@@ -197,3 +197,178 @@
 .ai-file-input-hidden {
   display: none;
 }
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .ai-input-media-wrapper {
+    padding: 10px;
+    gap: 6px;
+  }
+
+  .ai-attachments-preview {
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .ai-attachment-item {
+    padding: 4px 8px;
+    font-size: 11px;
+    gap: 4px;
+  }
+
+  .ai-attachment-name {
+    max-width: 120px;
+  }
+
+  .ai-input-container {
+    padding: 8px;
+    gap: 6px;
+  }
+
+  .ai-input {
+    font-size: 14px;
+    padding: 8px 10px;
+  }
+
+  .ai-action-buttons {
+    gap: 4px;
+  }
+
+  .ai-action-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+
+  .ai-send-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .ai-recording-indicator {
+    font-size: 11px;
+    gap: 4px;
+  }
+
+  .ai-recording-dot {
+    width: 6px;
+    height: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ai-input-media-wrapper {
+    padding: 8px;
+  }
+
+  .ai-attachment-item {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+
+  .ai-attachment-name {
+    max-width: 100px;
+  }
+
+  .ai-input {
+    font-size: 13px;
+    padding: 6px 8px;
+  }
+
+  .ai-action-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .ai-send-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .ai-input-media-wrapper {
+    padding: 10px;
+    gap: 6px;
+  }
+
+  .ai-input-actions {
+    gap: 8px;
+  }
+
+  .ai-input-action-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+
+  .ai-input {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+
+  .ai-send-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .ai-attachments-preview {
+    padding: 6px;
+    gap: 6px;
+  }
+
+  .ai-attachment-item {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .ai-attachment-icon {
+    font-size: 12px;
+  }
+
+  .ai-attachment-name {
+    max-width: 120px;
+  }
+
+  .ai-recording-indicator {
+    font-size: 12px;
+    gap: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ai-input-media-wrapper {
+    padding: 8px;
+  }
+
+  .ai-input-action-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+
+  .ai-send-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+
+  .ai-input {
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+
+  .ai-attachment-item {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+
+  .ai-attachment-name {
+    max-width: 100px;
+  }
+}

@@ -55,21 +55,7 @@
     gap: 12px;
 }
 
-.booking-board__create-btn {
-    padding: 8px 18px;
-    font-size: 14px;
-    font-weight: 600;
-    border-radius: 10px;
-    line-height: 1.2;
-    white-space: nowrap;
-    box-shadow: 0 6px 18px rgba(34, 197, 94, 0.25);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
 
-.booking-board__create-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 10px 24px rgba(34, 197, 94, 0.28);
-}
 
 .booking-board__icon-button {
     width: 36px;
@@ -98,86 +84,247 @@
     padding: 24px;
 }
 
-.booking-board__filters {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 16px 20px;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 16px;
+/* Filters Container */
+.booking-board__filters-container {
+    margin-bottom: 24px;
 }
 
+.booking-board__filters {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    align-items: end;
+}
+
+/* Filter Control Base */
 .filter-control {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    font-size: 14px;
-    color: #0f172a;
 }
 
-.filter-control label {
+.filter-control .form-label {
     font-weight: 600;
     font-size: 12px;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.1em;
     color: #475569;
+    margin-bottom: 4px;
 }
 
-.filter-control select,
-.filter-control input[type="text"],
-.filter-control input[type="date"] {
-    border: 1px solid #cbd5f5;
-    border-radius: 10px;
-    padding: 10px 12px;
-    font-size: 14px;
-    outline: none;
+/* Select Controls */
+.filter-control--select .filter-select {
     background: #ffffff;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: #0f172a;
+    outline: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.filter-control select:focus,
-.filter-control input[type="text"]:focus,
-.filter-control input[type="date"]:focus {
+.filter-control--select .filter-select:focus {
     border-color: #0f766e;
-    box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.16);
+    box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1), 0 1px 3px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
 }
 
-.filter-control__date {
+.filter-control--select .filter-select:hover {
+    border-color: #94a3b8;
+}
+
+/* Search Input */
+.filter-control--search {
+    position: relative;
+}
+
+.search-input-wrapper {
     position: relative;
     display: flex;
     align-items: center;
 }
 
-.filter-control__date i {
+.filter-control--search .filter-input {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 12px 16px 12px 40px;
+    font-size: 14px;
+    color: #0f172a;
+    outline: none;
+    width: 100%;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.filter-control--search .filter-input:focus {
+    border-color: #0f766e;
+    box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1), 0 1px 3px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.filter-control--search .filter-input:hover {
+    border-color: #94a3b8;
+}
+
+.search-icon {
     position: absolute;
-    right: 12px;
-    color: #0f766e;
+    left: 14px;
+    color: #64748b;
+    font-size: 14px;
     pointer-events: none;
-    font-size: 16px;
+    z-index: 1;
 }
 
-.filter-control__date--with-nav {
-    gap: 10px;
-    padding-right: 42px;
+/* Date Control */
+
+.date-input-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    width: fit-content;
 }
 
-.filter-control__date--with-nav input[type="date"] {
+.date-input-group:hover {
+    border-color: #94a3b8;
+}
+
+.date-input-group:focus-within {
+    border-color: #0f766e;
+    box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1), 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.date-input {
     flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: #0f172a;
+    font-weight: 500;
 }
 
 .date-nav-button {
-    width: 34px;
-    height: 34px;
+    width: 32px;
+    height: 32px;
+    border: none;
     border-radius: 8px;
-    border: 1px solid #d0d7de;
-    background: #ffffff;
-    color: #0f172a;
-    display: inline-flex;
+    background: #f8fafc;
+    color: #475569;
+    display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    transition: all 0.2s ease;
+    font-size: 0;
+}
+
+.date-nav-button:hover {
+    background: #e2e8f0;
+    color: #0f766e;
+    transform: scale(1.05);
+}
+
+.date-nav-button:active {
+    transform: scale(0.95);
+}
+
+.date-nav-button svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Date Display Section */
+.date-display-section {
+    margin-bottom: 20px;
+}
+
+.date-display-card {
+    background: linear-gradient(135deg, #0f766e 0%, #059669 100%);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 12px rgba(15, 118, 110, 0.2);
+    color: white;
+}
+
+.date-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.date-weekday {
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: capitalize;
+    opacity: 0.9;
+}
+
+.date-number {
+    font-size: 18px;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+.date-icon {
+    font-size: 24px;
+    opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+    .date-display-card {
+        padding: 12px 16px;
+    }
+    
+    .date-weekday {
+        font-size: 12px;
+    }
+    
+    .date-number {
+        font-size: 16px;
+    }
+    
+    .date-icon {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .date-display-card {
+        padding: 10px 14px;
+    }
+    
+    .date-weekday {
+        font-size: 11px;
+    }
+    
+    .date-number {
+        font-size: 14px;
+    }
+    
+    .date-icon {
+        font-size: 18px;
+    }
 }
 
 .date-nav-button:hover {
@@ -197,17 +344,43 @@
     height: 16px;
 }
 
-/* Color Legend Section */
-.color-legend {
-    display: flex;
-    justify-content: flex-start;
-    gap: 20px;
-    align-items: center;
-    padding: 12px 16px;
-    background: #f8fafc;
+/* Legend Section */
+.booking-board__legend-section {
+    margin-bottom: 20px;
+}
+
+.legend-container {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
     border: 1px solid #e2e8f0;
     border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.legend-title {
+    margin-bottom: 12px;
+}
+
+.legend-title span {
     font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.legend-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    align-items: center;
+}
+
+.legend-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
 }
 
 .legend-item {
@@ -220,33 +393,94 @@
 }
 
 .legend-color {
-    width: 20px;
-    height: 12px;
-    border: 1px solid #ddd;
-    border-radius: 3px;
+    width: 16px;
+    height: 10px;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
 }
 
 .legend-color.permanent {
-    background: #2196F3;
+    background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
     border-color: #1976D2;
 }
 
 .legend-color.temporary {
-    background: #4CAF50;
+    background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
     border-color: #388E3C;
 }
 
 .legend-color.available {
-    background: #f8f9fa;
-    border-color: #dee2e6;
+    background: #ffffff;
+    border: 2px dashed #cbd5e1;
 }
 
-/* Ribbon shapes trong legend */
-.legend-color.ribbon-shape {
-    width: 14px;
-    height: 14px;
+.legend-status-dot {
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
+    flex-shrink: 0;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.status-dacoc {
+    background: #dc3545;
+}
+
+.status-hoanthanh {
+    background: #ffc107;
+}
+
+.status-dahuy {
+    background: #6c757d;
+}
+
+/* Responsive Legend */
+@media (max-width: 768px) {
+    .legend-container {
+        padding: 12px 16px;
+    }
+    
+    .legend-items {
+        gap: 16px;
+    }
+    
+    .legend-group {
+        gap: 12px;
+    }
+    
+    .legend-item {
+        font-size: 12px;
+        gap: 6px;
+    }
+    
+    .legend-color {
+        width: 14px;
+        height: 8px;
+    }
+    
+    .legend-status-dot {
+        width: 10px;
+        height: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .legend-items {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .legend-group {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .legend-item {
+        font-size: 11px;
+        gap: 4px;
+    }
 }
 
 .booking-board__legend {
@@ -626,10 +860,12 @@
     position: sticky;
     left: 0;
     z-index: 101;
-    min-width: 180px;
     background: #f8fafc;
     font-weight: 700;
     color: #0f172a;
+    width: 180px;
+    max-width: 180px;
+    min-width: 160px;
 }
 
 .calendar-table tbody tr:hover {
@@ -653,13 +889,37 @@
     background: #f8fafc;
     font-weight: 600;
     text-align: left;
-    padding-left: 16px;
-    min-width: 180px;
+    padding: 8px 16px;
     border-right: 2px solid #e2e8f0;
+    width: 180px;
+    max-width: 180px;
+    min-width: 160px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    vertical-align: middle;
+    line-height: 1.3;
 }
 
 .calendar-table tbody tr:hover td:first-child {
     background: #f1f5f9;
+}
+
+/* Field name link styles */
+.field-name-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    line-height: 1.3;
+    width: 100%;
+}
+
+.field-name-link:hover {
+    color: #0f766e;
+    text-decoration: none;
 }
 
 .calendar-table .time-slot {
@@ -678,4 +938,341 @@
     opacity: 0.9;
     transform: scale(1.02);
     transition: all 0.2s ease;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .booking-board {
+        margin: 10px;
+        border-radius: 10px;
+    }
+
+    .booking-board__top {
+        padding: 16px;
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+
+    .booking-board__title-group {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+
+    .booking-board__title {
+        font-size: 18px;
+    }
+
+    .booking-board__subtitle {
+        font-size: 12px;
+    }
+
+    .booking-board__actions {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+  
+
+    .booking-board__icon-button {
+        width: 32px;
+        height: 32px;
+    }
+
+    .booking-board__body {
+        padding: 16px;
+        gap: 16px;
+    }
+
+    .booking-board__filters {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .filter-control {
+        flex: 1;
+        min-width: unset;
+    }
+
+    .filter-control label {
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+
+    .filter-control select,
+    .filter-control input {
+        font-size: 14px;
+        padding: 8px 10px;
+    }
+
+    .filter-control__date {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .filter-control__date--with-nav {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .filter-control__date--with-nav input {
+        flex: 1;
+        margin: 0 8px;
+    }
+
+    .filter-control__date--with-nav button {
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+
+    .color-legend {
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+    }
+
+    .legend-item {
+        font-size: 11px;
+        gap: 4px;
+    }
+
+    .legend-color {
+        width: 12px;
+        height: 12px;
+    }
+
+    .calendar-table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 8px;
+    }
+
+    .calendar-table {
+        min-width: 800px; /* Ensure table doesn't get too compressed */
+        font-size: 12px;
+    }
+
+    .calendar-table th,
+    .calendar-table td {
+        padding: 6px 4px;
+        min-width: 60px;
+    }
+
+    .day-header {
+        min-width: 120px;
+        font-size: 11px;
+        padding-left: 8px;
+    }
+
+    .time-slot-header {
+        font-size: 10px;
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+        height: 80px;
+    }
+
+    .booking-tag {
+        font-size: 9px;
+        padding: 2px;
+        border-radius: 3px;
+    }
+
+    .booking-label {
+        font-size: 10px;
+    }
+
+    .ribbon-position {
+        width: 8px;
+        height: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .booking-board {
+        margin: 5px;
+    }
+
+    .booking-board__top {
+        padding: 12px;
+    }
+
+    .booking-board__title {
+        font-size: 16px;
+    }
+
+    .booking-board__body {
+        padding: 12px;
+    }
+
+    .booking-board__create-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .filter-control select,
+    .filter-control input {
+        font-size: 13px;
+        padding: 6px 8px;
+    }
+
+    .calendar-table {
+        min-width: 600px;
+        font-size: 11px;
+    }
+
+    .calendar-table th,
+    .calendar-table td {
+        padding: 4px 2px;
+        min-width: 50px;
+    }
+
+    .day-header {
+        min-width: 100px;
+        font-size: 10px;
+    }
+
+    .time-slot-header {
+        font-size: 9px;
+        height: 70px;
+    }
+
+    .booking-tag {
+        font-size: 8px;
+    }
+
+    .legend-item {
+        font-size: 10px;
+    }
+}
+
+/* New Responsive Design for Modern Filters */
+@media (max-width: 1200px) {
+    .filter-row {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+    }
+    
+    .booking-board__filters {
+        padding: 16px;
+    }
+}
+
+@media (max-width: 992px) {
+    .filter-row {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+    
+    .filter-control--date {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 768px) {
+    .booking-board__filters {
+        padding: 16px;
+        border-radius: 12px;
+    }
+    
+    .filter-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .filter-control--date {
+        grid-column: span 1;
+    }
+    
+    .filter-control .form-label {
+        font-size: 11px;
+        margin-bottom: 6px;
+    }
+    
+    .filter-select,
+    .filter-input {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+    
+    .filter-control--search .filter-input {
+        padding-left: 36px;
+    }
+    
+    .date-input-group {
+        padding: 3px;
+    }
+    
+    .date-input {
+        padding: 6px 10px;
+    }
+    
+    .date-nav-button {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .date-nav-button svg {
+        width: 12px;
+        height: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .booking-board {
+        margin: 10px;
+        border-radius: 12px;
+    }
+    
+    .booking-board__filters {
+        padding: 12px;
+        margin-bottom: 16px;
+    }
+    
+    .filter-row {
+        gap: 10px;
+    }
+    
+    .filter-control .form-label {
+        font-size: 10px;
+        letter-spacing: 0.05em;
+    }
+    
+    .filter-select,
+    .filter-input {
+        padding: 8px 10px;
+        font-size: 13px;
+        border-radius: 8px;
+    }
+    
+    .filter-control--search .filter-input {
+        padding-left: 32px;
+    }
+    
+    .search-icon {
+        left: 10px;
+        font-size: 12px;
+    }
+    
+    .date-input-group {
+        border-radius: 8px;
+        padding: 2px;
+    }
+    
+    .date-input {
+        font-size: 13px;
+        padding: 4px 8px;
+    }
+    
+    .date-nav-button {
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+    }
+    
+    .date-nav-button svg {
+        width: 10px;
+        height: 10px;
+    }
 }

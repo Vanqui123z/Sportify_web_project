@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 # netlyfy
 .netlify
+
+.env
+dist/
