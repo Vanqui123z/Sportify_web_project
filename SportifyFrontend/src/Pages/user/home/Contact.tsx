@@ -235,7 +235,7 @@ const Contact: React.FC = () => {
                     </div>
                     <div className="text">
                       <p>
-                        <span>Email:</span> <a href="mailto:info@yoursite.com">phamleducngoc123@gmail.com</a>
+                        <span>Email:</span> <a href="mailto:info@yoursite.com">admin@gmail.com</a>
                       </p>
                     </div>
                   </div>

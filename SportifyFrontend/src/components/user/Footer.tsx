@@ -79,7 +79,7 @@ export default function Footer() {
                     <li>
                       <a href="#">
                         <span className="icon fa fa-paper-plane pr-4"></span>
-                        <span className="text">phamleducngoc123@gmail.com</span>
+                        <span className="text">admin@gmail.com</span>
                       </a>
                     </li>
                   </ul>

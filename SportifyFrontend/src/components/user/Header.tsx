@@ -65,7 +65,7 @@ export default function Header() {
                 </span>
                 <span className="text-light">
                   <span className="fa fa-paper-plane me-1"></span>
-                  phamleducngoc123@gmail.com
+                  admin@gmail.com
                 </span>
               </div>
             </div>
